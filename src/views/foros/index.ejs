@@ -1,0 +1,28 @@
+
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body>
+
+    <%- include('../partials/header', {
+        titulo: titulo,
+        descripcion: descripcion
+    }) %>
+
+    <%- include('../partials/navigation') %>
+
+    <main>
+
+        <h2>Opciones de los foros</h2>
+
+        <ul>
+            <li>Foros de discusión</li>
+            <li>Hilos de discusión</li>
+            <li>Participar en conversaciones</li>
+        </ul>
+
+    </main>
+
+    <%- include('../partials/footer') %>
+
+</body>
+</html>

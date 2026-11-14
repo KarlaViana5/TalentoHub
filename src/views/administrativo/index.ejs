@@ -1,0 +1,32 @@
+
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body>
+
+    <%- include('../partials/header', {
+        titulo: titulo,
+        descripcion: descripcion
+    }) %>
+
+    <%- include('../partials/navigation') %>
+
+    <main>
+
+        <h2>Opciones administrativas</h2>
+
+        <ul>
+            <li>Panel principal</li>
+            <li>Gestión de usuarios</li>
+            <li>Gestión de empresas</li>
+            <li>Gestión de vacantes</li>
+            <li>Moderación de contenido</li>
+            <li>Estadísticas del sistema</li>
+            <li>Configuración del sistema</li>
+        </ul>
+
+    </main>
+
+    <%- include('../partials/footer') %>
+
+</body>
+</html>

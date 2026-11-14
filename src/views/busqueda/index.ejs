@@ -1,0 +1,264 @@
+
+<!-- src/views/busqueda/index.ejs -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= titulo %> | TalentoHub</title>
+</head>
+<body>
+
+    <header>
+        <h1>TalentoHub</h1>
+
+        <nav>
+            <a href="/">Inicio</a> |
+            <a href="/busqueda">Vacantes</a> |
+            <a href="/recursos">Recursos</a> |
+            <a href="/foros">Foros</a>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Resultados de búsqueda</h2>
+
+        <section>
+            <h3>Buscar empleo</h3>
+
+            <form action="/busqueda" method="GET">
+
+                <label for="q">Puesto o palabra clave:</label>
+                <input
+                    type="text"
+                    id="q"
+                    name="q"
+                    value="<%= filtros.q %>"
+                    placeholder="Ejemplo: diseñador, programador..."
+                >
+
+                <br><br>
+
+                <label for="ubicacion">Ubicación:</label>
+                <input
+                    type="text"
+                    id="ubicacion"
+                    name="ubicacion"
+                    value="<%= filtros.ubicacion %>"
+                    placeholder="Ejemplo: San Salvador"
+                >
+
+                <br><br>
+
+                <label for="experiencia">Experiencia:</label>
+                <select id="experiencia" name="experiencia">
+                    <option value="">Todas</option>
+                    <option value="Sin experiencia" <%= filtros.experiencia === 'Sin experiencia' ? 'selected' : '' %>>Sin experiencia</option>
+                    <option value="1-3 años" <%= filtros.experiencia === '1-3 años' ? 'selected' : '' %>>1 a 3 años</option>
+                    <option value="Más de 3 años" <%= filtros.experiencia === 'Más de 3 años' ? 'selected' : '' %>>Más de 3 años</option>
+                </select>
+
+                <br><br>
+
+                <label for="sector">Sector laboral:</label>
+                <select id="sector" name="sector">
+                    <option value="">Todos</option>
+                    <option value="Tecnología" <%= filtros.sector === 'Tecnología' ? 'selected' : '' %>>Tecnología</option>
+                    <option value="Diseño" <%= filtros.sector === 'Diseño' ? 'selected' : '' %>>Diseño</option>
+                    <option value="Finanzas" <%= filtros.sector === 'Finanzas' ? 'selected' : '' %>>Finanzas</option>
+                    <option value="Recursos humanos" <%= filtros.sector === 'Recursos humanos' ? 'selected' : '' %>>Recursos humanos</option>
+                    <option value="Ventas" <%= filtros.sector === 'Ventas' ? 'selected' : '' %>>Ventas</option>
+                    <option value="Marketing" <%= filtros.sector === 'Marketing' ? 'selected' : '' %>>Marketing</option>
+                    <option value="Industria" <%= filtros.sector === 'Industria' ? 'selected' : '' %>>Industria</option>
+                    <option value="Administración" <%= filtros.sector === 'Administración' ? 'selected' : '' %>>Administración</option>
+                </select>
+
+                <br><br>
+
+                <label for="modalidad">Modalidad:</label>
+                <select id="modalidad" name="modalidad">
+                    <option value="">Todas</option>
+                    <option value="Presencial" <%= filtros.modalidad === 'Presencial' ? 'selected' : '' %>>Presencial</option>
+                    <option value="Remoto" <%= filtros.modalidad === 'Remoto' ? 'selected' : '' %>>Remoto</option>
+                    <option value="Híbrido" <%= filtros.modalidad === 'Híbrido' ? 'selected' : '' %>>Híbrido</option>
+                </select>
+
+                <br><br>
+
+                <label for="tipoContrato">Tipo de contrato:</label>
+                <select id="tipoContrato" name="tipoContrato">
+                    <option value="">Todos</option>
+                    <option value="Tiempo completo" <%= filtros.tipoContrato === 'Tiempo completo' ? 'selected' : '' %>>Tiempo completo</option>
+                    <option value="Medio tiempo" <%= filtros.tipoContrato === 'Medio tiempo' ? 'selected' : '' %>>Medio tiempo</option>
+                    <option value="Por proyecto" <%= filtros.tipoContrato === 'Por proyecto' ? 'selected' : '' %>>Por proyecto</option>
+                </select>
+
+                <br><br>
+
+                <label for="salarioMinimo">Salario mínimo:</label>
+                <input
+                    type="number"
+                    id="salarioMinimo"
+                    name="salarioMinimo"
+                    min="0"
+                    value="<%= filtros.salarioMinimo %>"
+                >
+
+                <br><br>
+
+                <label for="salarioMaximo">Salario máximo:</label>
+                <input
+                    type="number"
+                    id="salarioMaximo"
+                    name="salarioMaximo"
+                    min="0"
+                    value="<%= filtros.salarioMaximo %>"
+                >
+
+                <br><br>
+
+                <label for="fechaPublicacion">Fecha de publicación:</label>
+                <select id="fechaPublicacion" name="fechaPublicacion">
+                    <option value="">Cualquier fecha</option>
+                    <option value="7" <%= filtros.fechaPublicacion === '7' ? 'selected' : '' %>>Últimos 7 días</option>
+                    <option value="30" <%= filtros.fechaPublicacion === '30' ? 'selected' : '' %>>Últimos 30 días</option>
+                </select>
+
+                <br><br>
+
+                <button type="submit">Buscar empleos</button>
+                <a href="/busqueda">Limpiar filtros</a>
+
+            </form>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Vacantes encontradas</h3>
+
+            <p>
+                Total de resultados:
+                <strong><%= totalResultados %></strong>
+            </p>
+
+            <form action="/busqueda" method="GET">
+
+                <% Object.entries(filtros).forEach(([nombre, valor]) => { %>
+                    <% if (nombre !== 'orden' && valor) { %>
+                        <input
+                            type="hidden"
+                            name="<%= nombre %>"
+                            value="<%= valor %>"
+                        >
+                    <% } %>
+                <% }) %>
+
+                <label for="orden">Ordenar por:</label>
+
+                <select id="orden" name="orden">
+                    <option value="recientes" <%= filtros.orden === 'recientes' ? 'selected' : '' %>>Más recientes</option>
+                    <option value="antiguas" <%= filtros.orden === 'antiguas' ? 'selected' : '' %>>Más antiguas</option>
+                    <option value="salarioMayor" <%= filtros.orden === 'salarioMayor' ? 'selected' : '' %>>Mayor salario</option>
+                    <option value="salarioMenor" <%= filtros.orden === 'salarioMenor' ? 'selected' : '' %>>Menor salario</option>
+                </select>
+
+                <button type="submit">Ordenar</button>
+
+            </form>
+
+            <% if (vacantes.length === 0) { %>
+
+                <section>
+                    <h3>No encontramos vacantes con esos criterios</h3>
+
+                    <p>
+                        Intenta modificar tus filtros o ampliar la ubicación
+                        para encontrar otras oportunidades.
+                    </p>
+
+                    <a href="/busqueda">Limpiar filtros</a>
+                </section>
+
+            <% } else { %>
+
+                <% vacantes.forEach(vacante => { %>
+
+                    <article>
+                        <h3><%= vacante.titulo %></h3>
+
+                        <p>Empresa: <%= vacante.empresa %></p>
+                        <p>Ubicación: <%= vacante.ubicacion %></p>
+                        <p>Sector: <%= vacante.sector %></p>
+                        <p>Modalidad: <%= vacante.modalidad %></p>
+                        <p>Contrato: <%= vacante.tipoContrato %></p>
+                        <p>Experiencia: <%= vacante.experiencia %></p>
+
+                        <p>
+                            Salario:
+                            $<%= vacante.salarioMinimo.toLocaleString('en-US') %>
+                            -
+                            $<%= vacante.salarioMaximo.toLocaleString('en-US') %>
+                        </p>
+
+                        <p>Fecha de publicación: <%= vacante.fechaPublicacion %></p>
+
+                        <a href="/busqueda/empleo/<%= vacante.id %>">
+                            Ver detalle
+                        </a>
+                    </article>
+
+                    <hr>
+
+                <% }) %>
+
+            <% } %>
+        </section>
+
+        <% if (totalPaginas > 1) { %>
+
+            <section>
+                <h3>Paginación</h3>
+
+                <p>
+                    Página <%= paginaActual %> de <%= totalPaginas %>
+                </p>
+
+                <% if (paginaActual > 1) { %>
+                    <a href="/busqueda?<%= new URLSearchParams({ ...filtros, pagina: paginaActual - 1 }).toString() %>">
+                        Anterior
+                    </a>
+                <% } %>
+
+                <% for (let numero = 1; numero <= totalPaginas; numero++) { %>
+
+                    <% if (numero === paginaActual) { %>
+                        <strong><%= numero %></strong>
+                    <% } else { %>
+                        <a href="/busqueda?<%= new URLSearchParams({ ...filtros, pagina: numero }).toString() %>">
+                            <%= numero %>
+                        </a>
+                    <% } %>
+
+                <% } %>
+
+                <% if (paginaActual < totalPaginas) { %>
+                    <a href="/busqueda?<%= new URLSearchParams({ ...filtros, pagina: paginaActual + 1 }).toString() %>">
+                        Siguiente
+                    </a>
+                <% } %>
+
+            </section>
+
+        <% } %>
+
+    </main>
+
+    <footer>
+        <hr>
+        <p>TalentoHub - Portal de oportunidades laborales.</p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body>
+
+    <%- include('../partials/header', {
+        titulo: titulo,
+        descripcion: descripcion
+    }) %>
+
+    <%- include('../partials/navigation') %>
+
+    <main>
+
+        <h2>Opciones del candidato</h2>
+
+        <ul>
+            <li>Mi perfil profesional</li>
+            <li>Mis postulaciones</li>
+            <li>Mis metas de empleo</li>
+            <li>Mis datos personales</li>
+        </ul>
+
+    </main>
+
+    <%- include('../partials/footer') %>
+
+</body>
+</html>

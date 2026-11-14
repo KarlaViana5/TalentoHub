@@ -1,0 +1,30 @@
+
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body>
+
+    <%- include('../partials/header', {
+        titulo: titulo,
+        descripcion: descripcion
+    }) %>
+
+    <%- include('../partials/navigation') %>
+
+    <main>
+
+        <h2>Opciones empresariales</h2>
+
+        <ul>
+            <li>Panel de empresa</li>
+            <li>Publicar empleo</li>
+            <li>Mantenimiento de empresas</li>
+            <li>Postulaciones por oferta</li>
+            <li>Valoraciones de empresas</li>
+        </ul>
+
+    </main>
+
+    <%- include('../partials/footer') %>
+
+</body>
+</html>

@@ -1,0 +1,218 @@
+
+<!-- src/views/busqueda/detalle.ejs -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= titulo %> | TalentoHub</title>
+</head>
+<body>
+
+    <header>
+        <h1>TalentoHub</h1>
+
+        <nav>
+            <a href="/">Inicio</a> |
+            <a href="/busqueda">Vacantes</a> |
+            <a href="/recursos">Recursos</a> |
+            <a href="/foros">Foros</a>
+        </nav>
+    </header>
+
+    <main>
+
+        <p>
+            <a href="/">Inicio</a> /
+            <a href="/busqueda">Vacantes</a> /
+            <%= vacante.titulo %>
+        </p>
+
+        <hr>
+
+        <section>
+            <h2><%= vacante.titulo %></h2>
+
+            <p>Empresa: <%= vacante.empresa %></p>
+            <p>Ubicación: <%= vacante.ubicacion %></p>
+            <p>Sector: <%= vacante.sector %></p>
+            <p>Modalidad: <%= vacante.modalidad %></p>
+            <p>Tipo de contrato: <%= vacante.tipoContrato %></p>
+            <p>Experiencia requerida: <%= vacante.experiencia %></p>
+
+            <p>
+                Salario:
+                $<%= vacante.salarioMinimo.toLocaleString('en-US') %>
+                -
+                $<%= vacante.salarioMaximo.toLocaleString('en-US') %>
+            </p>
+
+            <p>Fecha de publicación: <%= vacante.fechaPublicacion %></p>
+            <p>Personas postuladas: <%= vacante.postulaciones %></p>
+        </section>
+
+        <section>
+            <h3>Acciones de la vacante</h3>
+
+            <button type="button" disabled>
+                Guardar vacante (requiere sesión)
+            </button>
+
+            <button
+                type="button"
+                onclick="compartirVacante()"
+            >
+                Compartir vacante
+            </button>
+
+            <button type="button" disabled>
+                Reportar vacante (pendiente de implementar)
+            </button>
+
+            <p>
+                La función de guardar y reportar estará disponible
+                cuando implementemos las cuentas de usuario.
+            </p>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Descripción del empleo</h3>
+            <p><%= vacante.descripcion %></p>
+        </section>
+
+        <section>
+            <h3>Responsabilidades</h3>
+
+            <ul>
+                <% vacante.responsabilidades.forEach(responsabilidad => { %>
+                    <li><%= responsabilidad %></li>
+                <% }) %>
+            </ul>
+        </section>
+
+        <section>
+            <h3>Requisitos</h3>
+
+            <ul>
+                <% vacante.requisitos.forEach(requisito => { %>
+                    <li><%= requisito %></li>
+                <% }) %>
+            </ul>
+        </section>
+
+        <section>
+            <h3>Beneficios</h3>
+
+            <ul>
+                <% vacante.beneficios.forEach(beneficio => { %>
+                    <li><%= beneficio %></li>
+                <% }) %>
+            </ul>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Postulación</h3>
+
+            <p>
+                Para postularte a esta oportunidad necesitarás
+                una cuenta de candidato.
+            </p>
+
+            <button
+                type="button"
+                onclick="mostrarMensajePostulacion()"
+            >
+                Postularme ahora
+            </button>
+
+            <p id="mensajePostulacion"></p>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Información de contacto</h3>
+
+            <p>Persona encargada: <%= vacante.reclutador %></p>
+
+            <p>
+                Correo:
+                <a href="mailto:<%= vacante.contacto %>">
+                    <%= vacante.contacto %>
+                </a>
+            </p>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Empleos similares</h3>
+
+            <% if (vacantesSimilares.length === 0) { %>
+
+                <p>No hay empleos similares disponibles.</p>
+
+            <% } else { %>
+
+                <% vacantesSimilares.forEach(similar => { %>
+
+                    <article>
+                        <h4><%= similar.titulo %></h4>
+
+                        <p>Empresa: <%= similar.empresa %></p>
+                        <p>Ubicación: <%= similar.ubicacion %></p>
+
+                        <a href="/busqueda/empleo/<%= similar.id %>">
+                            Consultar empleo
+                        </a>
+                    </article>
+
+                    <hr>
+
+                <% }) %>
+
+            <% } %>
+        </section>
+
+        <a href="/busqueda">Volver a los resultados</a>
+
+    </main>
+
+    <footer>
+        <hr>
+        <p>TalentoHub - Portal de oportunidades laborales.</p>
+    </footer>
+
+    <script>
+        function compartirVacante() {
+            const enlace = window.location.href;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: document.title,
+                    url: enlace
+                }).catch(() => {
+                    // El usuario puede cancelar la acción.
+                });
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(enlace)
+                    .then(() => alert('Enlace copiado correctamente.'))
+                    .catch(() => alert('No se pudo copiar el enlace.'));
+            } else {
+                alert('Copia este enlace: ' + enlace);
+            }
+        }
+
+        function mostrarMensajePostulacion() {
+            document.getElementById('mensajePostulacion').textContent =
+                'La postulación estará disponible cuando implementemos el inicio de sesión y el registro de candidatos.';
+        }
+    </script>
+
+</body>
+</html>

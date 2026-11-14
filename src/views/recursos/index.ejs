@@ -1,0 +1,27 @@
+
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body>
+
+    <%- include('../partials/header', {
+        titulo: titulo,
+        descripcion: descripcion
+    }) %>
+
+    <%- include('../partials/navigation') %>
+
+    <main>
+
+        <h2>Recursos disponibles</h2>
+
+        <ul>
+            <li>Consultar recursos</li>
+            <li>Ver detalles de recursos</li>
+        </ul>
+
+    </main>
+
+    <%- include('../partials/footer') %>
+
+</body>
+</html>
