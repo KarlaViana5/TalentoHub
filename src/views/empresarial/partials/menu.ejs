@@ -1,0 +1,19 @@
+<link rel="stylesheet" href="/css/empresarial.css">
+
+<nav class="emp-menu">
+    <a class="emp-marca" href="/">Talento<span>Hub</span></a>
+
+    <a class="emp-link <%= activo === 'panel' ? 'activo' : '' %>" href="/empresarial">Panel</a>
+    <a class="emp-link <%= activo === 'vacantes' ? 'activo' : '' %>" href="/empresarial/vacantes">Mis vacantes</a>
+    <a class="emp-link <%= activo === 'publicar' ? 'activo' : '' %>" href="/empresarial/publicar">Publicar empleo</a>
+    <a class="emp-link <%= activo === 'postulaciones' ? 'activo' : '' %>" href="/empresarial/postulaciones">Postulaciones</a>
+    <a class="emp-link <%= activo === 'empresas' ? 'activo' : '' %>" href="/empresarial/empresas">Empresas</a>
+
+    <div class="emp-usuario">
+        <span class="emp-avatar">N</span>
+        <div>
+            <strong>Nexo Digital</strong><br>
+            <small>Empleador</small>
+        </div>
+    </div>
+</nav>

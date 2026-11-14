@@ -1,0 +1,182 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body>
+
+    <%- include('partials/menu', { activo: 'empresas' }) %>
+
+    <main class="emp-main">
+
+        <section class="emp-contenido">
+            <p class="emp-etiqueta">Configuración</p>
+
+            <div class="emp-titulo-fila">
+                <h1>Mis empresas</h1>
+                <a class="emp-btn emp-btn-primario" href="/empresarial/empresas?nueva=1">+ Nueva empresa</a>
+            </div>
+
+            <form class="emp-filtros" method="get" action="/empresarial/empresas">
+                <input type="search" name="q" value="<%= filtros.q %>" placeholder="Buscar empresa...">
+
+                <select name="sector">
+                    <option value="">Todos los sectores</option>
+                    <% sectores.forEach(sector => { %>
+                        <option value="<%= sector %>" <%= filtros.sector === sector ? 'selected' : '' %>><%= sector %></option>
+                    <% }) %>
+                </select>
+
+                <select name="estado">
+                    <option value="">Estado</option>
+                    <% estados.forEach(estado => { %>
+                        <option value="<%= estado %>" <%= filtros.estado === estado ? 'selected' : '' %>><%= estado %></option>
+                    <% }) %>
+                </select>
+
+                <button class="emp-btn" type="submit">Filtrar</button>
+            </form>
+
+            <div class="emp-tarjeta">
+                <% if (empresas.length === 0) { %>
+                    <p class="emp-vacio">No se encontraron empresas con esos filtros.</p>
+                <% } else { %>
+                    <table class="emp-tabla">
+                        <thead>
+                            <tr>
+                                <th>Empresa</th>
+                                <th>Sector</th>
+                                <th>Ubicación</th>
+                                <th>Estado</th>
+                                <th style="text-align: right;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% empresas.forEach(empresa => { %>
+                                <tr class="<%= panel && panel.empresa.id === empresa.id ? 'seleccionada' : '' %>">
+                                    <td>
+                                        <div class="emp-nombre">
+                                            <span class="emp-avatar"><%= empresa.nombre.charAt(0) %></span>
+                                            <%= empresa.nombre %>
+                                        </div>
+                                    </td>
+                                    <td><%= empresa.sector %></td>
+                                    <td><%= empresa.ubicacion.split(',')[0] %></td>
+                                    <td>
+                                        <span class="emp-estado emp-estado-<%= empresa.estado.toLowerCase() %>"><%= empresa.estado %></span>
+                                    </td>
+                                    <td>
+                                        <div class="emp-acciones">
+                                            <a class="emp-btn emp-icono" href="/empresarial/empresas?ver=<%= empresa.id %>" title="Ver">👁</a>
+                                            <a class="emp-btn emp-icono" href="/empresarial/empresas?editar=<%= empresa.id %>" title="Editar">✎</a>
+
+                                            <% if (empresa.estado === 'Inactiva') { %>
+                                                <form method="post" action="/empresarial/empresas/<%= empresa.id %>/estado">
+                                                    <input type="hidden" name="estado" value="Activa">
+                                                    <button class="emp-btn emp-icono" type="submit" title="Activar">↻</button>
+                                                </form>
+                                            <% } else { %>
+                                                <form method="post" action="/empresarial/empresas/<%= empresa.id %>/estado"
+                                                      onsubmit="return confirm('¿Seguro que deseas desactivar esta empresa?');">
+                                                    <input type="hidden" name="estado" value="Inactiva">
+                                                    <button class="emp-btn emp-icono emp-btn-peligro" type="submit" title="Desactivar">⊘</button>
+                                                </form>
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                <% } %>
+
+                <p class="emp-pie-tabla">
+                    <span><%= empresas.length %> empresas</span>
+                </p>
+            </div>
+        </section>
+
+        <% if (panel) { %>
+            <aside class="emp-panel">
+                <div class="emp-panel-cabecera">
+                    <h2>
+                        <%= panel.modo === 'nueva' ? 'Nueva empresa' : panel.modo === 'editar' ? 'Editar empresa' : 'Detalle de empresa' %>
+                    </h2>
+                    <a href="/empresarial/empresas" title="Cerrar">✕</a>
+                </div>
+
+                <span class="emp-avatar emp-avatar-grande"><%= (panel.empresa.nombre || '?').charAt(0) %></span>
+
+                <% if (panel.modo === 'ver') { %>
+                    <dl class="emp-detalle">
+                        <dt>Nombre</dt>
+                        <dd><%= panel.empresa.nombre %></dd>
+                        <dt>Sector</dt>
+                        <dd><%= panel.empresa.sector %></dd>
+                        <dt>Ubicación</dt>
+                        <dd><%= panel.empresa.ubicacion %></dd>
+                        <dt>Descripción</dt>
+                        <dd><%= panel.empresa.descripcion || 'Sin descripción' %></dd>
+                        <dt>Estado</dt>
+                        <dd>
+                            <span class="emp-estado emp-estado-<%= panel.empresa.estado.toLowerCase() %>"><%= panel.empresa.estado %></span>
+                        </dd>
+                    </dl>
+
+                    <div class="emp-form-botones">
+                        <a class="emp-btn emp-btn-primario" href="/empresarial/empresas?editar=<%= panel.empresa.id %>">Editar</a>
+                    </div>
+                <% } else { %>
+                    <form class="emp-form" method="post"
+                          action="/empresarial/empresas<%= panel.modo === 'editar' ? '/' + panel.empresa.id : '' %>">
+
+                        <% if (panel.errores.length > 0) { %>
+                            <div class="emp-errores">
+                                <ul>
+                                    <% panel.errores.forEach(error => { %>
+                                        <li><%= error %></li>
+                                    <% }) %>
+                                </ul>
+                            </div>
+                        <% } %>
+
+                        <label for="nombre">Nombre *</label>
+                        <input id="nombre" name="nombre" value="<%= panel.empresa.nombre %>">
+
+                        <label for="sector">Sector *</label>
+                        <select id="sector" name="sector">
+                            <option value="">Selecciona un sector</option>
+                            <% sectores.forEach(sector => { %>
+                                <option value="<%= sector %>" <%= panel.empresa.sector === sector ? 'selected' : '' %>><%= sector %></option>
+                            <% }) %>
+                        </select>
+
+                        <label for="ubicacion">Ubicación *</label>
+                        <input id="ubicacion" name="ubicacion" value="<%= panel.empresa.ubicacion %>" placeholder="Ej. San Salvador, El Salvador">
+
+                        <label for="descripcion">Descripción</label>
+                        <textarea id="descripcion" name="descripcion"><%= panel.empresa.descripcion %></textarea>
+
+                        <label class="emp-interruptor">
+                            <span>
+                                Empresa activa
+                                <small>Visible en el portal</small>
+                            </span>
+                            <input type="checkbox" name="activa" <%= panel.empresa.estado !== 'Inactiva' ? 'checked' : '' %>>
+                        </label>
+
+                        <div class="emp-form-botones">
+                            <a class="emp-btn" href="/empresarial/empresas">Cancelar</a>
+                            <button class="emp-btn emp-btn-primario" type="submit">
+                                <%= panel.modo === 'nueva' ? 'Crear empresa' : 'Guardar cambios' %>
+                            </button>
+                        </div>
+                    </form>
+                <% } %>
+            </aside>
+        <% } %>
+
+    </main>
+
+    <% if (mensaje) { %>
+        <div class="emp-toast"><%= mensaje %></div>
+    <% } %>
+
+    <%- include('../partials/footer') %>
