@@ -32,4 +32,11 @@ router.get('/postulaciones/exportar', empresarialController.exportarPostulacione
 router.post('/postulaciones/estado', empresarialController.cambiarEstadoMasivo);
 router.post('/postulaciones/:id/estado', empresarialController.cambiarEstadoPostulacion);
 
+// perfil candidato
+router.get('/candidatos/:id', empresarialController.mostrarPerfil);
+router.get('/candidatos/:id/cv', empresarialController.verCv);
+router.get('/candidatos/:id/cv/descargar', empresarialController.descargarCv);
+router.post('/candidatos/:id/estado', empresarialController.cambiarEstadoPerfil);
+router.post('/candidatos/:id/notas', empresarialController.agregarNota);
+
 module.exports = router;

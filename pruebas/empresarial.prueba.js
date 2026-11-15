@@ -115,6 +115,15 @@ async function ejecutar(conexion) {
 
     await servicio.agregarNota(pAna, 'Nota de prueba');
     prueba('Agrega una nota interna', (await servicio.obtenerPostulacion(pAna)).notas.length === 1);
+    prueba('No guarda notas vacías', (await servicio.agregarNota(pAna, '   ')) === null);
+
+    console.log('\nPerfil del candidato');
+    const perfil = await servicio.obtenerPostulacion(pBeto);
+    prueba('Trae candidato, vacante y notas', perfil.candidato.nombre === 'Beto Prueba' &&
+        perfil.vacante.titulo === 'QA Tester' && Array.isArray(perfil.notas));
+    prueba('Marca habilidades que coinciden',
+        servicio.habilidadesCoincidentes({ habilidades: ['Figma', 'Motion'] }, { habilidades: ['Dominio de Figma'] }).join() === 'Figma');
+    prueba('Postulación inexistente devuelve null', (await servicio.obtenerPostulacion(999999)) === null);
 
     let duplicada = false;
     try {

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV · <%= candidato.nombre %></title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; color: #212529; background: #f1f3f5; margin: 0; padding: 24px; }
+        .hoja { max-width: 720px; margin: auto; background: #fff; padding: 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); }
+        header { display: flex; gap: 16px; align-items: center; border-bottom: 2px solid #3b5bdb; padding-bottom: 16px; }
+        .avatar { width: 56px; height: 56px; border-radius: 12px; background: #edf2ff; color: #3b5bdb; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; }
+        h1 { margin: 0; font-size: 26px; }
+        h2 { font-size: 13px; letter-spacing: 1px; color: #3b5bdb; text-transform: uppercase; margin: 24px 0 8px; }
+        p { margin: 4px 0; }
+        small { color: #868e96; }
+        .item { margin-bottom: 12px; }
+        .chips span { display: inline-block; background: #f1f3f5; border-radius: 999px; padding: 3px 10px; margin: 2px; font-size: 13px; }
+        @media print { body { background: #fff; padding: 0; } .hoja { box-shadow: none; } }
+    </style>
+</head>
+<body>
+    <div class="hoja">
+        <header>
+            <div class="avatar"><%= iniciales %></div>
+            <div>
+                <h1><%= candidato.nombre %></h1>
+                <p><%= candidato.cargo %></p>
+                <small><%= candidato.correo %><%= candidato.telefono ? ' · ' + candidato.telefono : '' %><%= candidato.ubicacion ? ' · ' + candidato.ubicacion : '' %></small>
+            </div>
+        </header>
+
+        <h2>Experiencia</h2>
+        <% candidato.experiencia.forEach(exp => { %>
+            <div class="item">
+                <strong><%= exp.puesto %> · <%= exp.empresa %></strong><br>
+                <small><%= exp.periodo %></small>
+                <% if (exp.descripcion) { %><p><%= exp.descripcion %></p><% } %>
+            </div>
+        <% }) %>
+
+        <h2>Educación</h2>
+        <% candidato.formacion.forEach(f => { %>
+            <div class="item">
+                <strong><%= f.titulo %></strong><br>
+                <small><%= f.institucion %> · <%= f.periodo %></small>
+            </div>
+        <% }) %>
+
+        <h2>Habilidades</h2>
+        <div class="chips">
+            <% candidato.habilidades.forEach(h => { %><span><%= h %></span><% }) %>
+        </div>
+
+        <h2>Años de experiencia</h2>
+        <p><%= candidato.aniosExperiencia %></p>
+    </div>
+</body>
+</html>

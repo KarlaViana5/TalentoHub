@@ -349,8 +349,75 @@ async function exportarPostulaciones(req, res) {
     res.type('text/csv').send(contenido);
 }
 
+// EMP-05
+const mensajesPerfil = {
+    estado: 'Estado del candidato actualizado.',
+    nota: 'Nota agregada.',
+    'nota-vacia': 'Escribe algo en la nota antes de guardarla.'
+};
+
+function iniciales(nombre) {
+    return nombre.split(' ').map(n => n.charAt(0)).join('').slice(0, 2).toUpperCase();
+}
+
+async function mostrarPerfil(req, res) {
+    const postulacion = await servicio.obtenerPostulacion(req.params.id);
+    if (!postulacion || !postulacion.candidato) return noEncontrado(req, res);
+
+    res.render('empresarial/candidato', {
+        titulo: postulacion.candidato.nombre,
+        postulacion,
+        candidato: postulacion.candidato,
+        vacante: postulacion.vacante,
+        coincidentes: servicio.habilidadesCoincidentes(postulacion.candidato, postulacion.vacante),
+        estados: servicio.ESTADOS_POSTULACION,
+        iniciales: iniciales(postulacion.candidato.nombre),
+        hace: haceCuanto(postulacion.fecha),
+        haceCuanto,
+        mensaje: mensajesPerfil[req.query.ok] || ''
+    });
+}
+
+async function cambiarEstadoPerfil(req, res) {
+    if (!await servicio.cambiarEstadoPostulacion(req.params.id, req.body.estado)) return noEncontrado(req, res);
+    res.redirect(`/empresarial/candidatos/${req.params.id}?ok=estado`);
+}
+
+async function agregarNota(req, res) {
+    if (!(req.body.texto || '').trim()) return res.redirect(`/empresarial/candidatos/${req.params.id}?ok=nota-vacia`);
+    if (!await servicio.agregarNota(req.params.id, req.body.texto)) return noEncontrado(req, res);
+    res.redirect(`/empresarial/candidatos/${req.params.id}?ok=nota#notas`);
+}
+
+async function datosCv(req, res) {
+    const postulacion = await servicio.obtenerPostulacion(req.params.id);
+    if (!postulacion || !postulacion.candidato) {
+        noEncontrado(req, res);
+        return null;
+    }
+    return { candidato: postulacion.candidato, iniciales: iniciales(postulacion.candidato.nombre) };
+}
+
+async function verCv(req, res) {
+    const datos = await datosCv(req, res);
+    if (datos) res.render('empresarial/cv', datos);
+}
+
+async function descargarCv(req, res) {
+    const datos = await datosCv(req, res);
+    if (!datos) return;
+    const nombre = (datos.candidato.cv || `CV_${datos.candidato.nombre}`).replace(/\.pdf$/i, '').replace(/\s+/g, '');
+    res.attachment(`${nombre}.html`);
+    res.render('empresarial/cv', datos);
+}
+
 module.exports = {
     mostrarInicio,
+    mostrarPerfil,
+    cambiarEstadoPerfil,
+    agregarNota,
+    verCv,
+    descargarCv,
     mostrarPostulaciones,
     cambiarEstadoPostulacion,
     cambiarEstadoMasivo,

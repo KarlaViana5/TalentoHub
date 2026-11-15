@@ -308,17 +308,24 @@ async function obtenerCandidato(id) {
     return filas[0] || null;
 }
 
+// requisito puede ser frase
+function coincide(habilidad, requisito) {
+    const h = habilidad.toLowerCase();
+    const r = requisito.toLowerCase();
+    return r.includes(h) || h.includes(r);
+}
+
 // % compatibilidad
 function calcularCompatibilidad(candidato, vacante) {
     if (!candidato || !vacante || vacante.habilidades.length === 0) return 0;
 
-    const delCandidato = candidato.habilidades.map(h => h.toLowerCase());
-    // requisito puede ser frase
-    const coincidencias = vacante.habilidades.filter(requisito => {
-        const r = requisito.toLowerCase();
-        return delCandidato.some(h => r.includes(h) || h.includes(r));
-    });
+    const coincidencias = vacante.habilidades.filter(r => candidato.habilidades.some(h => coincide(h, r)));
     return Math.round((coincidencias.length / vacante.habilidades.length) * 100);
+}
+
+function habilidadesCoincidentes(candidato, vacante) {
+    if (!candidato || !vacante) return [];
+    return candidato.habilidades.filter(h => vacante.habilidades.some(r => coincide(h, r)));
 }
 
 async function listarPostulaciones(vacanteId, filtros = {}) {
@@ -327,7 +334,7 @@ async function listarPostulaciones(vacanteId, filtros = {}) {
 
     const filas = await consulta(
         `SELECT p.id_postulacion::int AS id, p.vacante_id::int AS "vacanteId", p.candidato_id::int AS "candidatoId",
-            p.fecha_postulacion AS fecha, p.estado, ${SELECT_CANDIDATO}
+            (p.fecha_postulacion AT TIME ZONE 'UTC') AS fecha, p.estado, ${SELECT_CANDIDATO}
          FROM postulaciones p
          JOIN candidatos c ON c.id_candidato = p.candidato_id
          WHERE p.vacante_id = $1`,
@@ -388,7 +395,7 @@ async function obtenerPostulacion(id) {
     if (!idValido(id)) return null;
     const filas = await consulta(
         `SELECT id_postulacion::int AS id, vacante_id::int AS "vacanteId", candidato_id::int AS "candidatoId",
-            fecha_postulacion AS fecha, estado
+            (fecha_postulacion AT TIME ZONE 'UTC') AS fecha, estado
          FROM postulaciones WHERE id_postulacion = $1`,
         [id]
     );
@@ -398,7 +405,7 @@ async function obtenerPostulacion(id) {
     const candidato = await obtenerCandidato(postulacion.candidatoId);
     const vacante = await obtenerVacante(postulacion.vacanteId);
     const notas = await consulta(
-        'SELECT autor, texto, fecha FROM notas_postulacion WHERE postulacion_id = $1 ORDER BY fecha',
+        `SELECT autor, texto, (fecha AT TIME ZONE 'UTC') AS fecha FROM notas_postulacion WHERE postulacion_id = $1 ORDER BY fecha`,
         [id]
     );
 
@@ -429,7 +436,7 @@ async function agregarNota(postulacionId, textoNota) {
     const filas = await consulta(
         `INSERT INTO notas_postulacion (postulacion_id, autor, texto)
          SELECT id_postulacion, $2, $3 FROM postulaciones WHERE id_postulacion = $1
-         RETURNING autor, texto, fecha`,
+         RETURNING autor, texto, (fecha AT TIME ZONE 'UTC') AS fecha`,
         [postulacionId, empleadorActual.nombre, texto(textoNota)]
     );
     return filas[0] || null;
@@ -459,6 +466,7 @@ module.exports = {
     eliminarVacante,
     obtenerCandidato,
     calcularCompatibilidad,
+    habilidadesCoincidentes,
     listarPostulaciones,
     contarPostulacionesPorEstado,
     obtenerPostulacion,
