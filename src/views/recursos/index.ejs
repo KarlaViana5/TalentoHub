@@ -1,6 +1,9 @@
 
 <%- include('../partials/head', { titulo: titulo }) %>
 
+<link rel="stylesheet" href="/css/busqueda.css">
+<link rel="stylesheet" href="/css/recursos.css">
+
 <body>
 
     <%- include('../partials/header', {
@@ -10,14 +13,439 @@
 
     <%- include('../partials/navigation') %>
 
-    <main>
+    <main class="recursos-container">
 
-        <h2>Recursos disponibles</h2>
+        <!-- ENCABEZADO -->
+        <section class="recursos-intro">
 
-        <ul>
-            <li>Consultar recursos</li>
-            <li>Ver detalles de recursos</li>
-        </ul>
+            <div>
+                <span class="recursos-etiqueta">
+                    CENTRO DE APRENDIZAJE
+                </span>
+
+                <h1>Explora nuestros recursos</h1>
+
+                <p>
+                    Aprende, descubre nuevas habilidades y prepárate
+                    para alcanzar tus objetivos profesionales.
+                </p>
+            </div>
+
+            <div class="recursos-intro-icono">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+
+        </section>
+
+
+        <!-- BUSCADOR Y FILTROS -->
+        <section class="recursos-filtros">
+
+            <form action="/recursos" method="GET">
+
+                <div class="recursos-buscador">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    <input
+                        type="text"
+                        name="q"
+                        placeholder="Buscar artículos, tutoriales o autores..."
+                        value="<%= filtros.q %>"
+                    >
+
+                    <button type="submit">
+                        Buscar
+                    </button>
+
+                </div>
+
+
+                <div class="recursos-filtros-grid">
+
+                    <!-- CATEGORÍA -->
+                    <div class="filtro-grupo">
+
+                        <label for="categoria">
+                            Categoría
+                        </label>
+
+                        <select
+                            name="categoria"
+                            id="categoria"
+                        >
+
+                            <option value="">
+                                Todas las categorías
+                            </option>
+
+                            <% categorias.forEach(categoria => { %>
+
+                                <option
+                                    value="<%= categoria.id %>"
+                                    <%= String(filtros.categoria) === String(categoria.id) ? 'selected' : '' %>
+                                >
+                                    <%= categoria.nombre %>
+                                </option>
+
+                            <% }) %>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- TIPO -->
+                    <div class="filtro-grupo">
+
+                        <label for="tipo">
+                            Tipo de recurso
+                        </label>
+
+                        <select name="tipo" id="tipo">
+
+                            <option value="">
+                                Todos los tipos
+                            </option>
+
+                            <option
+                                value="articulo"
+                                <%= filtros.tipo === 'articulo' ? 'selected' : '' %>
+                            >
+                                Artículos
+                            </option>
+
+                            <option
+                                value="tutorial"
+                                <%= filtros.tipo === 'tutorial' ? 'selected' : '' %>
+                            >
+                                Tutoriales
+                            </option>
+
+                            <option
+                                value="video"
+                                <%= filtros.tipo === 'video' ? 'selected' : '' %>
+                            >
+                                Videos
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- FECHA -->
+                    <div class="filtro-grupo">
+
+                        <label for="fecha">
+                            Fecha de publicación
+                        </label>
+
+                        <select name="fecha" id="fecha">
+
+                            <option value="">
+                                Cualquier fecha
+                            </option>
+
+                            <option
+                                value="7"
+                                <%= filtros.fecha === '7' ? 'selected' : '' %>
+                            >
+                                Últimos 7 días
+                            </option>
+
+                            <option
+                                value="30"
+                                <%= filtros.fecha === '30' ? 'selected' : '' %>
+                            >
+                                Últimos 30 días
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- ORDEN -->
+                    <div class="filtro-grupo">
+
+                        <label for="orden">
+                            Ordenar por
+                        </label>
+
+                        <select name="orden" id="orden">
+
+                            <option
+                                value="recientes"
+                                <%= filtros.orden === 'recientes' ? 'selected' : '' %>
+                            >
+                                Más recientes
+                            </option>
+
+                            <option
+                                value="antiguas"
+                                <%= filtros.orden === 'antiguas' ? 'selected' : '' %>
+                            >
+                                Más antiguos
+                            </option>
+
+                            <option
+                                value="alfabetico"
+                                <%= filtros.orden === 'alfabetico' ? 'selected' : '' %>
+                            >
+                                Orden alfabético
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="recursos-filtros-acciones">
+
+                    <button type="submit" class="btn-aplicar">
+                        <i class="fa-solid fa-filter"></i>
+                        Aplicar filtros
+                    </button>
+
+                    <a href="/recursos" class="btn-limpiar">
+                        Limpiar filtros
+                    </a>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+        <!-- RESULTADOS -->
+        <section class="recursos-resultados">
+
+            <div class="recursos-resultados-header">
+
+                <div>
+                    <h2>Recursos disponibles</h2>
+
+                    <p>
+                        Encuentra contenido que te ayude a crecer
+                        profesionalmente.
+                    </p>
+                </div>
+
+                <span class="recursos-contador">
+                    <%= totalResultados %>
+                    <%= totalResultados === 1 ? 'recurso encontrado' : 'recursos encontrados' %>
+                </span>
+
+            </div>
+
+
+            <!-- TARJETAS -->
+            <% if (recursos.length > 0) { %>
+
+                <div class="recursos-grid">
+
+                    <% recursos.forEach(recurso => { %>
+
+                        <article class="recurso-card">
+
+                            <div class="recurso-imagen">
+
+                                <% if (recurso.imagenUrl) { %>
+
+                                    <img
+                                        src="<%= recurso.imagenUrl %>"
+                                        alt="<%= recurso.titulo %>"
+                                        loading="lazy"
+                                    >
+
+                                <% } else { %>
+
+                                    <div class="recurso-imagen-placeholder">
+
+                                        <% if (recurso.tipo === 'video') { %>
+
+                                            <i class="fa-solid fa-circle-play"></i>
+
+                                        <% } else if (recurso.tipo === 'tutorial') { %>
+
+                                            <i class="fa-solid fa-graduation-cap"></i>
+
+                                        <% } else { %>
+
+                                            <i class="fa-solid fa-book-open"></i>
+
+                                        <% } %>
+
+                                    </div>
+
+                                <% } %>
+
+
+                                <span class="recurso-tipo tipo-<%= recurso.tipo %>">
+
+                                    <% if (recurso.tipo === 'video') { %>
+                                        Video
+                                    <% } else if (recurso.tipo === 'tutorial') { %>
+                                        Tutorial
+                                    <% } else { %>
+                                        Artículo
+                                    <% } %>
+
+                                </span>
+
+
+                                <% if (recurso.destacado) { %>
+
+                                    <span class="recurso-destacado">
+                                        <i class="fa-solid fa-star"></i>
+                                        Destacado
+                                    </span>
+
+                                <% } %>
+
+                            </div>
+
+
+                            <div class="recurso-contenido">
+
+                                <span class="recurso-categoria">
+                                    <%= recurso.categoria %>
+                                </span>
+
+                                <h3>
+                                    <%= recurso.titulo %>
+                                </h3>
+
+                                <p class="recurso-resumen">
+                                    <%= recurso.resumen || 'Descubre información útil para tu desarrollo profesional.' %>
+                                </p>
+
+
+                                <div class="recurso-informacion">
+
+                                    <span>
+                                        <i class="fa-solid fa-user"></i>
+                                        <%= recurso.autor || 'TalentoHub' %>
+                                    </span>
+
+                                    <% if (recurso.tiempoLectura) { %>
+
+                                        <span>
+                                            <i class="fa-regular fa-clock"></i>
+                                            <%= recurso.tiempoLectura %> min
+                                        </span>
+
+                                    <% } %>
+
+                                </div>
+
+
+                                <div class="recurso-footer">
+
+                                    <span class="recurso-fecha">
+                                        <i class="fa-regular fa-calendar"></i>
+
+                                        <%= new Date(recurso.fechaPublicacion).toLocaleDateString('es-SV', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            year: 'numeric'
+                                        }) %>
+                                    </span>
+
+                                    <a
+                                        href="/recursos/<%= recurso.id %>"
+                                        class="btn-ver-recurso"
+                                    >
+                                        Leer más
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    <% }) %>
+
+                </div>
+
+
+                <!-- PAGINACIÓN -->
+                <% if (totalPaginas > 1) { %>
+
+                    <nav class="recursos-paginacion">
+
+                        <% if (paginaActual > 1) { %>
+
+                            <a
+                                href="/recursos?<%= new URLSearchParams({
+                                    ...filtros,
+                                    pagina: paginaActual - 1
+                                }).toString() %>"
+                                class="pagina-boton"
+                            >
+                                <i class="fa-solid fa-chevron-left"></i>
+                                Anterior
+                            </a>
+
+                        <% } %>
+
+
+                        <span class="pagina-actual">
+                            Página <%= paginaActual %> de <%= totalPaginas %>
+                        </span>
+
+
+                        <% if (paginaActual < totalPaginas) { %>
+
+                            <a
+                                href="/recursos?<%= new URLSearchParams({
+                                    ...filtros,
+                                    pagina: paginaActual + 1
+                                }).toString() %>"
+                                class="pagina-boton"
+                            >
+                                Siguiente
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </a>
+
+                        <% } %>
+
+                    </nav>
+
+                <% } %>
+
+
+            <% } else { %>
+
+                <!-- ESTADO SIN RESULTADOS -->
+                <div class="recursos-vacio">
+
+                    <div class="recursos-vacio-icono">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+
+                    <h3>No encontramos recursos</h3>
+
+                    <p>
+                        No hay recursos que coincidan con los filtros
+                        seleccionados. Intenta con otra búsqueda.
+                    </p>
+
+                    <a href="/recursos" class="btn-limpiar">
+                        Ver todos los recursos
+                    </a>
+
+                </div>
+
+            <% } %>
+
+        </section>
 
     </main>
 

@@ -1,217 +1,703 @@
 
 <!-- src/views/busqueda/detalle.ejs -->
 
+<%
+    const responsabilidades = Array.isArray(vacante.responsabilidades)
+        ? vacante.responsabilidades : [];
+
+    const requisitos = Array.isArray(vacante.requisitos)
+        ? vacante.requisitos : [];
+
+    const beneficios = Array.isArray(vacante.beneficios)
+        ? vacante.beneficios : [];
+
+    const salarioMinimo = vacante.salarioMinimo != null
+        ? Number(vacante.salarioMinimo) : null;
+
+    const salarioMaximo = vacante.salarioMaximo != null
+        ? Number(vacante.salarioMaximo) : null;
+
+    const fecha = vacante.fechaPublicacion
+        ? new Date(vacante.fechaPublicacion).toLocaleDateString('es-SV', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        })
+        : 'No especificada';
+%>
+
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title><%= titulo %> | TalentoHub</title>
+
+    <link rel="stylesheet" href="/css/busqueda.css">
+    <link rel="stylesheet" href="/css/detalle.css">
 </head>
+
 <body>
 
-    <header>
-        <h1>TalentoHub</h1>
+    <!-- =====================================
+         NAVEGACIÓN
+    ====================================== -->
 
-        <nav>
-            <a href="/">Inicio</a> |
-            <a href="/busqueda">Vacantes</a> |
-            <a href="/recursos">Recursos</a> |
-            <a href="/foros">Foros</a>
-        </nav>
+    <header class="main-header">
+        <div class="header-container">
+
+            <a href="/" class="brand">
+                <span class="brand-icon">T</span>
+                <span>Talento<span class="brand-highlight">Hub</span></span>
+            </a>
+
+            <nav class="main-nav">
+                <a href="/">Inicio</a>
+                <a href="/busqueda" class="active">Vacantes</a>
+                <a href="/recursos">Recursos</a>
+                <a href="/foros">Foros</a>
+            </nav>
+
+            <div class="header-actions">
+                <a href="/busqueda" class="header-link">
+                    Explorar empleos
+                </a>
+            </div>
+
+        </div>
     </header>
 
-    <main>
 
-        <p>
-            <a href="/">Inicio</a> /
-            <a href="/busqueda">Vacantes</a> /
-            <%= vacante.titulo %>
-        </p>
+    <!-- =====================================
+         CONTENIDO PRINCIPAL
+    ====================================== -->
 
-        <hr>
+    <main class="detail-page">
 
-        <section>
-            <h2><%= vacante.titulo %></h2>
+        <!-- RUTA DE NAVEGACIÓN -->
 
-            <p>Empresa: <%= vacante.empresa %></p>
-            <p>Ubicación: <%= vacante.ubicacion %></p>
-            <p>Sector: <%= vacante.sector %></p>
-            <p>Modalidad: <%= vacante.modalidad %></p>
-            <p>Tipo de contrato: <%= vacante.tipoContrato %></p>
-            <p>Experiencia requerida: <%= vacante.experiencia %></p>
+        <div class="breadcrumb">
+            <a href="/">Inicio</a>
+            <span>/</span>
+            <a href="/busqueda">Vacantes</a>
+            <span>/</span>
+            <strong><%= vacante.titulo %></strong>
+        </div>
 
-            <p>
-                Salario:
-                $<%= vacante.salarioMinimo.toLocaleString('en-US') %>
-                -
-                $<%= vacante.salarioMaximo.toLocaleString('en-US') %>
-            </p>
 
-            <p>Fecha de publicación: <%= vacante.fechaPublicacion %></p>
-            <p>Personas postuladas: <%= vacante.postulaciones %></p>
+        <!-- =====================================
+             ENCABEZADO DEL EMPLEO
+        ====================================== -->
+
+        <section class="detail-hero">
+
+            <div class="detail-company-logo">
+
+                <% if (vacante.logoEmpresa) { %>
+
+                    <img
+                        src="<%= vacante.logoEmpresa %>"
+                        alt="Logo de <%= vacante.empresa %>"
+                    >
+
+                <% } else { %>
+
+                    <span>
+                        <%= vacante.empresa.charAt(0).toUpperCase() %>
+                    </span>
+
+                <% } %>
+
+            </div>
+
+
+            <div class="detail-title-content">
+
+                <span class="detail-sector">
+                    <%= vacante.sector || 'Oportunidad laboral' %>
+                </span>
+
+                <h1><%= vacante.titulo %></h1>
+
+                <p class="detail-company-name">
+                    <%= vacante.empresa %>
+                </p>
+
+                <div class="detail-meta">
+
+                    <span>⌖ <%= vacante.ubicacion || 'Ubicación no especificada' %></span>
+
+                    <span>◷ <%= vacante.modalidad || 'Modalidad no especificada' %></span>
+
+                    <span>▤ <%= vacante.tipoContrato || 'Contrato no especificado' %></span>
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-publication">
+                <span class="publication-dot"></span>
+                Vacante publicada
+            </div>
+
         </section>
 
-        <section>
-            <h3>Acciones de la vacante</h3>
 
-            <button type="button" disabled>
-                Guardar vacante (requiere sesión)
-            </button>
+        <!-- =====================================
+             INFORMACIÓN Y CONTENIDO
+        ====================================== -->
 
-            <button
-                type="button"
-                onclick="compartirVacante()"
-            >
-                Compartir vacante
-            </button>
+        <div class="detail-layout">
 
-            <button type="button" disabled>
-                Reportar vacante (pendiente de implementar)
-            </button>
 
-            <p>
-                La función de guardar y reportar estará disponible
-                cuando implementemos las cuentas de usuario.
-            </p>
-        </section>
+            <!-- COLUMNA PRINCIPAL -->
 
-        <hr>
+            <div class="detail-main-column">
 
-        <section>
-            <h3>Descripción del empleo</h3>
-            <p><%= vacante.descripcion %></p>
-        </section>
 
-        <section>
-            <h3>Responsabilidades</h3>
+                <!-- DESCRIPCIÓN -->
 
-            <ul>
-                <% vacante.responsabilidades.forEach(responsabilidad => { %>
-                    <li><%= responsabilidad %></li>
-                <% }) %>
-            </ul>
-        </section>
+                <section class="detail-card">
 
-        <section>
-            <h3>Requisitos</h3>
+                    <div class="detail-section-heading">
+                        <span class="section-icon">▤</span>
 
-            <ul>
-                <% vacante.requisitos.forEach(requisito => { %>
-                    <li><%= requisito %></li>
-                <% }) %>
-            </ul>
-        </section>
+                        <div>
+                            <h2>Descripción del empleo</h2>
+                            <p>Conoce más sobre esta oportunidad</p>
+                        </div>
+                    </div>
 
-        <section>
-            <h3>Beneficios</h3>
+                    <div class="detail-text">
+                        <% if (vacante.descripcion) { %>
 
-            <ul>
-                <% vacante.beneficios.forEach(beneficio => { %>
-                    <li><%= beneficio %></li>
-                <% }) %>
-            </ul>
-        </section>
+                            <p><%= vacante.descripcion %></p>
 
-        <hr>
+                        <% } else { %>
 
-        <section>
-            <h3>Postulación</h3>
+                            <p>
+                                La empresa no ha proporcionado una descripción
+                                adicional para esta vacante.
+                            </p>
 
-            <p>
-                Para postularte a esta oportunidad necesitarás
-                una cuenta de candidato.
-            </p>
+                        <% } %>
+                    </div>
 
-            <button
-                type="button"
-                onclick="mostrarMensajePostulacion()"
-            >
-                Postularme ahora
-            </button>
+                </section>
 
-            <p id="mensajePostulacion"></p>
-        </section>
 
-        <hr>
+                <!-- RESPONSABILIDADES -->
 
-        <section>
-            <h3>Información de contacto</h3>
+                <section class="detail-card">
 
-            <p>Persona encargada: <%= vacante.reclutador %></p>
+                    <div class="detail-section-heading">
+                        <span class="section-icon">✓</span>
 
-            <p>
-                Correo:
-                <a href="mailto:<%= vacante.contacto %>">
-                    <%= vacante.contacto %>
+                        <div>
+                            <h2>Responsabilidades</h2>
+                            <p>Principales actividades del puesto</p>
+                        </div>
+                    </div>
+
+                    <% if (responsabilidades.length > 0) { %>
+
+                        <ul class="detail-list responsibility-list">
+
+                            <% responsabilidades.forEach(responsabilidad => { %>
+
+                                <li>
+                                    <span class="list-check">✓</span>
+                                    <span><%= responsabilidad %></span>
+                                </li>
+
+                            <% }) %>
+
+                        </ul>
+
+                    <% } else { %>
+
+                        <p class="detail-empty">
+                            No se han especificado responsabilidades.
+                        </p>
+
+                    <% } %>
+
+                </section>
+
+
+                <!-- REQUISITOS -->
+
+                <section class="detail-card">
+
+                    <div class="detail-section-heading">
+                        <span class="section-icon">✧</span>
+
+                        <div>
+                            <h2>Requisitos del puesto</h2>
+                            <p>Conocimientos y habilidades necesarios</p>
+                        </div>
+                    </div>
+
+                    <% if (requisitos.length > 0) { %>
+
+                        <ul class="detail-list requirement-list">
+
+                            <% requisitos.forEach(requisito => { %>
+
+                                <li>
+                                    <span class="list-bullet">•</span>
+                                    <span><%= requisito %></span>
+                                </li>
+
+                            <% }) %>
+
+                        </ul>
+
+                    <% } else { %>
+
+                        <p class="detail-empty">
+                            No se han especificado requisitos.
+                        </p>
+
+                    <% } %>
+
+                </section>
+
+
+                <!-- BENEFICIOS -->
+
+                <section class="detail-card">
+
+                    <div class="detail-section-heading">
+                        <span class="section-icon benefit-icon">♡</span>
+
+                        <div>
+                            <h2>Beneficios</h2>
+                            <p>Lo que ofrece esta oportunidad</p>
+                        </div>
+                    </div>
+
+                    <% if (beneficios.length > 0) { %>
+
+                        <div class="benefits-grid">
+
+                            <% beneficios.forEach(beneficio => { %>
+
+                                <div class="benefit-item">
+                                    <span>✓</span>
+                                    <p><%= beneficio %></p>
+                                </div>
+
+                            <% }) %>
+
+                        </div>
+
+                    <% } else { %>
+
+                        <p class="detail-empty">
+                            No se han especificado beneficios.
+                        </p>
+
+                    <% } %>
+
+                </section>
+
+
+                <!-- INFORMACIÓN DE CONTACTO -->
+
+                <section class="detail-card contact-card">
+
+                    <div class="detail-section-heading">
+                        <span class="section-icon">✉</span>
+
+                        <div>
+                            <h2>Información de contacto</h2>
+                            <p>Datos de la persona encargada del proceso</p>
+                        </div>
+                    </div>
+
+                    <div class="contact-information">
+
+                        <div class="contact-item">
+
+                            <span class="contact-label">
+                                Persona encargada
+                            </span>
+
+                            <strong>
+                                <%= vacante.reclutador || 'No especificada' %>
+                            </strong>
+
+                        </div>
+
+                        <div class="contact-item">
+
+                            <span class="contact-label">
+                                Correo electrónico
+                            </span>
+
+                            <% if (vacante.contacto) { %>
+
+                                <a href="mailto:<%= vacante.contacto %>">
+                                    <%= vacante.contacto %>
+                                </a>
+
+                            <% } else { %>
+
+                                <strong>No especificado</strong>
+
+                            <% } %>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+
+            <!-- COLUMNA LATERAL -->
+
+            <aside class="detail-sidebar">
+
+
+                <!-- TARJETA DE POSTULACIÓN -->
+
+                <section class="application-card">
+
+                    <span class="application-label">
+                        OPORTUNIDAD LABORAL
+                    </span>
+
+                    <h2>¿Te interesa este empleo?</h2>
+
+                    <p>
+                        Da el siguiente paso en tu carrera profesional.
+                        Consulta esta oportunidad y prepárate para postularte.
+                    </p>
+
+                    <button
+                        type="button"
+                        class="apply-button"
+                        onclick="mostrarMensajePostulacion()"
+                    >
+                        Postularme ahora
+                        <span>→</span>
+                    </button>
+
+                    <div
+                        id="mensajePostulacion"
+                        class="application-message"
+                        aria-live="polite"
+                    ></div>
+
+                    <div class="application-divider"></div>
+
+                    <button
+                        type="button"
+                        class="share-button"
+                        onclick="compartirVacante()"
+                    >
+                        <span>↗</span>
+                        Compartir vacante
+                    </button>
+
+                    <button
+                        type="button"
+                        class="save-button"
+                        disabled
+                        title="Disponible cuando implementemos las cuentas de usuario"
+                    >
+                        ♡ Guardar vacante
+                    </button>
+
+                    <p class="pending-message">
+                        Guardar y reportar vacantes estará disponible
+                        cuando implementemos las cuentas de usuario.
+                    </p>
+
+                </section>
+
+
+                <!-- RESUMEN DEL EMPLEO -->
+
+                <section class="detail-card summary-card">
+
+                    <h3>Información del empleo</h3>
+
+                    <div class="summary-item">
+
+                        <span class="summary-icon">＄</span>
+
+                        <div>
+                            <span>Salario mensual</span>
+
+                            <strong>
+
+                                <% if (salarioMinimo !== null && salarioMaximo !== null) { %>
+
+                                    $<%= salarioMinimo.toLocaleString('en-US') %>
+                                    -
+                                    $<%= salarioMaximo.toLocaleString('en-US') %>
+
+                                <% } else if (salarioMinimo !== null) { %>
+
+                                    Desde $<%= salarioMinimo.toLocaleString('en-US') %>
+
+                                <% } else if (salarioMaximo !== null) { %>
+
+                                    Hasta $<%= salarioMaximo.toLocaleString('en-US') %>
+
+                                <% } else { %>
+
+                                    No especificado
+
+                                <% } %>
+
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-icon">✧</span>
+
+                        <div>
+                            <span>Experiencia</span>
+                            <strong>
+                                <%= vacante.experiencia || 'No especificada' %>
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-icon">▤</span>
+
+                        <div>
+                            <span>Tipo de contrato</span>
+                            <strong>
+                                <%= vacante.tipoContrato || 'No especificado' %>
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-icon">◷</span>
+
+                        <div>
+                            <span>Fecha de publicación</span>
+                            <strong><%= fecha %></strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-icon">⌖</span>
+
+                        <div>
+                            <span>Ubicación</span>
+                            <strong>
+                                <%= vacante.ubicacion || 'No especificada' %>
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </aside>
+
+        </div>
+
+
+        <!-- =====================================
+             EMPLEOS SIMILARES
+        ====================================== -->
+
+        <section class="similar-section">
+
+            <div class="similar-heading">
+
+                <div>
+                    <span class="section-eyebrow">
+                        MÁS OPORTUNIDADES
+                    </span>
+
+                    <h2>Empleos similares</h2>
+
+                    <p>
+                        Descubre otras oportunidades que podrían interesarte.
+                    </p>
+                </div>
+
+                <a href="/busqueda" class="all-jobs-link">
+                    Ver todas las vacantes →
                 </a>
-            </p>
-        </section>
 
-        <hr>
+            </div>
 
-        <section>
-            <h3>Empleos similares</h3>
 
             <% if (vacantesSimilares.length === 0) { %>
 
-                <p>No hay empleos similares disponibles.</p>
+                <div class="similar-empty">
+                    <p>
+                        No hay otras vacantes similares disponibles por el momento.
+                    </p>
+                </div>
 
             <% } else { %>
 
-                <% vacantesSimilares.forEach(similar => { %>
+                <div class="similar-grid">
 
-                    <article>
-                        <h4><%= similar.titulo %></h4>
+                    <% vacantesSimilares.forEach(similar => { %>
 
-                        <p>Empresa: <%= similar.empresa %></p>
-                        <p>Ubicación: <%= similar.ubicacion %></p>
+                        <article class="similar-card">
 
-                        <a href="/busqueda/empleo/<%= similar.id %>">
-                            Consultar empleo
-                        </a>
-                    </article>
+                            <span class="similar-sector">
+                                <%= similar.sector || 'Oportunidad laboral' %>
+                            </span>
 
-                    <hr>
+                            <h3><%= similar.titulo %></h3>
 
-                <% }) %>
+                            <p class="similar-company">
+                                <%= similar.empresa %>
+                            </p>
+
+                            <div class="similar-meta">
+
+                                <span>
+                                    ⌖ <%= similar.ubicacion || 'No especificada' %>
+                                </span>
+
+                                <span>
+                                    ◷ <%= similar.modalidad || 'No especificada' %>
+                                </span>
+
+                            </div>
+
+                            <a href="/busqueda/empleo/<%= similar.id %>">
+                                Consultar empleo
+                                <span>→</span>
+                            </a>
+
+                        </article>
+
+                    <% }) %>
+
+                </div>
 
             <% } %>
+
         </section>
 
-        <a href="/busqueda">Volver a los resultados</a>
+
+        <!-- VOLVER -->
+
+        <div class="back-results">
+            <a href="/busqueda">
+                ← Volver a los resultados de búsqueda
+            </a>
+        </div>
 
     </main>
 
-    <footer>
-        <hr>
-        <p>TalentoHub - Portal de oportunidades laborales.</p>
+
+    <!-- =====================================
+         PIE DE PÁGINA
+    ====================================== -->
+
+    <footer class="main-footer">
+
+        <div class="footer-container">
+
+            <a href="/" class="brand footer-brand">
+                <span class="brand-icon">T</span>
+                <span>Talento<span class="brand-highlight">Hub</span></span>
+            </a>
+
+            <p>
+                Conectando talentos con nuevas oportunidades.
+            </p>
+
+            <span class="copyright">
+                © <%= new Date().getFullYear() %> TalentoHub.
+                Todos los derechos reservados.
+            </span>
+
+        </div>
+
     </footer>
 
+
+    <!-- =====================================
+         FUNCIONES DE LA PÁGINA
+    ====================================== -->
+
     <script>
-        function compartirVacante() {
+
+        // Compartir o copiar el enlace de la vacante.
+        async function compartirVacante() {
+
             const enlace = window.location.href;
 
-            if (navigator.share) {
-                navigator.share({
-                    title: document.title,
-                    url: enlace
-                }).catch(() => {
-                    // El usuario puede cancelar la acción.
-                });
-            } else if (navigator.clipboard) {
-                navigator.clipboard.writeText(enlace)
-                    .then(() => alert('Enlace copiado correctamente.'))
-                    .catch(() => alert('No se pudo copiar el enlace.'));
-            } else {
-                alert('Copia este enlace: ' + enlace);
+            try {
+
+                if (navigator.share) {
+
+                    await navigator.share({
+                        title: document.title,
+                        url: enlace
+                    });
+
+                } else if (navigator.clipboard) {
+
+                    await navigator.clipboard.writeText(enlace);
+
+                    alert('¡Enlace copiado correctamente!');
+
+                } else {
+
+                    prompt('Copia el enlace de esta vacante:', enlace);
+
+                }
+
+            } catch (error) {
+
+                if (error.name !== 'AbortError') {
+                    alert('No fue posible compartir la vacante.');
+                }
+
             }
+
         }
 
+
+        // Mensaje temporal de postulación.
         function mostrarMensajePostulacion() {
-            document.getElementById('mensajePostulacion').textContent =
+
+            const mensaje = document.getElementById('mensajePostulacion');
+
+            mensaje.textContent =
                 'La postulación estará disponible cuando implementemos el inicio de sesión y el registro de candidatos.';
+
+            mensaje.classList.add('visible');
+
         }
+
     </script>
 
 </body>
