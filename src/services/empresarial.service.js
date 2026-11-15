@@ -233,7 +233,7 @@ function convertirLista(valor) {
     if (Array.isArray(valor)) {
         return valor.map(texto).filter(Boolean);
     }
-    return texto(valor).split(/[\n,]/).map(texto).filter(Boolean);
+    return texto(valor).split(/\r?\n/).map(texto).filter(Boolean);
 }
 
 function fechaHoy() {
@@ -316,15 +316,33 @@ function obtenerVacante(id) {
     return vacantes.find(vacante => vacante.id === Number(id));
 }
 
+function contarVacantesPorEstado() {
+    const conteo = { Todas: vacantes.length };
+    ESTADOS_VACANTE.forEach(estado => {
+        conteo[estado] = vacantes.filter(v => v.estado === estado).length;
+    });
+    return conteo;
+}
+
+function validarBorrador(datos) {
+    const errores = [];
+    if (!texto(datos.titulo)) errores.push('Para guardar el borrador escribe al menos el título.');
+    if (!obtenerEmpresa(datos.empresaId)) errores.push('Selecciona una empresa.');
+    return errores;
+}
+
 function validarVacante(datos) {
     const errores = [];
+    const empresa = obtenerEmpresa(datos.empresaId);
     if (!texto(datos.titulo)) errores.push('El título del puesto es obligatorio.');
-    if (!obtenerEmpresa(datos.empresaId)) errores.push('Selecciona una empresa.');
+    if (!empresa) errores.push('Selecciona una empresa.');
+    if (empresa && empresa.estado !== 'Activa') errores.push('La empresa seleccionada no está activa.');
     if (!texto(datos.ubicacion)) errores.push('La ubicación es obligatoria.');
     if (!texto(datos.descripcion)) errores.push('La descripción del puesto es obligatoria.');
     if (texto(datos.descripcion).length > 3000) errores.push('La descripción no puede superar 3000 caracteres.');
     if (convertirLista(datos.habilidades).length === 0) errores.push('Agrega al menos una habilidad.');
     if (!texto(datos.experiencia)) errores.push('El nivel de experiencia es obligatorio.');
+    if (!/^\S+@\S+\.\S+$/.test(texto(datos.contacto))) errores.push('Escribe un correo de contacto válido.');
 
     const minimo = Number(datos.salarioMinimo);
     const maximo = Number(datos.salarioMaximo);
@@ -334,9 +352,8 @@ function validarVacante(datos) {
     return errores;
 }
 
-function crearVacante(datos, estado = 'Activa') {
-    const vacante = {
-        id: siguienteIdVacante++,
+function datosVacante(datos) {
+    return {
         empresaId: Number(datos.empresaId),
         titulo: texto(datos.titulo),
         ubicacion: texto(datos.ubicacion),
@@ -351,13 +368,32 @@ function crearVacante(datos, estado = 'Activa') {
         habilidades: convertirLista(datos.habilidades),
         beneficios: convertirLista(datos.beneficios),
         contacto: texto(datos.contacto),
+        fechaCierre: texto(datos.fechaCierre)
+    };
+}
+
+function crearVacante(datos, estado = 'Activa') {
+    const vacante = {
+        id: siguienteIdVacante++,
+        ...datosVacante(datos),
         reclutador: empleadorActual.nombre,
         fechaPublicacion: fechaHoy(),
-        fechaCierre: texto(datos.fechaCierre),
         estado,
         vistas: 0
     };
     vacantes.push(vacante);
+    return vacante;
+}
+
+function actualizarVacante(id, datos, estado) {
+    const vacante = obtenerVacante(id);
+    if (!vacante) return null;
+
+    Object.assign(vacante, datosVacante(datos));
+
+    // al publicar un borrador cambia la fecha
+    if (vacante.estado === 'Borrador' && estado === 'Activa') vacante.fechaPublicacion = fechaHoy();
+    if (estado) vacante.estado = estado;
     return vacante;
 }
 
@@ -487,8 +523,11 @@ module.exports = {
     cambiarEstadoEmpresa,
     listarVacantes,
     obtenerVacante,
+    contarVacantesPorEstado,
+    validarBorrador,
     validarVacante,
     crearVacante,
+    actualizarVacante,
     cambiarEstadoVacante,
     eliminarVacante,
     obtenerCandidato,

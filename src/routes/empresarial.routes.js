@@ -11,4 +11,12 @@ router.post('/empresas', empresarialController.crearEmpresa);
 router.post('/empresas/:id', empresarialController.actualizarEmpresa);
 router.post('/empresas/:id/estado', empresarialController.cambiarEstadoEmpresa);
 
+// vacantes
+router.get('/vacantes', empresarialController.mostrarVacantes);
+router.get('/publicar', empresarialController.mostrarPublicar);
+router.post('/publicar', empresarialController.publicarVacante);
+router.post('/vacantes/:id', empresarialController.actualizarVacante);
+router.post('/vacantes/:id/estado', empresarialController.cambiarEstadoVacante);
+router.post('/vacantes/:id/eliminar', empresarialController.eliminarVacante);
+
 module.exports = router;

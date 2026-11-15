@@ -1,0 +1,209 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body>
+
+    <%- include('partials/menu', { activo: modo === 'nueva' ? 'publicar' : 'vacantes' }) %>
+
+    <main class="emp-main">
+
+        <section class="emp-contenido">
+            <p class="emp-etiqueta"><%= modo === 'nueva' ? 'Nueva vacante' : 'Editar vacante' %></p>
+
+            <div class="emp-titulo-fila">
+                <h1><%= modo === 'nueva' ? 'Publicar empleo' : 'Editar empleo' %></h1>
+                <% if (vacante.estado) { %>
+                    <span class="emp-estado emp-estado-<%= vacante.estado.toLowerCase() %>"><%= vacante.estado %></span>
+                <% } %>
+            </div>
+
+            <ol class="emp-stepper" id="stepper">
+                <% ['Información básica', 'Descripción y requisitos', 'Condiciones y salario', 'Contacto', 'Vista previa'].forEach((nombre, i) => { %>
+                    <li data-paso="<%= i + 1 %>"><span><%= i + 1 %></span> <%= nombre %></li>
+                <% }) %>
+            </ol>
+
+            <div class="emp-publicar">
+                <form id="form-vacante" class="emp-form emp-tarjeta emp-form-pasos" method="post" action="<%= accion %>" novalidate>
+
+                    <% if (errores.length > 0) { %>
+                        <div class="emp-errores">
+                            <ul>
+                                <% errores.forEach(error => { %>
+                                    <li><%= error %></li>
+                                <% }) %>
+                            </ul>
+                        </div>
+                    <% } %>
+
+                    <section class="emp-paso" data-paso="1">
+                        <h3>Paso 1 · Información básica</h3>
+
+                        <label for="empresaId">Empresa *</label>
+                        <select id="empresaId" name="empresaId" required>
+                            <option value="">Selecciona una empresa</option>
+                            <% empresas.forEach(empresa => { %>
+                                <option value="<%= empresa.id %>" <%= Number(vacante.empresaId) === empresa.id ? 'selected' : '' %>><%= empresa.nombre %></option>
+                            <% }) %>
+                        </select>
+
+                        <label for="titulo">Título del puesto *</label>
+                        <input id="titulo" name="titulo" value="<%= vacante.titulo %>" placeholder="Ej. Diseñador UX/UI Senior" required>
+
+                        <label for="ubicacion">Ubicación *</label>
+                        <input id="ubicacion" name="ubicacion" value="<%= vacante.ubicacion %>" placeholder="Ej. San Salvador" required>
+
+                        <div class="emp-fila-2">
+                            <div>
+                                <label for="modalidad">Modalidad</label>
+                                <select id="modalidad" name="modalidad">
+                                    <% opciones.modalidades.forEach(op => { %>
+                                        <option <%= vacante.modalidad === op ? 'selected' : '' %>><%= op %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="tipoContrato">Tipo de contrato</label>
+                                <select id="tipoContrato" name="tipoContrato">
+                                    <% opciones.contratos.forEach(op => { %>
+                                        <option <%= vacante.tipoContrato === op ? 'selected' : '' %>><%= op %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="emp-paso" data-paso="2">
+                        <h3>Paso 2 · Descripción y requisitos</h3>
+
+                        <label for="descripcion">Descripción del puesto *</label>
+                        <textarea id="descripcion" name="descripcion" maxlength="3000" required><%= vacante.descripcion %></textarea>
+                        <small class="emp-contador"><span id="contador">0</span> / 3000</small>
+
+                        <label>Responsabilidades</label>
+                        <div id="lista-responsabilidades" class="emp-lista">
+                            <% vacante.responsabilidades.forEach(item => { %>
+                                <div class="emp-lista-item">
+                                    <input name="responsabilidades" value="<%= item %>">
+                                    <button type="button" class="emp-quitar" title="Quitar">✕</button>
+                                </div>
+                            <% }) %>
+                        </div>
+                        <button type="button" class="emp-link-btn" id="agregar-responsabilidad">+ Agregar responsabilidad</button>
+
+                        <label for="habilidad-input">Requisitos y habilidades *</label>
+                        <div class="emp-etiquetas" id="etiquetas">
+                            <% vacante.habilidades.forEach(h => { %>
+                                <span class="emp-tag"><%= h %><input type="hidden" name="habilidades" value="<%= h %>"><button type="button">×</button></span>
+                            <% }) %>
+                            <input id="habilidad-input" list="sugerencias" placeholder="Escribe y presiona Enter...">
+                        </div>
+                        <datalist id="sugerencias">
+                            <% opciones.habilidades.forEach(h => { %>
+                                <option value="<%= h %>">
+                            <% }) %>
+                        </datalist>
+
+                        <div class="emp-fila-2">
+                            <div>
+                                <label for="experiencia">Nivel de experiencia *</label>
+                                <select id="experiencia" name="experiencia" required>
+                                    <option value="">Selecciona</option>
+                                    <% opciones.experiencias.forEach(op => { %>
+                                        <option <%= vacante.experiencia === op ? 'selected' : '' %>><%= op %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="formacion">Formación mínima</label>
+                                <select id="formacion" name="formacion">
+                                    <% opciones.formaciones.forEach(op => { %>
+                                        <option <%= vacante.formacion === op ? 'selected' : '' %>><%= op %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="emp-paso" data-paso="3">
+                        <h3>Paso 3 · Condiciones y salario</h3>
+
+                        <div class="emp-fila-2">
+                            <div>
+                                <label for="salarioMinimo">Salario mínimo (USD)</label>
+                                <input id="salarioMinimo" name="salarioMinimo" type="number" min="0" value="<%= vacante.salarioMinimo || '' %>">
+                            </div>
+                            <div>
+                                <label for="salarioMaximo">Salario máximo (USD)</label>
+                                <input id="salarioMaximo" name="salarioMaximo" type="number" min="0" value="<%= vacante.salarioMaximo || '' %>">
+                            </div>
+                        </div>
+
+                        <label for="beneficios">Beneficios (uno por línea)</label>
+                        <textarea id="beneficios" name="beneficios" placeholder="Seguro médico&#10;Trabajo híbrido"><%= vacante.beneficios.join('\n') %></textarea>
+
+                        <label for="fechaCierre">Fecha de cierre</label>
+                        <input id="fechaCierre" name="fechaCierre" type="date" value="<%= vacante.fechaCierre %>">
+                    </section>
+
+                    <section class="emp-paso" data-paso="4">
+                        <h3>Paso 4 · Contacto</h3>
+
+                        <label for="contacto">Correo de contacto *</label>
+                        <input id="contacto" name="contacto" type="email" value="<%= vacante.contacto %>" placeholder="talento@empresa.com" required>
+
+                        <label>Reclutador</label>
+                        <input value="<%= reclutador %>" disabled>
+                    </section>
+
+                    <section class="emp-paso" data-paso="5">
+                        <h3>Paso 5 · Vista previa</h3>
+                        <p class="emp-ayuda">Así verán los candidatos tu oferta. Revisa los datos antes de publicar.</p>
+                        <div id="resumen" class="emp-resumen"></div>
+                    </section>
+
+                    <div class="emp-form-navegacion">
+                        <% if (puedeBorrador) { %>
+                            <button class="emp-btn" type="submit" name="accion" value="borrador" id="btn-borrador">Guardar borrador</button>
+                        <% } %>
+                        <span class="emp-espacio"></span>
+                        <button class="emp-btn" type="button" id="btn-anterior">‹ Anterior</button>
+                        <button class="emp-btn emp-btn-primario" type="button" id="btn-siguiente">Siguiente ›</button>
+                        <button class="emp-btn emp-btn-primario" type="submit" name="accion" value="publicar" id="btn-publicar">
+                            <%= modo === 'nueva' || vacante.estado === 'Borrador' ? 'Publicar empleo' : 'Guardar cambios' %>
+                        </button>
+                    </div>
+                </form>
+
+                <aside class="emp-tarjeta emp-preview">
+                    <p class="emp-ayuda">👁 Vista previa para candidatos</p>
+
+                    <div class="emp-preview-card">
+                        <div class="emp-nombre">
+                            <span class="emp-avatar" id="pv-inicial">?</span>
+                            <div>
+                                <strong id="pv-titulo">Título del puesto</strong><br>
+                                <small id="pv-empresa">Empresa · Ubicación</small>
+                            </div>
+                        </div>
+                        <div class="emp-chips" id="pv-chips"></div>
+                        <p class="emp-ayuda" id="pv-descripcion"></p>
+                        <div class="emp-chips" id="pv-habilidades"></div>
+                    </div>
+
+                    <div class="emp-calidad">
+                        <div><span>Calidad de la oferta</span><strong id="pv-calidad">Baja</strong></div>
+                        <div class="emp-barra"><div id="pv-barra"></div></div>
+                        <small id="pv-consejo"></small>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        window.pasoInicial = <%= pasoInicial %>;
+    </script>
+    <script src="/js/publicar.js"></script>
+
+    <%- include('../partials/footer') %>
