@@ -1,263 +1,649 @@
 
-<!-- src/views/busqueda/index.ejs -->
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= titulo %> | TalentoHub</title>
+
+    <title><%= titulo %></title>
+
+    <link rel="stylesheet" href="/css/busqueda.css">
 </head>
+
 <body>
 
-    <header>
-        <h1>TalentoHub</h1>
+    <!-- =====================================
+         NAVEGACIÓN PRINCIPAL
+    ====================================== -->
 
-        <nav>
-            <a href="/">Inicio</a> |
-            <a href="/busqueda">Vacantes</a> |
-            <a href="/recursos">Recursos</a> |
-            <a href="/foros">Foros</a>
-        </nav>
+    <header class="main-header">
+        <div class="header-container">
+
+            <a href="/" class="brand">
+                <span class="brand-icon">T</span>
+                <span>Talento<span class="brand-highlight">Hub</span></span>
+            </a>
+
+            <nav class="main-nav">
+                <a href="/">Inicio</a>
+                <a href="/busqueda" class="active">Vacantes</a>
+                <a href="/recursos">Recursos</a>
+                <a href="/foros">Foros</a>
+            </nav>
+
+            <div class="header-actions">
+                <a href="/busqueda" class="header-link">Explorar empleos</a>
+            </div>
+
+        </div>
     </header>
 
+
+    <!-- =====================================
+         CONTENIDO PRINCIPAL
+    ====================================== -->
+
     <main>
-        <h2>Resultados de búsqueda</h2>
 
-        <section>
-            <h3>Buscar empleo</h3>
+        <!-- PRESENTACIÓN Y BUSCADOR -->
 
-            <form action="/busqueda" method="GET">
+        <section class="search-hero">
 
-                <label for="q">Puesto o palabra clave:</label>
-                <input
-                    type="text"
-                    id="q"
-                    name="q"
-                    value="<%= filtros.q %>"
-                    placeholder="Ejemplo: diseñador, programador..."
-                >
+            <div class="hero-content">
 
-                <br><br>
+                <span class="eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    CONSTRUYE TU FUTURO PROFESIONAL
+                </span>
 
-                <label for="ubicacion">Ubicación:</label>
-                <input
-                    type="text"
-                    id="ubicacion"
-                    name="ubicacion"
-                    value="<%= filtros.ubicacion %>"
-                    placeholder="Ejemplo: San Salvador"
-                >
-
-                <br><br>
-
-                <label for="experiencia">Experiencia:</label>
-                <select id="experiencia" name="experiencia">
-                    <option value="">Todas</option>
-                    <option value="Sin experiencia" <%= filtros.experiencia === 'Sin experiencia' ? 'selected' : '' %>>Sin experiencia</option>
-                    <option value="1-3 años" <%= filtros.experiencia === '1-3 años' ? 'selected' : '' %>>1 a 3 años</option>
-                    <option value="Más de 3 años" <%= filtros.experiencia === 'Más de 3 años' ? 'selected' : '' %>>Más de 3 años</option>
-                </select>
-
-                <br><br>
-
-                <label for="sector">Sector laboral:</label>
-                <select id="sector" name="sector">
-                    <option value="">Todos</option>
-                    <option value="Tecnología" <%= filtros.sector === 'Tecnología' ? 'selected' : '' %>>Tecnología</option>
-                    <option value="Diseño" <%= filtros.sector === 'Diseño' ? 'selected' : '' %>>Diseño</option>
-                    <option value="Finanzas" <%= filtros.sector === 'Finanzas' ? 'selected' : '' %>>Finanzas</option>
-                    <option value="Recursos humanos" <%= filtros.sector === 'Recursos humanos' ? 'selected' : '' %>>Recursos humanos</option>
-                    <option value="Ventas" <%= filtros.sector === 'Ventas' ? 'selected' : '' %>>Ventas</option>
-                    <option value="Marketing" <%= filtros.sector === 'Marketing' ? 'selected' : '' %>>Marketing</option>
-                    <option value="Industria" <%= filtros.sector === 'Industria' ? 'selected' : '' %>>Industria</option>
-                    <option value="Administración" <%= filtros.sector === 'Administración' ? 'selected' : '' %>>Administración</option>
-                </select>
-
-                <br><br>
-
-                <label for="modalidad">Modalidad:</label>
-                <select id="modalidad" name="modalidad">
-                    <option value="">Todas</option>
-                    <option value="Presencial" <%= filtros.modalidad === 'Presencial' ? 'selected' : '' %>>Presencial</option>
-                    <option value="Remoto" <%= filtros.modalidad === 'Remoto' ? 'selected' : '' %>>Remoto</option>
-                    <option value="Híbrido" <%= filtros.modalidad === 'Híbrido' ? 'selected' : '' %>>Híbrido</option>
-                </select>
-
-                <br><br>
-
-                <label for="tipoContrato">Tipo de contrato:</label>
-                <select id="tipoContrato" name="tipoContrato">
-                    <option value="">Todos</option>
-                    <option value="Tiempo completo" <%= filtros.tipoContrato === 'Tiempo completo' ? 'selected' : '' %>>Tiempo completo</option>
-                    <option value="Medio tiempo" <%= filtros.tipoContrato === 'Medio tiempo' ? 'selected' : '' %>>Medio tiempo</option>
-                    <option value="Por proyecto" <%= filtros.tipoContrato === 'Por proyecto' ? 'selected' : '' %>>Por proyecto</option>
-                </select>
-
-                <br><br>
-
-                <label for="salarioMinimo">Salario mínimo:</label>
-                <input
-                    type="number"
-                    id="salarioMinimo"
-                    name="salarioMinimo"
-                    min="0"
-                    value="<%= filtros.salarioMinimo %>"
-                >
-
-                <br><br>
-
-                <label for="salarioMaximo">Salario máximo:</label>
-                <input
-                    type="number"
-                    id="salarioMaximo"
-                    name="salarioMaximo"
-                    min="0"
-                    value="<%= filtros.salarioMaximo %>"
-                >
-
-                <br><br>
-
-                <label for="fechaPublicacion">Fecha de publicación:</label>
-                <select id="fechaPublicacion" name="fechaPublicacion">
-                    <option value="">Cualquier fecha</option>
-                    <option value="7" <%= filtros.fechaPublicacion === '7' ? 'selected' : '' %>>Últimos 7 días</option>
-                    <option value="30" <%= filtros.fechaPublicacion === '30' ? 'selected' : '' %>>Últimos 30 días</option>
-                </select>
-
-                <br><br>
-
-                <button type="submit">Buscar empleos</button>
-                <a href="/busqueda">Limpiar filtros</a>
-
-            </form>
-        </section>
-
-        <hr>
-
-        <section>
-            <h3>Vacantes encontradas</h3>
-
-            <p>
-                Total de resultados:
-                <strong><%= totalResultados %></strong>
-            </p>
-
-            <form action="/busqueda" method="GET">
-
-                <% Object.entries(filtros).forEach(([nombre, valor]) => { %>
-                    <% if (nombre !== 'orden' && valor) { %>
-                        <input
-                            type="hidden"
-                            name="<%= nombre %>"
-                            value="<%= valor %>"
-                        >
-                    <% } %>
-                <% }) %>
-
-                <label for="orden">Ordenar por:</label>
-
-                <select id="orden" name="orden">
-                    <option value="recientes" <%= filtros.orden === 'recientes' ? 'selected' : '' %>>Más recientes</option>
-                    <option value="antiguas" <%= filtros.orden === 'antiguas' ? 'selected' : '' %>>Más antiguas</option>
-                    <option value="salarioMayor" <%= filtros.orden === 'salarioMayor' ? 'selected' : '' %>>Mayor salario</option>
-                    <option value="salarioMenor" <%= filtros.orden === 'salarioMenor' ? 'selected' : '' %>>Menor salario</option>
-                </select>
-
-                <button type="submit">Ordenar</button>
-
-            </form>
-
-            <% if (vacantes.length === 0) { %>
-
-                <section>
-                    <h3>No encontramos vacantes con esos criterios</h3>
-
-                    <p>
-                        Intenta modificar tus filtros o ampliar la ubicación
-                        para encontrar otras oportunidades.
-                    </p>
-
-                    <a href="/busqueda">Limpiar filtros</a>
-                </section>
-
-            <% } else { %>
-
-                <% vacantes.forEach(vacante => { %>
-
-                    <article>
-                        <h3><%= vacante.titulo %></h3>
-
-                        <p>Empresa: <%= vacante.empresa %></p>
-                        <p>Ubicación: <%= vacante.ubicacion %></p>
-                        <p>Sector: <%= vacante.sector %></p>
-                        <p>Modalidad: <%= vacante.modalidad %></p>
-                        <p>Contrato: <%= vacante.tipoContrato %></p>
-                        <p>Experiencia: <%= vacante.experiencia %></p>
-
-                        <p>
-                            Salario:
-                            $<%= vacante.salarioMinimo.toLocaleString('en-US') %>
-                            -
-                            $<%= vacante.salarioMaximo.toLocaleString('en-US') %>
-                        </p>
-
-                        <p>Fecha de publicación: <%= vacante.fechaPublicacion %></p>
-
-                        <a href="/busqueda/empleo/<%= vacante.id %>">
-                            Ver detalle
-                        </a>
-                    </article>
-
-                    <hr>
-
-                <% }) %>
-
-            <% } %>
-        </section>
-
-        <% if (totalPaginas > 1) { %>
-
-            <section>
-                <h3>Paginación</h3>
+                <h1>
+                    Encuentra el empleo que
+                    <span>impulsa tu futuro.</span>
+                </h1>
 
                 <p>
-                    Página <%= paginaActual %> de <%= totalPaginas %>
+                    Explora oportunidades laborales, descubre nuevas empresas
+                    y encuentra el puesto que se adapta a tus habilidades.
                 </p>
 
-                <% if (paginaActual > 1) { %>
-                    <a href="/busqueda?<%= new URLSearchParams({ ...filtros, pagina: paginaActual - 1 }).toString() %>">
-                        Anterior
-                    </a>
-                <% } %>
+                <form action="/busqueda" method="GET" class="quick-search">
 
-                <% for (let numero = 1; numero <= totalPaginas; numero++) { %>
+                    <div class="quick-search-field">
+                        <span class="field-icon">⌕</span>
 
-                    <% if (numero === paginaActual) { %>
-                        <strong><%= numero %></strong>
-                    <% } else { %>
-                        <a href="/busqueda?<%= new URLSearchParams({ ...filtros, pagina: numero }).toString() %>">
-                            <%= numero %>
+                        <div class="quick-search-input">
+                            <label for="q">¿Qué empleo buscas?</label>
+
+                            <input
+                                type="text"
+                                id="q"
+                                name="q"
+                                value="<%= filtros.q %>"
+                                placeholder="Ej. Diseñador, contador..."
+                            >
+                        </div>
+                    </div>
+
+                    <div class="search-divider"></div>
+
+                    <div class="quick-search-field">
+                        <span class="field-icon">⌖</span>
+
+                        <div class="quick-search-input">
+                            <label for="ubicacion">Ubicación</label>
+
+                            <input
+                                type="text"
+                                id="ubicacion"
+                                name="ubicacion"
+                                value="<%= filtros.ubicacion %>"
+                                placeholder="Ciudad o departamento"
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="search-button">
+                        Buscar empleos
+                    </button>
+
+                </form>
+
+            </div>
+
+            <div class="hero-decoration decoration-one"></div>
+            <div class="hero-decoration decoration-two"></div>
+
+        </section>
+
+
+        <!-- CONTENIDO DE BÚSQUEDA -->
+
+        <section class="results-section">
+
+            <div class="results-heading">
+
+                <div>
+                    <span class="section-eyebrow">OPORTUNIDADES LABORALES</span>
+
+                    <h2>Explora las vacantes</h2>
+
+                    <p>
+                        Encuentra nuevas oportunidades para crecer
+                        profesionalmente.
+                    </p>
+                </div>
+
+                <div class="results-counter">
+                    <strong><%= totalResultados %></strong>
+                    <span>vacantes encontradas</span>
+                </div>
+
+            </div>
+
+
+            <div class="results-layout">
+
+
+                <!-- =====================================
+                     PANEL DE FILTROS
+                ====================================== -->
+
+                <aside class="filters-panel">
+
+                    <div class="filters-header">
+                        <div>
+                            <h3>Filtros</h3>
+                            <p>Personaliza tu búsqueda</p>
+                        </div>
+
+                        <a href="/busqueda" class="clear-link">
+                            Limpiar
                         </a>
+                    </div>
+
+
+                    <form action="/busqueda" method="GET" class="filters-form">
+                        <input type="hidden" name="q" value="<%= filtros.q %>">
+<input type="hidden" name="ubicacion" value="<%= filtros.ubicacion %>">
+<input type="hidden" name="orden" value="<%= filtros.orden %>">
+
+                        <div class="filter-group">
+                            <label for="experiencia">Experiencia</label>
+
+                            <select id="experiencia" name="experiencia">
+                                <option value="">Todas</option>
+
+                                <option value="Sin experiencia"
+                                    <%= filtros.experiencia === 'Sin experiencia' ? 'selected' : '' %>>
+                                    Sin experiencia
+                                </option>
+
+                                <option value="1-3 años"
+                                    <%= filtros.experiencia === '1-3 años' ? 'selected' : '' %>>
+                                    1 a 3 años
+                                </option>
+
+                                <option value="Más de 3 años"
+                                    <%= filtros.experiencia === 'Más de 3 años' ? 'selected' : '' %>>
+                                    Más de 3 años
+                                </option>
+                            </select>
+                        </div>
+
+
+                        <div class="filter-group">
+                            <label for="sector">Sector laboral</label>
+
+                            <select id="sector" name="sector">
+                                <option value="">Todos los sectores</option>
+
+                                <% [
+                                    'Tecnología',
+                                    'Diseño',
+                                    'Finanzas',
+                                    'Recursos humanos',
+                                    'Ventas',
+                                    'Marketing',
+                                    'Industria',
+                                    'Administración'
+                                ].forEach(sector => { %>
+
+                                    <option value="<%= sector %>"
+                                        <%= filtros.sector === sector ? 'selected' : '' %>>
+                                        <%= sector %>
+                                    </option>
+
+                                <% }) %>
+                            </select>
+                        </div>
+
+
+                        <div class="filter-group">
+                            <label for="modalidad">Modalidad de trabajo</label>
+
+                            <select id="modalidad" name="modalidad">
+                                <option value="">Todas</option>
+
+                                <% ['Presencial', 'Remoto', 'Híbrido'].forEach(modalidad => { %>
+
+                                    <option value="<%= modalidad %>"
+                                        <%= filtros.modalidad === modalidad ? 'selected' : '' %>>
+                                        <%= modalidad %>
+                                    </option>
+
+                                <% }) %>
+                            </select>
+                        </div>
+
+
+                        <div class="filter-group">
+                            <label for="tipoContrato">Tipo de contrato</label>
+
+                            <select id="tipoContrato" name="tipoContrato">
+                                <option value="">Todos</option>
+
+                                <% ['Tiempo completo', 'Medio tiempo', 'Por proyecto'].forEach(tipo => { %>
+
+                                    <option value="<%= tipo %>"
+                                        <%= filtros.tipoContrato === tipo ? 'selected' : '' %>>
+                                        <%= tipo %>
+                                    </option>
+
+                                <% }) %>
+                            </select>
+                        </div>
+
+
+                        <div class="filter-group">
+                            <label>Rango salarial mensual</label>
+
+                            <div class="salary-inputs">
+
+                                <div>
+                                    <span>$</span>
+                                    <input
+                                        type="number"
+                                        name="salarioMinimo"
+                                        min="0"
+                                        value="<%= filtros.salarioMinimo %>"
+                                        placeholder="Mínimo"
+                                    >
+                                </div>
+
+                                <div>
+                                    <span>$</span>
+                                    <input
+                                        type="number"
+                                        name="salarioMaximo"
+                                        min="0"
+                                        value="<%= filtros.salarioMaximo %>"
+                                        placeholder="Máximo"
+                                    >
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        <div class="filter-group">
+                            <label for="fechaPublicacion">Fecha de publicación</label>
+
+                            <select id="fechaPublicacion" name="fechaPublicacion">
+                                <option value="">Cualquier fecha</option>
+
+                                <option value="7"
+                                    <%= filtros.fechaPublicacion === '7' ? 'selected' : '' %>>
+                                    Últimos 7 días
+                                </option>
+
+                                <option value="30"
+                                    <%= filtros.fechaPublicacion === '30' ? 'selected' : '' %>>
+                                    Últimos 30 días
+                                </option>
+                            </select>
+                        </div>
+
+
+                        <button type="submit" class="apply-filters-button">
+                            Aplicar filtros
+                        </button>
+
+                        <a href="/busqueda" class="reset-filters">
+                            Restablecer búsqueda
+                        </a>
+
+                    </form>
+
+                </aside>
+
+
+                <!-- =====================================
+                     LISTADO DE VACANTES
+                ====================================== -->
+
+                <div class="jobs-content">
+
+
+                    <!-- BARRA DE ORDENAMIENTO -->
+
+                    <div class="jobs-toolbar">
+
+                        <div>
+                            <strong>Resultados de empleo</strong>
+                            <span>
+                                Mostrando <%= vacantes.length %>
+                                de <%= totalResultados %> vacantes
+                            </span>
+                        </div>
+
+                        <form action="/busqueda" method="GET" class="sort-form">
+
+                            <% Object.entries(filtros).forEach(([nombre, valor]) => { %>
+
+                                <% if (nombre !== 'orden' && valor) { %>
+
+                                    <input
+                                        type="hidden"
+                                        name="<%= nombre %>"
+                                        value="<%= valor %>"
+                                    >
+
+                                <% } %>
+
+                            <% }) %>
+
+                            <label for="orden">Ordenar:</label>
+
+                            <select id="orden" name="orden">
+                                <option value="recientes"
+                                    <%= filtros.orden === 'recientes' ? 'selected' : '' %>>
+                                    Más recientes
+                                </option>
+
+                                <option value="antiguas"
+                                    <%= filtros.orden === 'antiguas' ? 'selected' : '' %>>
+                                    Más antiguas
+                                </option>
+
+                                <option value="salarioMayor"
+                                    <%= filtros.orden === 'salarioMayor' ? 'selected' : '' %>>
+                                    Mayor salario
+                                </option>
+
+                                <option value="salarioMenor"
+                                    <%= filtros.orden === 'salarioMenor' ? 'selected' : '' %>>
+                                    Menor salario
+                                </option>
+                            </select>
+
+                            <button type="submit" class="sort-button">
+                                Aplicar
+                            </button>
+
+                        </form>
+
+                    </div>
+
+
+                    <!-- TARJETAS DE VACANTES -->
+
+                    <% if (vacantes.length === 0) { %>
+
+                        <div class="empty-state">
+
+                            <div class="empty-icon">⌕</div>
+
+                            <h3>No encontramos vacantes</h3>
+
+                            <p>
+                                No hay empleos que coincidan con tus criterios
+                                de búsqueda. Intenta cambiar los filtros o
+                                utilizar otras palabras clave.
+                            </p>
+
+                            <a href="/busqueda" class="empty-button">
+                                Ver todas las vacantes
+                            </a>
+
+                        </div>
+
+                    <% } else { %>
+
+                        <div class="jobs-list">
+
+                            <% vacantes.forEach(vacante => { %>
+
+                                <article class="job-card">
+
+                                    <div class="job-card-top">
+
+                                        <div class="company-logo">
+
+                                            <% if (vacante.logoEmpresa) { %>
+
+                                                <img
+                                                    src="<%= vacante.logoEmpresa %>"
+                                                    alt="Logo de <%= vacante.empresa %>"
+                                                >
+
+                                            <% } else { %>
+
+                                                <span>
+                                                    <%= vacante.empresa.charAt(0).toUpperCase() %>
+                                                </span>
+
+                                            <% } %>
+
+                                        </div>
+
+                                        <div class="job-main-info">
+
+                                            <span class="job-sector">
+                                                <%= vacante.sector || 'Oportunidad laboral' %>
+                                            </span>
+
+                                            <h3>
+                                                <a href="/busqueda/empleo/<%= vacante.id %>">
+                                                    <%= vacante.titulo %>
+                                                </a>
+                                            </h3>
+
+                                            <p class="company-name">
+                                                <%= vacante.empresa %>
+                                            </p>
+
+                                        </div>
+
+                                        <span class="job-status">
+                                            Publicada
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="job-description">
+
+                                        <p>
+                                            <%= vacante.descripcion
+                                                ? (vacante.descripcion.length > 180
+                                                    ? vacante.descripcion.substring(0, 180) + '...'
+                                                    : vacante.descripcion)
+                                                : 'Consulta los detalles de esta oportunidad laboral.' %>
+                                        </p>
+
+                                    </div>
+
+
+                                    <div class="job-tags">
+
+                                        <span>⌖ <%= vacante.ubicacion || 'Ubicación no especificada' %></span>
+
+                                        <span>◷ <%= vacante.modalidad || 'No especificada' %></span>
+
+                                        <span>▤ <%= vacante.tipoContrato || 'No especificado' %></span>
+
+                                        <span>✧ <%= vacante.experiencia || 'No especificada' %></span>
+
+                                    </div>
+
+
+                                    <div class="job-card-footer">
+
+                                        <div class="job-salary">
+
+                                            <span>Salario mensual</span>
+
+                                            <strong>
+
+                                                <% if (vacante.salarioMinimo != null && vacante.salarioMaximo != null) { %>
+
+                                                    $<%= Number(vacante.salarioMinimo).toLocaleString('en-US') %>
+                                                    -
+                                                    $<%= Number(vacante.salarioMaximo).toLocaleString('en-US') %>
+
+                                                <% } else if (vacante.salarioMinimo != null) { %>
+
+                                                    Desde $<%= Number(vacante.salarioMinimo).toLocaleString('en-US') %>
+
+                                                <% } else if (vacante.salarioMaximo != null) { %>
+
+                                                    Hasta $<%= Number(vacante.salarioMaximo).toLocaleString('en-US') %>
+
+                                                <% } else { %>
+
+                                                    Salario no especificado
+
+                                                <% } %>
+
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div class="job-actions">
+
+                                            <a
+                                                href="/busqueda/empleo/<%= vacante.id %>"
+                                                class="details-button"
+                                            >
+                                                Ver detalles
+                                                <span>→</span>
+                                            </a>
+
+                                        </div>
+
+                                    </div>
+
+                                </article>
+
+                            <% }) %>
+
+                        </div>
+
+
+                        <!-- =====================================
+                             PAGINACIÓN
+                        ====================================== -->
+
+                        <% if (totalPaginas > 1) { %>
+
+                            <%
+                                const parametrosPaginacion = new URLSearchParams();
+
+                                Object.entries(filtros).forEach(([nombre, valor]) => {
+                                    if (valor) parametrosPaginacion.set(nombre, valor);
+                                });
+                            %>
+
+                            <nav class="pagination" aria-label="Paginación de vacantes">
+
+                                <% if (paginaActual > 1) { %>
+
+                                    <a
+                                        class="page-arrow"
+                                        href="/busqueda?<%= new URLSearchParams({
+                                            ...filtros,
+                                            pagina: paginaActual - 1
+                                        }).toString() %>"
+                                    >
+                                        ← Anterior
+                                    </a>
+
+                                <% } %>
+
+
+                                <div class="page-numbers">
+
+                                    <% for (let numero = 1; numero <= totalPaginas; numero++) { %>
+
+                                        <a
+                                            class="<%= numero === paginaActual ? 'current-page' : '' %>"
+                                            href="/busqueda?<%= new URLSearchParams({
+                                                ...filtros,
+                                                pagina: numero
+                                            }).toString() %>"
+                                        >
+                                            <%= numero %>
+                                        </a>
+
+                                    <% } %>
+
+                                </div>
+
+
+                                <% if (paginaActual < totalPaginas) { %>
+
+                                    <a
+                                        class="page-arrow"
+                                        href="/busqueda?<%= new URLSearchParams({
+                                            ...filtros,
+                                            pagina: paginaActual + 1
+                                        }).toString() %>"
+                                    >
+                                        Siguiente →
+                                    </a>
+
+                                <% } %>
+
+                            </nav>
+
+                        <% } %>
+
                     <% } %>
 
-                <% } %>
+                </div>
 
-                <% if (paginaActual < totalPaginas) { %>
-                    <a href="/busqueda?<%= new URLSearchParams({ ...filtros, pagina: paginaActual + 1 }).toString() %>">
-                        Siguiente
-                    </a>
-                <% } %>
+            </div>
 
-            </section>
-
-        <% } %>
+        </section>
 
     </main>
 
-    <footer>
-        <hr>
-        <p>TalentoHub - Portal de oportunidades laborales.</p>
+
+    <!-- =====================================
+         PIE DE PÁGINA
+    ====================================== -->
+
+    <footer class="main-footer">
+
+        <div class="footer-container">
+
+            <a href="/" class="brand footer-brand">
+                <span class="brand-icon">T</span>
+                <span>Talento<span class="brand-highlight">Hub</span></span>
+            </a>
+
+            <p>
+                Conectando talentos con nuevas oportunidades.
+            </p>
+
+            <span class="copyright">
+                © <%= new Date().getFullYear() %> TalentoHub.
+                Todos los derechos reservados.
+            </span>
+
+        </div>
+
     </footer>
 
 </body>
