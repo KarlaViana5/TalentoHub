@@ -1,0 +1,165 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body>
+
+    <%- include('partials/menu', { activo: 'postulaciones' }) %>
+
+    <main class="emp-main">
+
+        <section class="emp-contenido">
+            <p class="emp-etiqueta">Postulaciones de</p>
+
+            <div class="emp-titulo-fila">
+                <form method="get" action="/empresarial/postulaciones" class="emp-selector-oferta">
+                    <span class="emp-avatar"><%= vacante.titulo.charAt(0) %></span>
+                    <select name="vacante" onchange="this.form.submit()">
+                        <% vacantes.forEach(v => { %>
+                            <option value="<%= v.id %>" <%= v.id === vacante.id ? 'selected' : '' %>><%= v.titulo %> (<%= v.estado %>)</option>
+                        <% }) %>
+                    </select>
+                </form>
+
+                <div class="emp-acciones">
+                    <a class="emp-btn" href="/empresarial/postulaciones/exportar?vacante=<%= vacante.id %>">⭳ Exportar</a>
+                    <% if (vacante.estado !== 'Cancelada') { %>
+                        <a class="emp-btn" href="/empresarial/publicar?id=<%= vacante.id %>">✎ Editar oferta</a>
+                    <% } %>
+                </div>
+            </div>
+
+            <nav class="emp-pestanas">
+                <a class="<%= !filtros.estado ? 'activo' : '' %>" href="/empresarial/postulaciones?vacante=<%= vacante.id %>">
+                    Todos <span><%= conteo.Todos %></span>
+                </a>
+                <% estados.forEach(estado => { %>
+                    <a class="<%= filtros.estado === estado ? 'activo' : '' %>" href="/empresarial/postulaciones?vacante=<%= vacante.id %>&estado=<%= estado %>">
+                        <%= estado %> <span><%= conteo[estado] %></span>
+                    </a>
+                <% }) %>
+            </nav>
+
+            <form class="emp-filtros" method="get" action="/empresarial/postulaciones">
+                <input type="hidden" name="vacante" value="<%= vacante.id %>">
+                <input type="hidden" name="estado" value="<%= filtros.estado %>">
+                <input type="search" name="q" value="<%= filtros.q %>" placeholder="🔍 Buscar candidato...">
+
+                <select name="experienciaMin" onchange="this.form.submit()">
+                    <option value="">Experiencia</option>
+                    <% [1, 3, 5].forEach(n => { %>
+                        <option value="<%= n %>" <%= Number(filtros.experienciaMin) === n ? 'selected' : '' %>><%= n %>+ años</option>
+                    <% }) %>
+                </select>
+
+                <select name="compatibilidadMin" onchange="this.form.submit()">
+                    <option value="">Compatibilidad</option>
+                    <% [50, 70, 90].forEach(n => { %>
+                        <option value="<%= n %>" <%= Number(filtros.compatibilidadMin) === n ? 'selected' : '' %>>Compatibilidad ≥ <%= n %>%</option>
+                    <% }) %>
+                </select>
+
+                <select name="orden" onchange="this.form.submit()">
+                    <option value="fecha">Más recientes</option>
+                    <option value="compatibilidad" <%= filtros.orden === 'compatibilidad' ? 'selected' : '' %>>Mayor compatibilidad</option>
+                </select>
+
+                <button class="emp-btn" type="submit">Buscar</button>
+            </form>
+
+            <div class="emp-tarjeta">
+                <% if (postulaciones.length === 0) { %>
+                    <p class="emp-vacio">No hay candidatos con estos filtros.</p>
+                <% } else { %>
+                    <table class="emp-tabla">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="seleccionar-todos" title="Seleccionar todos"></th>
+                                <th>Candidato</th>
+                                <th>Compatibilidad</th>
+                                <th>Experiencia</th>
+                                <th>Postulación</th>
+                                <th>Estado</th>
+                                <th style="text-align: right;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% postulaciones.forEach(p => { %>
+                                <%
+                                    const iniciales = p.candidato.nombre.split(' ').map(n => n.charAt(0)).join('');
+                                    const nivel = p.compatibilidad >= 80 ? 'buena' : p.compatibilidad >= 60 ? 'media' : 'baja';
+                                %>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="seleccion" name="ids" value="<%= p.id %>" form="form-masivo" data-correo="<%= p.candidato.correo %>">
+                                    </td>
+                                    <td>
+                                        <div class="emp-nombre">
+                                            <span class="emp-avatar"><%= iniciales %></span>
+                                            <div>
+                                                <a href="/empresarial/candidatos/<%= p.id %>"><strong><%= p.candidato.nombre %></strong></a><br>
+                                                <small><%= p.candidato.cargo %> · <%= p.candidato.empresaActual %></small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="emp-compatibilidad">
+                                            <div class="emp-barra"><div class="nivel-<%= nivel %>" style="width: <%= p.compatibilidad %>%;"></div></div>
+                                            <strong class="texto-<%= nivel %>"><%= p.compatibilidad %>%</strong>
+                                        </div>
+                                    </td>
+                                    <td><%= p.candidato.aniosExperiencia %> <%= p.candidato.aniosExperiencia === 1 ? 'año' : 'años' %></td>
+                                    <td><%= p.hace %></td>
+                                    <td>
+                                        <span class="emp-estado emp-estado-<%= p.estado.toLowerCase() %>"><%= p.estado %></span>
+                                    </td>
+                                    <td>
+                                        <div class="emp-acciones">
+                                            <a class="emp-btn emp-icono" href="/empresarial/candidatos/<%= p.id %>" title="Ver perfil y CV">📄</a>
+
+                                            <% if (p.estado !== 'Preseleccionado') { %>
+                                                <form method="post" action="/empresarial/postulaciones/<%= p.id %>/estado">
+                                                    <input type="hidden" name="estado" value="Preseleccionado">
+                                                    <input type="hidden" name="volver" value="<%= volver %>">
+                                                    <button class="emp-btn emp-icono emp-btn-exito" type="submit" title="Preseleccionar">✓</button>
+                                                </form>
+                                            <% } %>
+
+                                            <% if (p.estado !== 'Rechazado') { %>
+                                                <form method="post" action="/empresarial/postulaciones/<%= p.id %>/estado"
+                                                      onsubmit="return confirm('¿Rechazar a <%= p.candidato.nombre %>?');">
+                                                    <input type="hidden" name="estado" value="Rechazado">
+                                                    <input type="hidden" name="volver" value="<%= volver %>">
+                                                    <button class="emp-btn emp-icono emp-btn-peligro" type="submit" title="Rechazar">✕</button>
+                                                </form>
+                                            <% } %>
+
+                                            <a class="emp-btn emp-icono" href="mailto:<%= p.candidato.correo %>?subject=<%= encodeURIComponent(vacante.titulo + ' - TalentoHub') %>" title="Contactar">✉</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                <% } %>
+
+                <form id="form-masivo" class="emp-pie-tabla" method="post" action="/empresarial/postulaciones/estado">
+                    <input type="hidden" name="volver" value="<%= volver %>">
+                    <span id="contador-seleccion">0 seleccionados · <%= postulaciones.length %> candidatos</span>
+                    <span class="emp-acciones">
+                        <button class="emp-btn" type="submit" name="estado" value="Preseleccionado" disabled>Preseleccionar</button>
+                        <button class="emp-btn emp-btn-peligro" type="submit" name="estado" value="Rechazado" disabled
+                                onclick="return confirm('¿Rechazar a los candidatos seleccionados?');">Rechazar</button>
+                        <button class="emp-btn emp-btn-primario" type="button" id="btn-contactar" disabled>✉ Contactar</button>
+                    </span>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <% if (mensaje) { %>
+        <div class="emp-toast"><%= mensaje %></div>
+    <% } %>
+
+    <script src="/js/postulaciones.js"></script>
+
+    <%- include('../partials/footer') %>

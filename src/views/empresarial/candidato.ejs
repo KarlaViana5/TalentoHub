@@ -1,0 +1,145 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body>
+
+    <%- include('partials/menu', { activo: 'postulaciones' }) %>
+
+    <main class="emp-main">
+
+        <section class="emp-contenido">
+            <p class="emp-migas">
+                <a href="/empresarial/postulaciones">Postulaciones</a> /
+                <a href="/empresarial/postulaciones?vacante=<%= vacante.id %>"><%= vacante.titulo %></a> /
+                <strong><%= candidato.nombre %></strong>
+            </p>
+
+            <div class="emp-tarjeta emp-perfil-cabecera">
+                <span class="emp-avatar emp-avatar-grande"><%= iniciales %></span>
+
+                <div class="emp-perfil-datos">
+                    <h1><%= candidato.nombre %></h1>
+                    <p><%= candidato.cargo %><%= candidato.empresaActual ? ' · ' + candidato.empresaActual : '' %><%= candidato.ubicacion ? ' · ' + candidato.ubicacion : '' %></p>
+                    <p class="emp-ayuda">
+                        ✉ <%= candidato.correo %>
+                        <% if (candidato.telefono) { %> &nbsp; ☎ <%= candidato.telefono %><% } %>
+                        &nbsp; 🕑 Postuló <%= hace.toLowerCase() %>
+                    </p>
+                </div>
+
+                <% const nivel = postulacion.compatibilidad >= 80 ? 'buena' : postulacion.compatibilidad >= 60 ? 'media' : 'baja'; %>
+                <div class="emp-anillo nivel-<%= nivel %>" style="--valor: <%= postulacion.compatibilidad %>;">
+                    <strong><%= postulacion.compatibilidad %>%</strong>
+                    <small>Compatibilidad</small>
+                </div>
+
+                <div class="emp-perfil-acciones">
+                    <form method="post" action="/empresarial/candidatos/<%= postulacion.id %>/estado">
+                        <select name="estado" class="emp-select-estado emp-estado-<%= postulacion.estado.toLowerCase() %>" onchange="this.form.submit()" title="Cambiar estado">
+                            <% estados.forEach(estado => { %>
+                                <option <%= postulacion.estado === estado ? 'selected' : '' %>><%= estado %></option>
+                            <% }) %>
+                        </select>
+                    </form>
+
+                    <div class="emp-acciones">
+                        <% if (postulacion.estado !== 'Rechazado') { %>
+                            <form method="post" action="/empresarial/candidatos/<%= postulacion.id %>/estado"
+                                  onsubmit="return confirm('¿Rechazar a <%= candidato.nombre %>?');">
+                                <input type="hidden" name="estado" value="Rechazado">
+                                <button class="emp-btn emp-btn-peligro" type="submit">Rechazar</button>
+                            </form>
+                        <% } %>
+                        <a class="emp-btn emp-btn-primario" href="mailto:<%= candidato.correo %>?subject=<%= encodeURIComponent(vacante.titulo + ' - TalentoHub') %>">✉ Contactar</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="emp-perfil">
+                <div>
+                    <div class="emp-tarjeta emp-bloque">
+                        <h3>Habilidades</h3>
+                        <div class="emp-chips">
+                            <% candidato.habilidades.forEach(h => { %>
+                                <% if (coincidentes.includes(h)) { %>
+                                    <span class="emp-chip emp-chip-ok" title="Coincide con la vacante">✓ <%= h %></span>
+                                <% } else { %>
+                                    <span class="emp-chip"><%= h %></span>
+                                <% } %>
+                            <% }) %>
+                        </div>
+                        <p class="emp-ayuda">En verde las que coinciden con los requisitos de la vacante.</p>
+                    </div>
+
+                    <div class="emp-tarjeta emp-bloque">
+                        <h3>Experiencia</h3>
+                        <% if (candidato.experiencia.length === 0) { %>
+                            <p class="emp-ayuda">Sin experiencia registrada.</p>
+                        <% } %>
+                        <ul class="emp-linea">
+                            <% candidato.experiencia.forEach(exp => { %>
+                                <li>
+                                    <span class="emp-avatar"><%= (exp.empresa || '?').charAt(0) %></span>
+                                    <div>
+                                        <strong><%= exp.puesto %> · <%= exp.empresa %></strong><br>
+                                        <small><%= exp.periodo %></small>
+                                        <% if (exp.descripcion) { %><p><%= exp.descripcion %></p><% } %>
+                                    </div>
+                                </li>
+                            <% }) %>
+                        </ul>
+
+                        <h3>Formación</h3>
+                        <ul class="emp-linea">
+                            <% candidato.formacion.forEach(f => { %>
+                                <li>
+                                    <span class="emp-avatar">🎓</span>
+                                    <div>
+                                        <strong><%= f.titulo %></strong><br>
+                                        <small><%= f.institucion %> · <%= f.periodo %></small>
+                                    </div>
+                                </li>
+                            <% }) %>
+                        </ul>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="emp-tarjeta emp-bloque">
+                        <div class="emp-titulo-fila">
+                            <h3>Currículum</h3>
+                            <div class="emp-acciones">
+                                <a class="emp-btn" href="/empresarial/candidatos/<%= postulacion.id %>/cv" target="_blank">👁 Pantalla completa</a>
+                                <a class="emp-btn" href="/empresarial/candidatos/<%= postulacion.id %>/cv/descargar">⭳ Descargar</a>
+                            </div>
+                        </div>
+                        <iframe class="emp-visor-cv" src="/empresarial/candidatos/<%= postulacion.id %>/cv" title="Currículum de <%= candidato.nombre %>"></iframe>
+                        <small class="emp-ayuda"><%= candidato.cv || 'CV generado desde el perfil' %></small>
+                    </div>
+
+                    <div class="emp-tarjeta emp-bloque" id="notas">
+                        <h3>Notas internas</h3>
+                        <p class="emp-ayuda">Solo las ve tu equipo, el candidato no.</p>
+
+                        <% postulacion.notas.forEach(nota => { %>
+                            <div class="emp-nota">
+                                <small><strong><%= nota.autor %></strong> · <%= haceCuanto(nota.fecha).toLowerCase() %></small>
+                                <p><%= nota.texto %></p>
+                            </div>
+                        <% }) %>
+
+                        <form class="emp-form emp-nota-form" method="post" action="/empresarial/candidatos/<%= postulacion.id %>/notas">
+                            <textarea name="texto" placeholder="Escribe una nota..." required maxlength="1000"></textarea>
+                            <button class="emp-btn emp-btn-primario" type="submit">Agregar nota</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <% if (mensaje) { %>
+        <div class="emp-toast"><%= mensaje %></div>
+    <% } %>
+
+    <%- include('../partials/footer') %>

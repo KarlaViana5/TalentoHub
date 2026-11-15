@@ -1,0 +1,111 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body>
+
+    <%- include('partials/menu', { activo: 'vacantes' }) %>
+
+    <main class="emp-main">
+
+        <section class="emp-contenido">
+            <p class="emp-etiqueta">Ofertas</p>
+
+            <div class="emp-titulo-fila">
+                <h1>Mis vacantes</h1>
+                <a class="emp-btn emp-btn-primario" href="/empresarial/publicar">+ Publicar empleo</a>
+            </div>
+
+            <nav class="emp-pestanas">
+                <a class="<%= !estadoActual ? 'activo' : '' %>" href="/empresarial/vacantes">
+                    Todas <span><%= conteo.Todas %></span>
+                </a>
+                <% estados.forEach(estado => { %>
+                    <a class="<%= estadoActual === estado ? 'activo' : '' %>" href="/empresarial/vacantes?estado=<%= estado %>">
+                        <%= estado %> <span><%= conteo[estado] %></span>
+                    </a>
+                <% }) %>
+            </nav>
+
+            <div class="emp-tarjeta">
+                <% if (vacantes.length === 0) { %>
+                    <p class="emp-vacio">No hay vacantes en este estado.</p>
+                <% } else { %>
+                    <table class="emp-tabla">
+                        <thead>
+                            <tr>
+                                <th>Vacante</th>
+                                <th>Empresa</th>
+                                <th>Publicada</th>
+                                <th>Cierre</th>
+                                <th>Postulantes</th>
+                                <th>Vistas</th>
+                                <th>Estado</th>
+                                <th style="text-align: right;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% vacantes.forEach(vacante => { %>
+                                <tr>
+                                    <td><strong><%= vacante.titulo %></strong></td>
+                                    <td><%= vacante.empresa ? vacante.empresa.nombre : '-' %></td>
+                                    <td><%= vacante.fechaPublicacion %></td>
+                                    <td><%= vacante.fechaCierre || '-' %></td>
+                                    <td>
+                                        <a href="/empresarial/postulaciones?vacante=<%= vacante.id %>"><%= vacante.totalPostulantes %></a>
+                                    </td>
+                                    <td><%= vacante.vistas.toLocaleString('es') %></td>
+                                    <td>
+                                        <span class="emp-estado emp-estado-<%= vacante.estado.toLowerCase() %>"><%= vacante.estado %></span>
+                                    </td>
+                                    <td>
+                                        <div class="emp-acciones">
+                                            <% if (vacante.estado !== 'Cancelada') { %>
+                                                <a class="emp-btn emp-icono" href="/empresarial/publicar?id=<%= vacante.id %>" title="Editar">✎</a>
+                                            <% } %>
+
+                                            <% if (vacante.estado === 'Activa') { %>
+                                                <form method="post" action="/empresarial/vacantes/<%= vacante.id %>/estado">
+                                                    <input type="hidden" name="estado" value="Inactiva">
+                                                    <button class="emp-btn emp-icono" type="submit" title="Inactivar">⏸</button>
+                                                </form>
+                                            <% } %>
+
+                                            <% if (vacante.estado === 'Inactiva') { %>
+                                                <form method="post" action="/empresarial/vacantes/<%= vacante.id %>/estado">
+                                                    <input type="hidden" name="estado" value="Activa">
+                                                    <button class="emp-btn emp-icono" type="submit" title="Reactivar">▶</button>
+                                                </form>
+                                            <% } %>
+
+                                            <% if (vacante.estado === 'Activa' || vacante.estado === 'Inactiva') { %>
+                                                <form method="post" action="/empresarial/vacantes/<%= vacante.id %>/estado"
+                                                      onsubmit="return confirm('¿Cancelar esta vacante? Ya no podrá reactivarse.');">
+                                                    <input type="hidden" name="estado" value="Cancelada">
+                                                    <button class="emp-btn emp-icono emp-btn-peligro" type="submit" title="Cancelar">⊘</button>
+                                                </form>
+                                            <% } %>
+
+                                            <form method="post" action="/empresarial/vacantes/<%= vacante.id %>/eliminar"
+                                                  onsubmit="return confirm('¿Eliminar esta vacante y sus postulaciones? Esta acción no se puede deshacer.');">
+                                                <button class="emp-btn emp-icono emp-btn-peligro" type="submit" title="Eliminar">🗑</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                <% } %>
+
+                <p class="emp-pie-tabla">
+                    <span><%= vacantes.length %> vacantes</span>
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <% if (mensaje) { %>
+        <div class="emp-toast"><%= mensaje %></div>
+    <% } %>
+
+    <%- include('../partials/footer') %>
