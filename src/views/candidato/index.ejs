@@ -1,29 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<%- include('../partials/head', { titulo: titulo }) %>
+    <title><%= titulo %> | TalentoHub</title>
+
+    <link rel="stylesheet" href="/css/busqueda.css">
+    <link rel="stylesheet" href="/css/candidato.css">
+</head>
 
 <body>
 
-    <%- include('../partials/header', {
-        titulo: titulo,
-        descripcion: descripcion
-    }) %>
+    <!-- =====================================
+         NAVEGACIÓN PRINCIPAL
+    ====================================== -->
 
-    <%- include('../partials/navigation') %>
+    <header class="main-header">
+        <div class="header-container">
+
+            <a href="/" class="brand">
+                <span class="brand-icon">T</span>
+                <span>Talento<span class="brand-highlight">Hub</span></span>
+            </a>
+
+            <nav class="main-nav">
+                <a href="/">Inicio</a>
+                <a href="/busqueda">Vacantes</a>
+                <a href="/candidato" class="active">Candidato</a>
+                <a href="/recursos">Recursos</a>
+                <a href="/foros">Foros</a>
+            </nav>
+
+            <div class="header-actions">
+                <a href="/busqueda" class="header-link">Explorar empleos</a>
+            </div>
+
+        </div>
+    </header>
+
+
+    <!-- =====================================
+         CONTENIDO PRINCIPAL
+    ====================================== -->
 
     <main>
 
-        <h2>Opciones del candidato</h2>
+        <!-- HERO DE PRESENTACIÓN -->
 
-        <ul>
-            <li>Mi perfil profesional</li>
-            <li>Mis postulaciones</li>
-            <li>Mis metas de empleo</li>
-            <li>Mis datos personales</li>
-        </ul>
+        <section class="search-hero">
+
+            <div class="hero-content">
+
+                <span class="eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    ÁREA DEL CANDIDATO
+                </span>
+
+                <h1>
+                    Gestiona tu perfil e
+                    <span>impulsa tu carrera.</span>
+                </h1>
+
+                <p>
+                    Mantén actualizada tu información profesional, da seguimiento a tus postulaciones,
+                    configura alertas de empleo y comparte valoraciones sobre empresas.
+                </p>
+
+            </div>
+
+            <div class="hero-decoration decoration-one"></div>
+            <div class="hero-decoration decoration-two"></div>
+
+        </section>
+
+
+        <!-- SECCIÓN PRINCIPAL DEL MÓDULO -->
+
+        <section class="results-section">
+
+            <div class="results-heading">
+
+                <div>
+                    <span class="section-eyebrow">PANEL PROFESIONAL</span>
+                    <h2>Mi espacio de empleo</h2>
+                    <p>Consulta y actualiza toda tu actividad como candidato en un solo lugar.</p>
+                </div>
+
+                <% if (perfil) { %>
+                    <div class="results-counter">
+                        <strong><%= postulaciones.length %></strong>
+                        <span>postulaciones activas</span>
+                    </div>
+                <% } %>
+
+            </div>
+
+            <% if (mensaje) { %>
+                <div class="flash-alert success">
+                    <span>✓</span>
+                    <span><%= mensaje %></span>
+                </div>
+            <% } %>
+
+            <% if (error) { %>
+                <div class="flash-alert error">
+                    <span>!</span>
+                    <span><%= error %></span>
+                </div>
+            <% } %>
+
+            <% if (!perfil) { %>
+
+                <div class="empty-state">
+                    <div class="empty-icon">⌕</div>
+                    <h3>No se encontró un perfil de candidato</h3>
+                    <p>Registra un candidato en la base de datos de Supabase para comenzar a gestionar tu perfil.</p>
+                </div>
+
+            <% } else { %>
+
+                <div class="results-layout">
+
+                    <!-- =====================================
+                         BARRA LATERAL DE RESUMEN Y NAVEGACIÓN
+                    ====================================== -->
+
+                    <aside class="filters-panel">
+
+                        <div class="candidate-summary">
+                            <div class="candidate-avatar">
+                                <%= perfil.nombre.charAt(0).toUpperCase() %>
+                            </div>
+                            <h3><%= perfil.nombre %></h3>
+                            <p class="candidate-role"><%= perfil.cargo || 'Candidato TalentoHub' %></p>
+                            <p class="candidate-meta">⌖ <%= perfil.ubicacion || 'Ubicación no especificada' %></p>
+                        </div>
+
+                        <div class="candidate-stats">
+                            <div class="stat-box">
+                                <strong><%= postulaciones.length %></strong>
+                                <span>Postulaciones</span>
+                            </div>
+                            <div class="stat-box">
+                                <strong><%= alertas.length %></strong>
+                                <span>Alertas</span>
+                            </div>
+                            <div class="stat-box">
+                                <strong><%= valoraciones.length %></strong>
+                                <span>Reseñas</span>
+                            </div>
+                        </div>
+
+                        <nav class="sidebar-nav" aria-label="Secciones del candidato">
+                            <a href="#seccion-perfil">
+                                <span>1. Perfil del candidato</span>
+                                <span>→</span>
+                            </a>
+                            <a href="#seccion-postulaciones">
+                                <span>2. Historial de postulaciones</span>
+                                <span>→</span>
+                            </a>
+                            <a href="#seccion-alertas">
+                                <span>3. Alertas de empleo</span>
+                                <span>→</span>
+                            </a>
+                            <a href="#seccion-valoraciones">
+                                <span>4. Valoraciones</span>
+                                <span>→</span>
+                            </a>
+                        </nav>
+
+                    </aside>
+
+
+                    <!-- =====================================
+                         TARJETAS DE GESTIÓN DEL CANDIDATO
+                    ====================================== -->
+
+                    <div class="jobs-content">
+
+                        <!-- 1. PERFIL DEL CANDIDATO -->
+
+                        <article id="seccion-perfil" class="job-card module-card">
+
+                            <div class="module-card-header">
+                                <div>
+                                    <span class="job-sector">INFORMACIÓN PERSONAL Y PROFESIONAL</span>
+                                    <h3>Perfil del candidato</h3>
+                                    <p>Correo de cuenta: <strong><%= perfil.correo %></strong></p>
+                                </div>
+                                <span class="job-status">Activo</span>
+                            </div>
+
+                            <form action="/candidato/perfil/<%= perfil.id_candidato %>" method="POST" class="candidate-form">
+
+                                <div class="form-grid-2">
+                                    <div class="field-box">
+                                        <label for="nombre">Nombre completo *</label>
+                                        <input type="text" id="nombre" name="nombre" value="<%= perfil.nombre %>" required>
+                                    </div>
+
+                                    <div class="field-box">
+                                        <label for="cargo">Cargo o título profesional</label>
+                                        <input type="text" id="cargo" name="cargo" value="<%= perfil.cargo || '' %>" placeholder="Ej. Desarrollador Full Stack">
+                                    </div>
+                                </div>
+
+                                <div class="form-grid-2">
+                                    <div class="field-box">
+                                        <label for="empresa_actual">Empresa actual</label>
+                                        <input type="text" id="empresa_actual" name="empresa_actual" value="<%= perfil.empresa_actual || '' %>" placeholder="Ej. Tech Solutions">
+                                    </div>
+
+                                    <div class="field-box">
+                                        <label for="ubicacion">Ubicación</label>
+                                        <input type="text" id="ubicacion" name="ubicacion" value="<%= perfil.ubicacion || '' %>" placeholder="Ciudad o departamento">
+                                    </div>
+                                </div>
+
+                                <div class="form-grid-2">
+                                    <div class="field-box">
+                                        <label for="telefono">Teléfono de contacto</label>
+                                        <input type="text" id="telefono" name="telefono" value="<%= perfil.telefono || '' %>" placeholder="Ej. 7000-0000">
+                                    </div>
+
+                                    <div class="field-box">
+                                        <label for="anios_experiencia">Años de experiencia</label>
+                                        <input type="number" id="anios_experiencia" name="anios_experiencia" min="0" value="<%= perfil.anios_experiencia || 0 %>">
+                                    </div>
+                                </div>
+
+                                <div class="form-grid-2">
+                                    <div class="field-box">
+                                        <label for="habilidades">Habilidades (separadas por coma)</label>
+                                        <input type="text" id="habilidades" name="habilidades" value="<%= (perfil.habilidades || []).join(', ') %>" placeholder="Node.js, SQL, JavaScript">
+                                    </div>
+
+                                    <div class="field-box">
+                                        <label for="cv_url">Enlace a CV (URL)</label>
+                                        <input type="url" id="cv_url" name="cv_url" value="<%= perfil.cv_url || '' %>" placeholder="https://...">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-primary">
+                                    Guardar cambios del perfil
+                                </button>
+
+                            </form>
+
+                        </article>
+
+
+                        <!-- 2. HISTORIAL DE POSTULACIONES -->
+
+                        <article id="seccion-postulaciones" class="job-card module-card">
+
+                            <div class="module-card-header">
+                                <div>
+                                    <span class="job-sector">SEGUIMIENTO DE VACANTES</span>
+                                    <h3>Historial de postulaciones</h3>
+                                    <p>Consulta el estado de las vacantes a las que has aplicado.</p>
+                                </div>
+                                <span class="job-status"><%= postulaciones.length %> registradas</span>
+                            </div>
+
+                            <% if (postulaciones.length === 0) { %>
+                                <p style="color: #64748b; margin: 0;">Aún no tienes postulaciones registradas. Explora las vacantes disponibles para aplicar.</p>
+                            <% } else { %>
+                                <div class="inner-list">
+                                    <% postulaciones.forEach(p => { %>
+                                        <div class="inner-item">
+                                            <div class="inner-item-info">
+                                                <h4>
+                                                    <a href="/busqueda/empleo/<%= p.id_vacante %>" style="color: inherit; text-decoration: none;">
+                                                        <%= p.titulo_vacante %>
+                                                    </a>
+                                                </h4>
+                                                <p>
+                                                    <strong><%= p.empresa %></strong> ·
+                                                    <%= p.modalidad || 'Modalidad N/A' %> ·
+                                                    <%= p.ubicacion || 'Ubicación N/A' %> ·
+                                                    Aplicado el <%= new Date(p.fecha_postulacion).toLocaleDateString() %>
+                                                </p>
+                                            </div>
+
+                                            <div class="inner-actions">
+                                                <span class="badge-pill badge-<%= p.estado %>">
+                                                    <%= p.estado %>
+                                                </span>
+
+                                                <% if (p.estado === 'nuevo') { %>
+                                                    <form action="/candidato/postulaciones/<%= p.id_postulacion %>/cancelar" method="POST">
+                                                        <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
+                                                        <button type="submit" class="btn-danger">Cancelar</button>
+                                                    </form>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    <% }) %>
+                                </div>
+                            <% } %>
+
+                        </article>
+
+
+                        <!-- 3. ALERTAS DE EMPLEO -->
+
+                        <article id="seccion-alertas" class="job-card module-card">
+
+                            <div class="module-card-header">
+                                <div>
+                                    <span class="job-sector">NOTIFICACIONES PERSONALIZADAS</span>
+                                    <h3>Alertas de empleo</h3>
+                                    <p>Crea alertas según el puesto, ubicación y modalidad que buscas.</p>
+                                </div>
+                                <span class="job-status"><%= alertas.length %> alertas</span>
+                            </div>
+
+                            <form action="/candidato/alertas" method="POST" class="form-grid-4">
+                                <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
+
+                                <div class="field-box">
+                                    <label for="palabras_clave">Palabras clave *</label>
+                                    <input type="text" id="palabras_clave" name="palabras_clave" placeholder="Ej. Backend, Diseño UX" required>
+                                </div>
+
+                                <div class="field-box">
+                                    <label for="alerta_ubicacion">Ubicación</label>
+                                    <input type="text" id="alerta_ubicacion" name="ubicacion" placeholder="Ciudad">
+                                </div>
+
+                                <div class="field-box">
+                                    <label for="alerta_modalidad">Modalidad</label>
+                                    <select id="alerta_modalidad" name="modalidad">
+                                        <option value="">Todas</option>
+                                        <option value="Remoto">Remoto</option>
+                                        <option value="Híbrido">Híbrido</option>
+                                        <option value="Presencial">Presencial</option>
+                                    </select>
+                                </div>
+
+                                <div class="field-box">
+                                    <label for="frecuencia">Frecuencia</label>
+                                    <select id="frecuencia" name="frecuencia">
+                                        <option value="diaria">Diaria</option>
+                                        <option value="semanal">Semanal</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <button type="submit" class="btn-primary">Crear alerta</button>
+                                </div>
+                            </form>
+
+                            <% if (alertas.length === 0) { %>
+                                <p style="color: #64748b; margin-top: 1rem;">No tienes alertas de empleo configuradas todavía.</p>
+                            <% } else { %>
+                                <div class="inner-list">
+                                    <% alertas.forEach(a => { %>
+                                        <div class="inner-item">
+                                            <div class="inner-item-info">
+                                                <h4><%= a.palabras_clave %></h4>
+                                                <p>
+                                                    Modalidad: <%= a.modalidad || 'Cualquiera' %> ·
+                                                    Ubicación: <%= a.ubicacion || 'Cualquiera' %> ·
+                                                    Frecuencia: <%= a.frecuencia %>
+                                                </p>
+                                            </div>
+
+                                            <div class="inner-actions">
+                                                <span class="badge-pill <%= a.activa ? 'badge-activa' : 'badge-pausada' %>">
+                                                    <%= a.activa ? 'Activa' : 'Pausada' %>
+                                                </span>
+
+                                                <form action="/candidato/alertas/<%= a.id_alerta %>/estado" method="POST">
+                                                    <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
+                                                    <button type="submit" class="btn-secondary">
+                                                        <%= a.activa ? 'Pausar' : 'Activar' %>
+                                                    </button>
+                                                </form>
+
+                                                <form action="/candidato/alertas/<%= a.id_alerta %>/eliminar" method="POST">
+                                                    <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
+                                                    <button type="submit" class="btn-danger">Eliminar</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    <% }) %>
+                                </div>
+                            <% } %>
+
+                        </article>
+
+
+                        <!-- 4. VALORACIONES -->
+
+                        <article id="seccion-valoraciones" class="job-card module-card">
+
+                            <div class="module-card-header">
+                                <div>
+                                    <span class="job-sector">EXPERIENCIAS Y RESEÑAS</span>
+                                    <h3>Valoraciones de empresas</h3>
+                                    <p>Califica tus procesos de selección o experiencia laboral en empresas.</p>
+                                </div>
+                                <span class="job-status"><%= valoraciones.length %> publicadas</span>
+                            </div>
+
+                            <% if (empresas.length === 0) { %>
+                                <p style="color: #64748b;">No hay empresas activas registradas para valorar en este momento.</p>
+                            <% } else { %>
+                                <form action="/candidato/valoraciones" method="POST" class="candidate-form">
+                                    <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
+
+                                    <div class="form-grid-2">
+                                        <div class="field-box">
+                                            <label for="empresa_id">Empresa *</label>
+                                            <select id="empresa_id" name="empresa_id" required>
+                                                <option value="">Selecciona una empresa...</option>
+                                                <% empresas.forEach(emp => { %>
+                                                    <option value="<%= emp.id_empresa %>"><%= emp.nombre %></option>
+                                                <% }) %>
+                                            </select>
+                                        </div>
+
+                                        <div class="field-box">
+                                            <label for="puntuacion">Puntuación *</label>
+                                            <select id="puntuacion" name="puntuacion" required>
+                                                <option value="5">★★★★★ (5 - Excelente)</option>
+                                                <option value="4">★★★★☆ (4 - Muy buena)</option>
+                                                <option value="3">★★★☆☆ (3 - Regular)</option>
+                                                <option value="2">★★☆☆☆ (2 - Deficiente)</option>
+                                                <option value="1">★☆☆☆☆ (1 - Mala)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="field-box">
+                                        <label for="val_titulo">Título de la valoración</label>
+                                        <input type="text" id="val_titulo" name="titulo" placeholder="Ej. Excelente ambiente y proceso claro">
+                                    </div>
+
+                                    <div class="field-box">
+                                        <label for="comentario">Comentario *</label>
+                                        <textarea id="comentario" name="comentario" rows="3" placeholder="Comparte tu experiencia..." required></textarea>
+                                    </div>
+
+                                    <button type="submit" class="btn-primary">Publicar valoración</button>
+                                </form>
+                            <% } %>
+
+                            <% if (valoraciones.length > 0) { %>
+                                <div class="inner-list">
+                                    <% valoraciones.forEach(v => { %>
+                                        <div class="inner-item-column">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                                                <h4 style="margin: 0; color: #0f172a;"><%= v.empresa %></h4>
+                                                <span class="stars-tag">★ <%= v.puntuacion %>/5</span>
+                                            </div>
+
+                                            <% if (v.titulo) { %>
+                                                <p style="margin: 0.35rem 0 0.2rem; font-weight: 600; color: #1e293b;"><%= v.titulo %></p>
+                                            <% } %>
+
+                                            <p style="margin: 0.25rem 0; color: #475569; font-size: 0.92rem;"><%= v.comentario %></p>
+                                            <small style="color: #94a3b8;">Publicado el <%= new Date(v.fecha_valoracion).toLocaleDateString() %></small>
+
+                                            <details class="edit-details">
+                                                <summary>Editar valoración</summary>
+                                                <form action="/candidato/valoraciones/<%= v.id_valoracion %>/actualizar" method="POST" class="candidate-form" style="margin-top: 0.75rem;">
+                                                    <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
+
+                                                    <div class="form-grid-2">
+                                                        <div class="field-box">
+                                                            <label>Puntuación</label>
+                                                            <select name="puntuacion" required>
+                                                                <% [5, 4, 3, 2, 1].forEach(num => { %>
+                                                                    <option value="<%= num %>" <%= v.puntuacion === num ? 'selected' : '' %>><%= num %> estrellas</option>
+                                                                <% }) %>
+                                                            </select>
+                                                        </div>
+
+                                                        <div class="field-box">
+                                                            <label>Título</label>
+                                                            <input type="text" name="titulo" value="<%= v.titulo || '' %>">
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="field-box">
+                                                        <label>Comentario</label>
+                                                        <textarea name="comentario" rows="2" required><%= v.comentario %></textarea>
+                                                    </div>
+
+                                                    <button type="submit" class="btn-secondary" style="width: fit-content;">Guardar cambios</button>
+                                                </form>
+                                            </details>
+                                        </div>
+                                    <% }) %>
+                                </div>
+                            <% } %>
+
+                        </article>
+
+                    </div>
+
+                </div>
+
+            <% } %>
+
+        </section>
 
     </main>
 
-    <%- include('../partials/footer') %>
+
+    <!-- =====================================
+         PIE DE PÁGINA
+    ====================================== -->
+
+    <footer class="main-footer">
+
+        <div class="footer-container">
+
+            <a href="/" class="brand footer-brand">
+                <span class="brand-icon">T</span>
+                <span>Talento<span class="brand-highlight">Hub</span></span>
+            </a>
+
+            <p>
+                Conectando talentos con nuevas oportunidades.
+            </p>
+
+            <span class="copyright">
+                © <%= new Date().getFullYear() %> TalentoHub.
+                Todos los derechos reservados.
+            </span>
+
+        </div>
+
+    </footer>
 
 </body>
 </html>
