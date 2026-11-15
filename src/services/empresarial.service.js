@@ -1,3 +1,5 @@
+const { pool } = require('../config/database');
+
 // usuario simulado
 const empleadorActual = {
     nombre: 'María Rodríguez',
@@ -7,333 +9,204 @@ const empleadorActual = {
 const ESTADOS_EMPRESA = ['Activa', 'Pendiente', 'Inactiva'];
 const ESTADOS_VACANTE = ['Activa', 'Borrador', 'Inactiva', 'Cancelada'];
 const ESTADOS_POSTULACION = ['Nuevo', 'Preseleccionado', 'Entrevista', 'Contratado', 'Rechazado'];
-const SECTORES = ['Tecnología', 'Investigación', 'Comercio', 'ONG', 'Finanzas', 'Diseño', 'Marketing'];
+const SECTORES = ['Tecnología', 'Logística', 'Diseño y Marketing', 'Finanzas', 'Salud', 'Educación', 'Comercio', 'ONG'];
 
-// datos iniciales
+// estados en la bd
+const ESTADO_VACANTE_BD = { Activa: 'publicada', Inactiva: 'pausada', Cancelada: 'cerrada', Borrador: 'borrador' };
+const ESTADO_VACANTE_APP = { publicada: 'Activa', pausada: 'Inactiva', cerrada: 'Cancelada', borrador: 'Borrador' };
 
-const empresas = [
-    {
-        id: 1,
-        nombre: 'Nexo Digital',
-        sector: 'Tecnología',
-        ubicacion: 'San Salvador, El Salvador',
-        descripcion: 'Estudio de producto digital enfocado en banca y comercio electrónico.',
-        estado: 'Activa'
-    },
-    {
-        id: 2,
-        nombre: 'Nexo Labs',
-        sector: 'Investigación',
-        ubicacion: 'Santa Tecla, El Salvador',
-        descripcion: 'Laboratorio de innovación y prototipado de nuevas soluciones.',
-        estado: 'Activa'
-    },
-    {
-        id: 3,
-        nombre: 'Nexo Retail',
-        sector: 'Comercio',
-        ubicacion: 'San Miguel, El Salvador',
-        descripcion: 'Cadena de tiendas y comercio minorista.',
-        estado: 'Pendiente'
-    },
-    {
-        id: 4,
-        nombre: 'Nexo Foundation',
-        sector: 'ONG',
-        ubicacion: 'San Salvador, El Salvador',
-        descripcion: 'Fundación dedicada a programas de educación tecnológica.',
-        estado: 'Inactiva'
-    }
-];
+// pa las pruebas
+let db = pool;
 
-// ids desde 101
-const vacantes = [
-    {
-        id: 101,
-        empresaId: 1,
-        titulo: 'Diseñador UX/UI Senior',
-        ubicacion: 'San Salvador',
-        modalidad: 'Híbrido',
-        tipoContrato: 'Tiempo completo',
-        experiencia: '3-5 años',
-        formacion: 'Universitaria',
-        salarioMinimo: 1500,
-        salarioMaximo: 2100,
-        descripcion: 'Buscamos un diseñador UX/UI con experiencia en productos digitales financieros que lidere la creación de flujos y prototipos.',
-        responsabilidades: ['Diseñar flujos y prototipos de alta fidelidad.', 'Conducir pruebas de usabilidad.'],
-        habilidades: ['Figma', 'UX Research', 'Design Systems', 'Prototipado'],
-        beneficios: ['Trabajo híbrido.', 'Seguro médico.'],
-        contacto: 'talento@nexodigital.com',
-        reclutador: 'María Rodríguez',
-        fechaPublicacion: '2026-10-18',
-        fechaCierre: '2026-11-30',
-        estado: 'Activa',
-        vistas: 1210
-    },
-    {
-        id: 102,
-        empresaId: 1,
-        titulo: 'Frontend Developer',
-        ubicacion: 'San Salvador',
-        modalidad: 'Remoto',
-        tipoContrato: 'Tiempo completo',
-        experiencia: '1-3 años',
-        formacion: 'Universitaria',
-        salarioMinimo: 1200,
-        salarioMaximo: 1800,
-        descripcion: 'Desarrollo de interfaces web modernas para nuestros clientes.',
-        responsabilidades: ['Maquetar interfaces responsivas.', 'Consumir API REST.'],
-        habilidades: ['JavaScript', 'HTML/CSS', 'React', 'Git'],
-        beneficios: ['Trabajo remoto.', 'Capacitación continua.'],
-        contacto: 'talento@nexodigital.com',
-        reclutador: 'María Rodríguez',
-        fechaPublicacion: '2026-10-12',
-        fechaCierre: '2026-11-25',
-        estado: 'Activa',
-        vistas: 2034
-    },
-    {
-        id: 103,
-        empresaId: 1,
-        titulo: 'Data Analyst',
-        ubicacion: 'San Salvador',
-        modalidad: 'Presencial',
-        tipoContrato: 'Tiempo completo',
-        experiencia: '1-3 años',
-        formacion: 'Universitaria',
-        salarioMinimo: 1100,
-        salarioMaximo: 1500,
-        descripcion: 'Análisis de datos y elaboración de reportes para el área comercial.',
-        responsabilidades: ['Preparar reportes semanales.', 'Construir tableros de indicadores.'],
-        habilidades: ['SQL', 'Excel', 'Power BI'],
-        beneficios: ['Prestaciones de ley.'],
-        contacto: 'talento@nexodigital.com',
-        reclutador: 'María Rodríguez',
-        fechaPublicacion: '2026-10-01',
-        fechaCierre: '2026-11-16',
-        estado: 'Activa',
-        vistas: 860
-    }
-];
+function usarConexion(conexion) {
+    db = conexion || pool;
+}
 
-const candidatos = [
-    {
-        id: 1,
-        nombre: 'Alex Moreno',
-        cargo: 'Product Designer',
-        empresaActual: 'Aster',
-        ubicacion: 'San Salvador, El Salvador',
-        correo: 'alex.moreno@correo.com',
-        telefono: '+503 7012 3456',
-        aniosExperiencia: 5,
-        habilidades: ['Figma', 'UX Research', 'Design Systems', 'Prototipado', 'HTML/CSS', 'Motion'],
-        experiencia: [
-            { puesto: 'Product Designer', empresa: 'Aster', periodo: '2023 - Actualidad', descripcion: 'Lideró el rediseño de la app móvil (+35% retención).' },
-            { puesto: 'Diseñador UI', empresa: 'Finova', periodo: '2021 - 2023', descripcion: 'Diseño de interfaces para banca en línea.' }
-        ],
-        formacion: [
-            { titulo: 'Lic. en Diseño Gráfico', institucion: 'Universidad', periodo: '2016 - 2020' }
-        ],
-        cv: 'CV_AlexMoreno_2026.pdf'
-    },
-    {
-        id: 2,
-        nombre: 'Karla Rivas',
-        cargo: 'UI Designer',
-        empresaActual: 'Cloudly',
-        ubicacion: 'Santa Tecla, El Salvador',
-        correo: 'karla.rivas@correo.com',
-        telefono: '+503 7123 4567',
-        aniosExperiencia: 4,
-        habilidades: ['Figma', 'Design Systems', 'Prototipado', 'Illustrator'],
-        experiencia: [
-            { puesto: 'UI Designer', empresa: 'Cloudly', periodo: '2022 - Actualidad', descripcion: 'Diseño de componentes para la plataforma SaaS.' }
-        ],
-        formacion: [
-            { titulo: 'Técnico en Diseño Digital', institucion: 'Instituto Técnico', periodo: '2018 - 2020' }
-        ],
-        cv: 'CV_KarlaRivas.pdf'
-    },
-    {
-        id: 3,
-        nombre: 'José Martínez',
-        cargo: 'Diseñador Web',
-        empresaActual: 'Freelance',
-        ubicacion: 'San Miguel, El Salvador',
-        correo: 'jose.martinez@correo.com',
-        telefono: '+503 7234 5678',
-        aniosExperiencia: 3,
-        habilidades: ['Figma', 'HTML/CSS', 'JavaScript', 'UX Research'],
-        experiencia: [
-            { puesto: 'Diseñador Web', empresa: 'Freelance', periodo: '2023 - Actualidad', descripcion: 'Sitios web para pequeñas empresas.' }
-        ],
-        formacion: [
-            { titulo: 'Ing. en Sistemas (en curso)', institucion: 'Universidad', periodo: '2020 - Actualidad' }
-        ],
-        cv: 'CV_JoseMartinez.pdf'
-    },
-    {
-        id: 4,
-        nombre: 'Sofía López',
-        cargo: 'Diseñadora gráfica',
-        empresaActual: 'Lumen',
-        ubicacion: 'San Salvador, El Salvador',
-        correo: 'sofia.lopez@correo.com',
-        telefono: '+503 7345 6789',
-        aniosExperiencia: 1,
-        habilidades: ['Illustrator', 'Photoshop', 'Figma'],
-        experiencia: [
-            { puesto: 'Diseñadora gráfica', empresa: 'Lumen', periodo: '2025 - Actualidad', descripcion: 'Piezas gráficas para redes sociales.' }
-        ],
-        formacion: [
-            { titulo: 'Lic. en Comunicaciones', institucion: 'Universidad', periodo: '2020 - 2024' }
-        ],
-        cv: 'CV_SofiaLopez.pdf'
-    },
-    {
-        id: 5,
-        nombre: 'Daniel Flores',
-        cargo: 'Desarrollador Web',
-        empresaActual: 'Innovatech',
-        ubicacion: 'San Salvador, El Salvador',
-        correo: 'daniel.flores@correo.com',
-        telefono: '+503 7456 7890',
-        aniosExperiencia: 2,
-        habilidades: ['JavaScript', 'HTML/CSS', 'Git', 'Node.js'],
-        experiencia: [
-            { puesto: 'Desarrollador Web', empresa: 'Innovatech', periodo: '2024 - Actualidad', descripcion: 'Mantenimiento de sitios corporativos.' }
-        ],
-        formacion: [
-            { titulo: 'Ing. en Desarrollo de Software', institucion: 'Universidad', periodo: '2019 - 2023' }
-        ],
-        cv: 'CV_DanielFlores.pdf'
-    }
-];
-
-const postulaciones = [
-    { id: 1, vacanteId: 101, candidatoId: 1, fecha: '2026-11-14T08:00:00', estado: 'Preseleccionado', notas: [{ autor: 'María R.', texto: 'Portafolio sólido. Agendar entrevista técnica esta semana.', fecha: '2026-11-14T09:00:00' }] },
-    { id: 2, vacanteId: 101, candidatoId: 2, fecha: '2026-11-13T10:00:00', estado: 'Entrevista', notas: [] },
-    { id: 3, vacanteId: 101, candidatoId: 3, fecha: '2026-11-12T15:00:00', estado: 'Nuevo', notas: [] },
-    { id: 4, vacanteId: 101, candidatoId: 4, fecha: '2026-11-11T11:00:00', estado: 'Rechazado', notas: [] },
-    { id: 5, vacanteId: 102, candidatoId: 5, fecha: '2026-11-13T09:30:00', estado: 'Nuevo', notas: [] },
-    { id: 6, vacanteId: 102, candidatoId: 3, fecha: '2026-11-10T14:00:00', estado: 'Nuevo', notas: [] },
-    { id: 7, vacanteId: 103, candidatoId: 5, fecha: '2026-11-09T16:00:00', estado: 'Preseleccionado', notas: [] }
-];
-
-let siguienteIdEmpresa = 5;
-let siguienteIdVacante = 104;
+async function consulta(sql, valores = []) {
+    const resultado = await db.query(sql, valores);
+    return resultado.rows;
+}
 
 // utilidades
 
 function texto(valor) {
-    return (valor || '').toString().trim();
+    return String(valor ?? '').trim();
 }
 
 function convertirLista(valor) {
-    if (Array.isArray(valor)) {
-        return valor.map(texto).filter(Boolean);
-    }
-    return texto(valor).split(/\r?\n/).map(texto).filter(Boolean);
+    const lista = Array.isArray(valor) ? valor : String(valor ?? '').split(/\r?\n/);
+    return lista.map(texto).filter(Boolean);
 }
 
-function fechaHoy() {
-    return new Date().toISOString().slice(0, 10);
+function capitalizar(valor) {
+    return valor ? valor.charAt(0).toUpperCase() + valor.slice(1) : valor;
+}
+
+function idValido(id) {
+    return /^\d+$/.test(String(id));
 }
 
 // empresas
 
-function listarEmpresas(filtros = {}) {
-    const busqueda = texto(filtros.q).toLowerCase();
+const SELECT_EMPRESAS = `
+    SELECT id_empresa::int AS id, nombre, sector, ubicacion, descripcion, estado
+    FROM empresas
+`;
 
-    return empresas.filter(empresa =>
-        (!busqueda || empresa.nombre.toLowerCase().includes(busqueda)) &&
-        (!filtros.sector || empresa.sector === filtros.sector) &&
-        (!filtros.estado || empresa.estado === filtros.estado)
-    );
+function mapearEmpresa(fila) {
+    return fila ? { ...fila, estado: capitalizar(fila.estado) } : null;
 }
 
-function obtenerEmpresa(id) {
-    return empresas.find(empresa => empresa.id === Number(id));
+async function listarEmpresas(filtros = {}) {
+    const condiciones = [];
+    const valores = [];
+
+    if (texto(filtros.q)) {
+        valores.push(`%${texto(filtros.q)}%`);
+        condiciones.push(`(nombre ILIKE $${valores.length} OR ubicacion ILIKE $${valores.length})`);
+    }
+    if (filtros.sector) {
+        valores.push(filtros.sector);
+        condiciones.push(`sector = $${valores.length}`);
+    }
+    if (filtros.estado) {
+        valores.push(filtros.estado.toLowerCase());
+        condiciones.push(`estado = $${valores.length}`);
+    }
+
+    const where = condiciones.length ? `WHERE ${condiciones.join(' AND ')}` : '';
+    const filas = await consulta(`${SELECT_EMPRESAS} ${where} ORDER BY nombre`, valores);
+    return filas.map(mapearEmpresa);
+}
+
+async function obtenerEmpresa(id) {
+    if (!idValido(id)) return null;
+    const filas = await consulta(`${SELECT_EMPRESAS} WHERE id_empresa = $1`, [id]);
+    return mapearEmpresa(filas[0]);
 }
 
 function validarEmpresa(datos) {
     const errores = [];
-    if (!texto(datos.nombre)) errores.push('El nombre es obligatorio.');
+    if (!texto(datos.nombre)) errores.push('El nombre de la empresa es obligatorio.');
     if (!SECTORES.includes(datos.sector)) errores.push('Selecciona un sector válido.');
     if (!texto(datos.ubicacion)) errores.push('La ubicación es obligatoria.');
     return errores;
 }
 
-function crearEmpresa(datos) {
-    const empresa = {
-        id: siguienteIdEmpresa++,
-        nombre: texto(datos.nombre),
-        sector: datos.sector,
-        ubicacion: texto(datos.ubicacion),
-        descripcion: texto(datos.descripcion),
-        estado: datos.activa ? 'Activa' : 'Inactiva'
-    };
-    empresas.push(empresa);
-    return empresa;
+async function crearEmpresa(datos) {
+    const filas = await consulta(
+        `INSERT INTO empresas (nombre, sector, ubicacion, descripcion, estado)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id_empresa::int AS id, nombre, sector, ubicacion, descripcion, estado`,
+        [texto(datos.nombre), datos.sector, texto(datos.ubicacion), texto(datos.descripcion), datos.activa ? 'activa' : 'inactiva']
+    );
+    return mapearEmpresa(filas[0]);
 }
 
-function actualizarEmpresa(id, datos) {
-    const empresa = obtenerEmpresa(id);
-    if (!empresa) return null;
-
-    empresa.nombre = texto(datos.nombre);
-    empresa.sector = datos.sector;
-    empresa.ubicacion = texto(datos.ubicacion);
-    empresa.descripcion = texto(datos.descripcion);
-    empresa.estado = datos.activa ? 'Activa' : 'Inactiva';
-    return empresa;
+async function actualizarEmpresa(id, datos) {
+    if (!idValido(id)) return null;
+    const filas = await consulta(
+        `UPDATE empresas SET nombre = $2, sector = $3, ubicacion = $4, descripcion = $5, estado = $6
+         WHERE id_empresa = $1
+         RETURNING id_empresa::int AS id, nombre, sector, ubicacion, descripcion, estado`,
+        [id, texto(datos.nombre), datos.sector, texto(datos.ubicacion), texto(datos.descripcion), datos.activa ? 'activa' : 'inactiva']
+    );
+    return mapearEmpresa(filas[0]);
 }
 
-function cambiarEstadoEmpresa(id, estado) {
-    const empresa = obtenerEmpresa(id);
-    if (!empresa || !ESTADOS_EMPRESA.includes(estado)) return null;
-    empresa.estado = estado;
-    return empresa;
+async function cambiarEstadoEmpresa(id, estado) {
+    if (!idValido(id) || !ESTADOS_EMPRESA.includes(estado)) return null;
+    const filas = await consulta(
+        `UPDATE empresas SET estado = $2 WHERE id_empresa = $1
+         RETURNING id_empresa::int AS id, nombre, sector, ubicacion, descripcion, estado`,
+        [id, estado.toLowerCase()]
+    );
+    return mapearEmpresa(filas[0]);
 }
 
 // vacantes
 
-function listarVacantes(filtros = {}) {
-    return vacantes
-        .filter(vacante =>
-            (!filtros.empresaId || vacante.empresaId === Number(filtros.empresaId)) &&
-            (!filtros.estado || vacante.estado === filtros.estado)
-        )
-        .map(vacante => ({
-            ...vacante,
-            empresa: obtenerEmpresa(vacante.empresaId),
-            totalPostulantes: postulaciones.filter(p => p.vacanteId === vacante.id).length
-        }))
-        .sort((a, b) => b.fechaPublicacion.localeCompare(a.fechaPublicacion));
+const SELECT_VACANTES = `
+    SELECT
+        v.id_vacante::int AS id,
+        v.empresa_id::int AS "empresaId",
+        v.titulo, v.ubicacion, v.modalidad,
+        v.tipo_contrato AS "tipoContrato",
+        v.experiencia, v.formacion,
+        v.salario_minimo::float AS "salarioMinimo",
+        v.salario_maximo::float AS "salarioMaximo",
+        v.descripcion,
+        COALESCE(v.responsabilidades, '{}') AS responsabilidades,
+        COALESCE(v.requisitos, '{}') AS habilidades,
+        COALESCE(v.beneficios, '{}') AS beneficios,
+        v.correo_contacto AS contacto,
+        v.nombre_reclutador AS reclutador,
+        to_char(v.fecha_publicacion, 'YYYY-MM-DD') AS "fechaPublicacion",
+        COALESCE(to_char(v.fecha_cierre, 'YYYY-MM-DD'), '') AS "fechaCierre",
+        v.estado, v.vistas,
+        e.nombre AS "empresaNombre",
+        (SELECT COUNT(*) FROM postulaciones p WHERE p.vacante_id = v.id_vacante)::int AS "totalPostulantes"
+    FROM vacantes v
+    JOIN empresas e ON e.id_empresa = v.empresa_id
+`;
+
+function mapearVacante(fila) {
+    if (!fila) return null;
+    const { empresaNombre, ...vacante } = fila;
+    return {
+        ...vacante,
+        salarioMinimo: vacante.salarioMinimo || 0,
+        salarioMaximo: vacante.salarioMaximo || 0,
+        estado: ESTADO_VACANTE_APP[vacante.estado] || vacante.estado,
+        empresa: { id: vacante.empresaId, nombre: empresaNombre }
+    };
 }
 
-function obtenerVacante(id) {
-    return vacantes.find(vacante => vacante.id === Number(id));
+async function listarVacantes(filtros = {}) {
+    const condiciones = [];
+    const valores = [];
+
+    if (filtros.empresaId) {
+        valores.push(filtros.empresaId);
+        condiciones.push(`v.empresa_id = $${valores.length}`);
+    }
+    if (filtros.estado) {
+        valores.push(ESTADO_VACANTE_BD[filtros.estado]);
+        condiciones.push(`v.estado = $${valores.length}`);
+    }
+
+    const where = condiciones.length ? `WHERE ${condiciones.join(' AND ')}` : '';
+    const filas = await consulta(`${SELECT_VACANTES} ${where} ORDER BY v.fecha_publicacion DESC, v.id_vacante DESC`, valores);
+    return filas.map(mapearVacante);
 }
 
-function contarVacantesPorEstado() {
-    const conteo = { Todas: vacantes.length };
-    ESTADOS_VACANTE.forEach(estado => {
-        conteo[estado] = vacantes.filter(v => v.estado === estado).length;
+async function obtenerVacante(id) {
+    if (!idValido(id)) return null;
+    const filas = await consulta(`${SELECT_VACANTES} WHERE v.id_vacante = $1`, [id]);
+    return mapearVacante(filas[0]);
+}
+
+async function contarVacantesPorEstado() {
+    const filas = await consulta('SELECT estado, COUNT(*)::int AS total FROM vacantes GROUP BY estado');
+    const conteo = { Todas: 0 };
+    ESTADOS_VACANTE.forEach(estado => { conteo[estado] = 0; });
+    filas.forEach(f => {
+        conteo[ESTADO_VACANTE_APP[f.estado]] = f.total;
+        conteo.Todas += f.total;
     });
     return conteo;
 }
 
-function validarBorrador(datos) {
+async function validarBorrador(datos) {
     const errores = [];
     if (!texto(datos.titulo)) errores.push('Para guardar el borrador escribe al menos el título.');
-    if (!obtenerEmpresa(datos.empresaId)) errores.push('Selecciona una empresa.');
+    if (!(await obtenerEmpresa(datos.empresaId))) errores.push('Selecciona una empresa.');
     return errores;
 }
 
-function validarVacante(datos) {
+async function validarVacante(datos) {
     const errores = [];
-    const empresa = obtenerEmpresa(datos.empresaId);
+    const empresa = await obtenerEmpresa(datos.empresaId);
     if (!texto(datos.titulo)) errores.push('El título del puesto es obligatorio.');
     if (!empresa) errores.push('Selecciona una empresa.');
     if (empresa && empresa.estado !== 'Activa') errores.push('La empresa seleccionada no está activa.');
@@ -352,75 +225,87 @@ function validarVacante(datos) {
     return errores;
 }
 
-function datosVacante(datos) {
-    return {
-        empresaId: Number(datos.empresaId),
-        titulo: texto(datos.titulo),
-        ubicacion: texto(datos.ubicacion),
-        modalidad: texto(datos.modalidad),
-        tipoContrato: texto(datos.tipoContrato),
-        experiencia: texto(datos.experiencia),
-        formacion: texto(datos.formacion),
-        salarioMinimo: Number(datos.salarioMinimo) || 0,
-        salarioMaximo: Number(datos.salarioMaximo) || 0,
-        descripcion: texto(datos.descripcion),
-        responsabilidades: convertirLista(datos.responsabilidades),
-        habilidades: convertirLista(datos.habilidades),
-        beneficios: convertirLista(datos.beneficios),
-        contacto: texto(datos.contacto),
-        fechaCierre: texto(datos.fechaCierre)
-    };
+function valoresVacante(datos) {
+    const modalidades = ['Presencial', 'Híbrido', 'Remoto'];
+    return [
+        Number(datos.empresaId),
+        texto(datos.titulo),
+        texto(datos.ubicacion) || null,
+        modalidades.includes(datos.modalidad) ? datos.modalidad : null,
+        texto(datos.tipoContrato) || null,
+        texto(datos.experiencia) || null,
+        texto(datos.formacion) || null,
+        Number(datos.salarioMinimo) || null,
+        Number(datos.salarioMaximo) || null,
+        texto(datos.descripcion),
+        convertirLista(datos.responsabilidades),
+        convertirLista(datos.habilidades),
+        convertirLista(datos.beneficios),
+        texto(datos.contacto) || null,
+        texto(datos.fechaCierre) || null
+    ];
 }
 
-function crearVacante(datos, estado = 'Activa') {
-    const vacante = {
-        id: siguienteIdVacante++,
-        ...datosVacante(datos),
-        reclutador: empleadorActual.nombre,
-        fechaPublicacion: fechaHoy(),
-        estado,
-        vistas: 0
-    };
-    vacantes.push(vacante);
-    return vacante;
+async function crearVacante(datos, estado = 'Activa') {
+    // sector = el d la empresa
+    const filas = await consulta(
+        `INSERT INTO vacantes (empresa_id, titulo, ubicacion, modalidad, tipo_contrato, experiencia, formacion,
+            salario_minimo, salario_maximo, descripcion, responsabilidades, requisitos, beneficios,
+            correo_contacto, fecha_cierre, nombre_reclutador, estado, sector)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
+            (SELECT sector FROM empresas WHERE id_empresa = $1))
+         RETURNING id_vacante::int AS id`,
+        [...valoresVacante(datos), empleadorActual.nombre, ESTADO_VACANTE_BD[estado]]
+    );
+    return obtenerVacante(filas[0].id);
 }
 
-function actualizarVacante(id, datos, estado) {
-    const vacante = obtenerVacante(id);
+async function actualizarVacante(id, datos, estado) {
+    const vacante = await obtenerVacante(id);
     if (!vacante) return null;
 
-    Object.assign(vacante, datosVacante(datos));
-
+    const nuevoEstado = estado || vacante.estado;
     // al publicar un borrador cambia la fecha
-    if (vacante.estado === 'Borrador' && estado === 'Activa') vacante.fechaPublicacion = fechaHoy();
-    if (estado) vacante.estado = estado;
-    return vacante;
+    const publicaBorrador = vacante.estado === 'Borrador' && nuevoEstado === 'Activa';
+
+    await consulta(
+        `UPDATE vacantes SET empresa_id = $2, titulo = $3, ubicacion = $4, modalidad = $5, tipo_contrato = $6,
+            experiencia = $7, formacion = $8, salario_minimo = $9, salario_maximo = $10, descripcion = $11,
+            responsabilidades = $12, requisitos = $13, beneficios = $14, correo_contacto = $15, fecha_cierre = $16,
+            estado = $17,
+            sector = (SELECT sector FROM empresas WHERE id_empresa = $2),
+            fecha_publicacion = CASE WHEN $18 THEN CURRENT_TIMESTAMP ELSE fecha_publicacion END
+         WHERE id_vacante = $1`,
+        [id, ...valoresVacante(datos), ESTADO_VACANTE_BD[nuevoEstado], publicaBorrador]
+    );
+    return obtenerVacante(id);
 }
 
-function cambiarEstadoVacante(id, estado) {
-    const vacante = obtenerVacante(id);
-    if (!vacante || !ESTADOS_VACANTE.includes(estado)) return null;
-    vacante.estado = estado;
-    return vacante;
+async function cambiarEstadoVacante(id, estado) {
+    if (!idValido(id) || !ESTADOS_VACANTE.includes(estado)) return null;
+    await consulta('UPDATE vacantes SET estado = $2 WHERE id_vacante = $1', [id, ESTADO_VACANTE_BD[estado]]);
+    return obtenerVacante(id);
 }
 
-function eliminarVacante(id) {
-    const indice = vacantes.findIndex(vacante => vacante.id === Number(id));
-    if (indice === -1) return false;
-
-    vacantes.splice(indice, 1);
-
-    // borra sus postulasiones
-    for (let i = postulaciones.length - 1; i >= 0; i--) {
-        if (postulaciones[i].vacanteId === Number(id)) postulaciones.splice(i, 1);
-    }
-    return true;
+async function eliminarVacante(id) {
+    if (!idValido(id)) return false;
+    // cascada borra postulasiones
+    const filas = await consulta('DELETE FROM vacantes WHERE id_vacante = $1 RETURNING id_vacante', [id]);
+    return filas.length > 0;
 }
 
 // postulasiones
 
-function obtenerCandidato(id) {
-    return candidatos.find(candidato => candidato.id === Number(id));
+const SELECT_CANDIDATO = `
+    c.id_candidato::int AS id, c.nombre, c.cargo, c.empresa_actual AS "empresaActual", c.ubicacion,
+    c.correo, c.telefono, c.anios_experiencia AS "aniosExperiencia", c.habilidades,
+    c.experiencia, c.formacion, c.cv_url AS cv
+`;
+
+async function obtenerCandidato(id) {
+    if (!idValido(id)) return null;
+    const filas = await consulta(`SELECT ${SELECT_CANDIDATO} FROM candidatos c WHERE c.id_candidato = $1`, [id]);
+    return filas[0] || null;
 }
 
 // % compatibilidad
@@ -428,29 +313,46 @@ function calcularCompatibilidad(candidato, vacante) {
     if (!candidato || !vacante || vacante.habilidades.length === 0) return 0;
 
     const delCandidato = candidato.habilidades.map(h => h.toLowerCase());
-    const coincidencias = vacante.habilidades.filter(h => delCandidato.includes(h.toLowerCase()));
+    // requisito puede ser frase
+    const coincidencias = vacante.habilidades.filter(requisito => {
+        const r = requisito.toLowerCase();
+        return delCandidato.some(h => r.includes(h) || h.includes(r));
+    });
     return Math.round((coincidencias.length / vacante.habilidades.length) * 100);
 }
 
-function completarPostulacion(postulacion) {
-    const candidato = obtenerCandidato(postulacion.candidatoId);
-    const vacante = obtenerVacante(postulacion.vacanteId);
-    return {
-        ...postulacion,
-        candidato,
-        vacante,
-        compatibilidad: calcularCompatibilidad(candidato, vacante)
-    };
-}
+async function listarPostulaciones(vacanteId, filtros = {}) {
+    const vacante = await obtenerVacante(vacanteId);
+    if (!vacante) return [];
 
-function listarPostulaciones(vacanteId, filtros = {}) {
+    const filas = await consulta(
+        `SELECT p.id_postulacion::int AS id, p.vacante_id::int AS "vacanteId", p.candidato_id::int AS "candidatoId",
+            p.fecha_postulacion AS fecha, p.estado, ${SELECT_CANDIDATO}
+         FROM postulaciones p
+         JOIN candidatos c ON c.id_candidato = p.candidato_id
+         WHERE p.vacante_id = $1`,
+        [vacanteId]
+    );
+
     const busqueda = texto(filtros.q).toLowerCase();
     const experienciaMinima = Number(filtros.experienciaMin) || 0;
     const compatibilidadMinima = Number(filtros.compatibilidadMin) || 0;
 
-    const resultado = postulaciones
-        .filter(p => p.vacanteId === Number(vacanteId))
-        .map(completarPostulacion)
+    const resultado = filas
+        .map(f => {
+            const { id, vacanteId: vId, candidatoId, fecha, estado, ...candidato } = f;
+            candidato.id = candidatoId;
+            return {
+                id,
+                vacanteId: vId,
+                candidatoId,
+                fecha,
+                estado: capitalizar(estado),
+                candidato,
+                vacante,
+                compatibilidad: calcularCompatibilidad(candidato, vacante)
+            };
+        })
         .filter(p =>
             (!filtros.estado || p.estado === filtros.estado) &&
             (!busqueda || p.candidato.nombre.toLowerCase().includes(busqueda)) &&
@@ -461,52 +363,76 @@ function listarPostulaciones(vacanteId, filtros = {}) {
     if (filtros.orden === 'compatibilidad') {
         resultado.sort((a, b) => b.compatibilidad - a.compatibilidad);
     } else {
-        resultado.sort((a, b) => b.fecha.localeCompare(a.fecha));
+        resultado.sort((a, b) => b.fecha - a.fecha);
     }
     return resultado;
 }
 
-function contarPostulacionesPorEstado(vacanteId) {
+async function contarPostulacionesPorEstado(vacanteId) {
     const conteo = { Todos: 0 };
     ESTADOS_POSTULACION.forEach(estado => { conteo[estado] = 0; });
+    if (!idValido(vacanteId)) return conteo;
 
-    postulaciones
-        .filter(p => p.vacanteId === Number(vacanteId))
-        .forEach(p => {
-            conteo.Todos++;
-            conteo[p.estado]++;
-        });
+    const filas = await consulta(
+        'SELECT estado, COUNT(*)::int AS total FROM postulaciones WHERE vacante_id = $1 GROUP BY estado',
+        [vacanteId]
+    );
+    filas.forEach(f => {
+        conteo[capitalizar(f.estado)] = f.total;
+        conteo.Todos += f.total;
+    });
     return conteo;
 }
 
-function obtenerPostulacion(id) {
-    const postulacion = postulaciones.find(p => p.id === Number(id));
-    return postulacion ? completarPostulacion(postulacion) : null;
+async function obtenerPostulacion(id) {
+    if (!idValido(id)) return null;
+    const filas = await consulta(
+        `SELECT id_postulacion::int AS id, vacante_id::int AS "vacanteId", candidato_id::int AS "candidatoId",
+            fecha_postulacion AS fecha, estado
+         FROM postulaciones WHERE id_postulacion = $1`,
+        [id]
+    );
+    if (!filas[0]) return null;
+
+    const postulacion = { ...filas[0], estado: capitalizar(filas[0].estado) };
+    const candidato = await obtenerCandidato(postulacion.candidatoId);
+    const vacante = await obtenerVacante(postulacion.vacanteId);
+    const notas = await consulta(
+        'SELECT autor, texto, fecha FROM notas_postulacion WHERE postulacion_id = $1 ORDER BY fecha',
+        [id]
+    );
+
+    return { ...postulacion, candidato, vacante, notas, compatibilidad: calcularCompatibilidad(candidato, vacante) };
 }
 
-function cambiarEstadoPostulacion(id, estado) {
-    const postulacion = postulaciones.find(p => p.id === Number(id));
-    if (!postulacion || !ESTADOS_POSTULACION.includes(estado)) return null;
-    postulacion.estado = estado;
-    return postulacion;
+async function cambiarEstadoPostulacion(id, estado) {
+    if (!idValido(id) || !ESTADOS_POSTULACION.includes(estado)) return null;
+    const filas = await consulta(
+        'UPDATE postulaciones SET estado = $2 WHERE id_postulacion = $1 RETURNING id_postulacion::int AS id',
+        [id, estado.toLowerCase()]
+    );
+    return filas[0] || null;
 }
 
-function cambiarEstadoVariasPostulaciones(ids, estado) {
-    const lista = Array.isArray(ids) ? ids : [ids];
-    return lista.map(id => cambiarEstadoPostulacion(id, estado)).filter(Boolean).length;
+async function cambiarEstadoVariasPostulaciones(ids, estado) {
+    const lista = [].concat(ids).filter(idValido);
+    if (!ESTADOS_POSTULACION.includes(estado) || lista.length === 0) return 0;
+    const filas = await consulta(
+        'UPDATE postulaciones SET estado = $2 WHERE id_postulacion = ANY($1::bigint[]) RETURNING id_postulacion',
+        [lista, estado.toLowerCase()]
+    );
+    return filas.length;
 }
 
-function agregarNota(postulacionId, textoNota) {
-    const postulacion = postulaciones.find(p => p.id === Number(postulacionId));
-    if (!postulacion || !texto(textoNota)) return null;
-
-    const nota = {
-        autor: empleadorActual.nombre,
-        texto: texto(textoNota),
-        fecha: new Date().toISOString()
-    };
-    postulacion.notas.push(nota);
-    return nota;
+async function agregarNota(postulacionId, textoNota) {
+    if (!idValido(postulacionId) || !texto(textoNota)) return null;
+    const filas = await consulta(
+        `INSERT INTO notas_postulacion (postulacion_id, autor, texto)
+         SELECT id_postulacion, $2, $3 FROM postulaciones WHERE id_postulacion = $1
+         RETURNING autor, texto, fecha`,
+        [postulacionId, empleadorActual.nombre, texto(textoNota)]
+    );
+    return filas[0] || null;
 }
 
 module.exports = {
@@ -515,6 +441,7 @@ module.exports = {
     ESTADOS_VACANTE,
     ESTADOS_POSTULACION,
     SECTORES,
+    usarConexion,
     listarEmpresas,
     obtenerEmpresa,
     validarEmpresa,

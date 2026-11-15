@@ -10,9 +10,10 @@
     <a class="emp-link <%= activo === 'empresas' ? 'activo' : '' %>" href="/empresarial/empresas">Empresas</a>
 
     <div class="emp-usuario">
-        <span class="emp-avatar">N</span>
+        <% const nombreEmpresa = locals.empresaActual ? empresaActual.nombre : 'Mi empresa'; %>
+        <span class="emp-avatar"><%= nombreEmpresa.charAt(0) %></span>
         <div>
-            <strong>Nexo Digital</strong><br>
+            <strong><%= nombreEmpresa %></strong><br>
             <small>Empleador</small>
         </div>
     </div>

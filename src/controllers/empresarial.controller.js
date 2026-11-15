@@ -15,7 +15,7 @@ function mostrarInicio(req, res) {
 }
 
 // EMP-02
-function renderEmpresas(req, res, panel, status = 200) {
+async function renderEmpresas(req, res, panel, status = 200) {
     const filtros = {
         q: req.query.q || '',
         sector: req.query.sector || '',
@@ -25,7 +25,7 @@ function renderEmpresas(req, res, panel, status = 200) {
     res.status(status).render('empresarial/empresas', {
         titulo: 'Mis empresas',
         filtros,
-        empresas: servicio.listarEmpresas(filtros),
+        empresas: await servicio.listarEmpresas(filtros),
         sectores: servicio.SECTORES,
         estados: servicio.ESTADOS_EMPRESA,
         panel,
@@ -51,7 +51,7 @@ function noEncontrado(req, res) {
     });
 }
 
-function mostrarEmpresas(req, res) {
+async function mostrarEmpresas(req, res) {
     let panel = null;
 
     if (req.query.nueva) {
@@ -60,16 +60,16 @@ function mostrarEmpresas(req, res) {
 
     const id = req.query.editar || req.query.ver;
     if (id) {
-        const empresa = servicio.obtenerEmpresa(id);
+        const empresa = await servicio.obtenerEmpresa(id);
         if (empresa) {
             panel = { modo: req.query.editar ? 'editar' : 'ver', empresa, errores: [] };
         }
     }
 
-    renderEmpresas(req, res, panel);
+    await renderEmpresas(req, res, panel);
 }
 
-function crearEmpresa(req, res) {
+async function crearEmpresa(req, res) {
     const errores = servicio.validarEmpresa(req.body);
 
     if (errores.length > 0) {
@@ -77,12 +77,12 @@ function crearEmpresa(req, res) {
         return renderEmpresas(req, res, panel, 400);
     }
 
-    servicio.crearEmpresa(req.body);
+    await servicio.crearEmpresa(req.body);
     res.redirect('/empresarial/empresas?ok=creada');
 }
 
-function actualizarEmpresa(req, res) {
-    if (!servicio.obtenerEmpresa(req.params.id)) return noEncontrado(req, res);
+async function actualizarEmpresa(req, res) {
+    if (!await servicio.obtenerEmpresa(req.params.id)) return noEncontrado(req, res);
 
     const errores = servicio.validarEmpresa(req.body);
 
@@ -91,12 +91,12 @@ function actualizarEmpresa(req, res) {
         return renderEmpresas(req, res, panel, 400);
     }
 
-    servicio.actualizarEmpresa(req.params.id, req.body);
+    await servicio.actualizarEmpresa(req.params.id, req.body);
     res.redirect('/empresarial/empresas?ok=actualizada');
 }
 
-function cambiarEstadoEmpresa(req, res) {
-    const empresa = servicio.cambiarEstadoEmpresa(req.params.id, req.body.estado);
+async function cambiarEstadoEmpresa(req, res) {
+    const empresa = await servicio.cambiarEstadoEmpresa(req.params.id, req.body.estado);
     if (!empresa) return noEncontrado(req, res);
 
     const ok = empresa.estado === 'Inactiva' ? 'desactivada' : 'activada';
@@ -123,13 +123,13 @@ const opcionesVacante = {
         'Design Systems', 'Prototipado', 'Excel', 'Power BI', 'Comunicación', 'Trabajo en equipo']
 };
 
-function mostrarVacantes(req, res) {
+async function mostrarVacantes(req, res) {
     const estadoActual = servicio.ESTADOS_VACANTE.includes(req.query.estado) ? req.query.estado : '';
 
     res.render('empresarial/vacantes', {
         titulo: 'Mis vacantes',
-        vacantes: servicio.listarVacantes({ estado: estadoActual }),
-        conteo: servicio.contarVacantesPorEstado(),
+        vacantes: await servicio.listarVacantes({ estado: estadoActual }),
+        conteo: await servicio.contarVacantesPorEstado(),
         estados: servicio.ESTADOS_VACANTE,
         estadoActual,
         mensaje: mensajesVacantes[req.query.ok] || ''
@@ -165,7 +165,7 @@ function vacanteVacia() {
     };
 }
 
-function renderPublicar(res, vacante, errores = [], status = 200) {
+async function renderPublicar(res, vacante, errores = [], status = 200) {
     const modo = vacante.id ? 'editar' : 'nueva';
 
     res.status(status).render('empresarial/publicar', {
@@ -177,7 +177,7 @@ function renderPublicar(res, vacante, errores = [], status = 200) {
             beneficios: Array.isArray(vacante.beneficios) ? vacante.beneficios : vacante.beneficios.split(/\r?\n/)
         },
         errores,
-        empresas: servicio.listarEmpresas({ estado: 'Activa' }),
+        empresas: await servicio.listarEmpresas({ estado: 'Activa' }),
         opciones: opcionesVacante,
         reclutador: servicio.empleadorActual.nombre,
         puedeBorrador: modo === 'nueva' || vacante.estado === 'Borrador',
@@ -185,36 +185,36 @@ function renderPublicar(res, vacante, errores = [], status = 200) {
     });
 }
 
-function mostrarPublicar(req, res) {
+async function mostrarPublicar(req, res) {
     if (!req.query.id) return renderPublicar(res, vacanteVacia());
 
-    const vacante = servicio.obtenerVacante(req.query.id);
+    const vacante = await servicio.obtenerVacante(req.query.id);
     if (!vacante || vacante.estado === 'Cancelada') return noEncontrado(req, res);
 
-    renderPublicar(res, vacante);
+    await renderPublicar(res, vacante);
 }
 
-function validarSegunAccion(body) {
-    return body.accion === 'borrador' ? servicio.validarBorrador(body) : servicio.validarVacante(body);
+async function validarSegunAccion(body) {
+    return body.accion === 'borrador' ? await servicio.validarBorrador(body) : await servicio.validarVacante(body);
 }
 
-function publicarVacante(req, res) {
+async function publicarVacante(req, res) {
     const datos = formularioVacante(req.body);
-    const errores = validarSegunAccion(datos);
+    const errores = await validarSegunAccion(datos);
 
     if (errores.length > 0) return renderPublicar(res, datos, errores, 400);
 
     const esBorrador = req.body.accion === 'borrador';
-    servicio.crearVacante(datos, esBorrador ? 'Borrador' : 'Activa');
+    await servicio.crearVacante(datos, esBorrador ? 'Borrador' : 'Activa');
     res.redirect(`/empresarial/vacantes?ok=${esBorrador ? 'borrador' : 'publicada'}`);
 }
 
-function actualizarVacante(req, res) {
-    const vacante = servicio.obtenerVacante(req.params.id);
+async function actualizarVacante(req, res) {
+    const vacante = await servicio.obtenerVacante(req.params.id);
     if (!vacante || vacante.estado === 'Cancelada') return noEncontrado(req, res);
 
     const datos = formularioVacante(req.body);
-    const errores = validarSegunAccion(datos);
+    const errores = await validarSegunAccion(datos);
 
     if (errores.length > 0) {
         return renderPublicar(res, { ...datos, id: vacante.id, estado: vacante.estado }, errores, 400);
@@ -228,12 +228,12 @@ function actualizarVacante(req, res) {
         ok = estado === 'Activa' ? 'publicada' : 'borrador';
     }
 
-    servicio.actualizarVacante(vacante.id, datos, estado);
+    await servicio.actualizarVacante(vacante.id, datos, estado);
     res.redirect(`/empresarial/vacantes?ok=${ok}`);
 }
 
-function cambiarEstadoVacante(req, res) {
-    const vacante = servicio.obtenerVacante(req.params.id);
+async function cambiarEstadoVacante(req, res) {
+    const vacante = await servicio.obtenerVacante(req.params.id);
     if (!vacante) return noEncontrado(req, res);
 
     const estado = req.body.estado;
@@ -246,12 +246,12 @@ function cambiarEstadoVacante(req, res) {
         return res.redirect('/empresarial/vacantes');
     }
 
-    servicio.cambiarEstadoVacante(vacante.id, estado);
+    await servicio.cambiarEstadoVacante(vacante.id, estado);
     res.redirect(`/empresarial/vacantes?ok=${estado.toLowerCase()}`);
 }
 
-function eliminarVacante(req, res) {
-    if (!servicio.eliminarVacante(req.params.id)) return noEncontrado(req, res);
+async function eliminarVacante(req, res) {
+    if (!await servicio.eliminarVacante(req.params.id)) return noEncontrado(req, res);
     res.redirect('/empresarial/vacantes?ok=eliminada');
 }
 
@@ -270,8 +270,8 @@ function haceCuanto(fecha) {
     return dias === 1 ? 'Ayer' : `Hace ${dias} días`;
 }
 
-function vacantesConPostulaciones() {
-    return servicio.listarVacantes().filter(v => v.estado !== 'Borrador');
+async function vacantesConPostulaciones() {
+    return (await servicio.listarVacantes()).filter(v => v.estado !== 'Borrador');
 }
 
 // solo rutas internas
@@ -285,9 +285,9 @@ function conMensaje(url, ok) {
     return limpia + (limpia.includes('?') ? '&' : '?') + 'ok=' + ok;
 }
 
-function mostrarPostulaciones(req, res) {
-    const lista = vacantesConPostulaciones();
-    const vacante = req.query.vacante ? servicio.obtenerVacante(req.query.vacante) : lista[0];
+async function mostrarPostulaciones(req, res) {
+    const lista = await vacantesConPostulaciones();
+    const vacante = req.query.vacante ? await servicio.obtenerVacante(req.query.vacante) : lista[0];
 
     if (!vacante || vacante.estado === 'Borrador') return noEncontrado(req, res);
 
@@ -299,7 +299,7 @@ function mostrarPostulaciones(req, res) {
         orden: req.query.orden === 'compatibilidad' ? 'compatibilidad' : 'fecha'
     };
 
-    const postulaciones = servicio.listarPostulaciones(vacante.id, filtros)
+    const postulaciones = (await servicio.listarPostulaciones(vacante.id, filtros))
         .map(p => ({ ...p, hace: haceCuanto(p.fecha) }));
 
     res.render('empresarial/postulaciones', {
@@ -308,24 +308,24 @@ function mostrarPostulaciones(req, res) {
         vacantes: lista,
         filtros,
         postulaciones,
-        conteo: servicio.contarPostulacionesPorEstado(vacante.id),
+        conteo: await servicio.contarPostulacionesPorEstado(vacante.id),
         estados: servicio.ESTADOS_POSTULACION,
         volver: req.originalUrl,
         mensaje: mensajesPostulaciones[req.query.ok] || ''
     });
 }
 
-function cambiarEstadoPostulacion(req, res) {
+async function cambiarEstadoPostulacion(req, res) {
     const estado = req.body.estado;
-    if (!servicio.cambiarEstadoPostulacion(req.params.id, estado)) return noEncontrado(req, res);
+    if (!await servicio.cambiarEstadoPostulacion(req.params.id, estado)) return noEncontrado(req, res);
     res.redirect(conMensaje(urlVolver(req.body), estado.toLowerCase()));
 }
 
-function cambiarEstadoMasivo(req, res) {
+async function cambiarEstadoMasivo(req, res) {
     const volver = urlVolver(req.body);
     if (!req.body.ids) return res.redirect(volver);
 
-    servicio.cambiarEstadoVariasPostulaciones(req.body.ids, req.body.estado);
+    await servicio.cambiarEstadoVariasPostulaciones(req.body.ids, req.body.estado);
     res.redirect(conMensaje(volver, 'masivo'));
 }
 
@@ -333,14 +333,14 @@ function csv(valor) {
     return `"${String(valor).replace(/"/g, '""')}"`;
 }
 
-function exportarPostulaciones(req, res) {
-    const vacante = servicio.obtenerVacante(req.query.vacante);
+async function exportarPostulaciones(req, res) {
+    const vacante = await servicio.obtenerVacante(req.query.vacante);
     if (!vacante) return noEncontrado(req, res);
 
     const filas = [['Candidato', 'Cargo', 'Correo', 'Teléfono', 'Experiencia (años)', 'Compatibilidad (%)', 'Fecha', 'Estado']];
-    servicio.listarPostulaciones(vacante.id).forEach(p => {
+    (await servicio.listarPostulaciones(vacante.id)).forEach(p => {
         filas.push([p.candidato.nombre, p.candidato.cargo, p.candidato.correo, p.candidato.telefono,
-            p.candidato.aniosExperiencia, p.compatibilidad, p.fecha.slice(0, 10), p.estado]);
+            p.candidato.aniosExperiencia, p.compatibilidad, p.fecha.toISOString().slice(0, 10), p.estado]);
     });
 
     // bom pa excel

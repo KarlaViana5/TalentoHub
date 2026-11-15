@@ -2,6 +2,13 @@ const express = require('express');
 const router = express.Router();
 
 const empresarialController = require('../controllers/empresarial.controller');
+const servicio = require('../services/empresarial.service');
+
+// empresa del menu
+router.use(async (req, res, next) => {
+    res.locals.empresaActual = await servicio.obtenerEmpresa(servicio.empleadorActual.empresaId);
+    next();
+});
 
 router.get('/', empresarialController.mostrarInicio);
 
