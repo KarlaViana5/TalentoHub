@@ -442,8 +442,130 @@ async function agregarNota(postulacionId, textoNota) {
     return filas[0] || null;
 }
 
+// panel EMP-01
+
+const DIA = 24 * 60 * 60 * 1000;
+
+async function obtenerIndicadores() {
+    const [vacantes] = await consulta(
+        `SELECT
+            COUNT(*) FILTER (WHERE estado = 'publicada')::int AS activas,
+            COUNT(*) FILTER (WHERE estado = 'publicada' AND fecha_publicacion >= CURRENT_DATE - 30)::int AS "activasMes",
+            COALESCE(SUM(vistas), 0)::int AS vistas
+         FROM vacantes`
+    );
+    const [postulaciones] = await consulta(
+        `SELECT
+            COUNT(*)::int AS total,
+            COUNT(*) FILTER (WHERE fecha_postulacion >= CURRENT_DATE - 30)::int AS "totalMes",
+            COUNT(*) FILTER (WHERE estado <> 'nuevo')::int AS respondidas
+         FROM postulaciones`
+    );
+
+    return {
+        vacantesActivas: vacantes.activas,
+        vacantesMes: vacantes.activasMes,
+        postulaciones: postulaciones.total,
+        postulacionesMes: postulaciones.totalMes,
+        visualizaciones: vacantes.vistas,
+        // % q ya tuvieron respuesta
+        tasaRespuesta: postulaciones.total ? Math.round((postulaciones.respondidas / postulaciones.total) * 100) : 0
+    };
+}
+
+// 7 dias x dia, resto x semana
+function armarGrafica(fechas, rango, hoy = new Date()) {
+    const porDia = rango === 7;
+    const tamano = porDia ? DIA : 7 * DIA;
+    const cantidad = porDia ? 7 : Math.ceil(rango / 7);
+    const fin = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 1).getTime();
+    const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+    const barras = Array.from({ length: cantidad }, (_, i) => {
+        const desde = fin - (cantidad - i) * tamano;
+        return {
+            etiqueta: porDia ? dias[new Date(desde).getDay()] : `Sem ${i + 1}`,
+            desde,
+            total: 0
+        };
+    });
+
+    fechas.forEach(fecha => {
+        const indice = Math.floor((new Date(fecha).getTime() - (fin - cantidad * tamano)) / tamano);
+        if (indice >= 0 && indice < cantidad) barras[indice].total++;
+    });
+
+    const maximo = Math.max(1, ...barras.map(b => b.total));
+    return barras.map(b => ({ etiqueta: b.etiqueta, total: b.total, altura: Math.round((b.total / maximo) * 100) }));
+}
+
+async function obtenerGrafica(rango) {
+    const filas = await consulta(
+        `SELECT (fecha_postulacion AT TIME ZONE 'UTC') AS fecha FROM postulaciones
+         WHERE fecha_postulacion >= CURRENT_DATE - $1::int - 1`,
+        [rango]
+    );
+    return armarGrafica(filas.map(f => f.fecha), rango);
+}
+
+async function obtenerActividad(limite = 6) {
+    const postulaciones = await consulta(
+        `SELECT 'postulacion' AS tipo, c.nombre, v.titulo AS vacante, p.estado,
+            p.id_postulacion::int AS "postulacionId", (p.fecha_postulacion AT TIME ZONE 'UTC') AS fecha
+         FROM postulaciones p
+         JOIN candidatos c ON c.id_candidato = p.candidato_id
+         JOIN vacantes v ON v.id_vacante = p.vacante_id
+         ORDER BY p.fecha_postulacion DESC LIMIT $1`,
+        [limite]
+    );
+    const notas = await consulta(
+        `SELECT 'nota' AS tipo, n.autor AS nombre, c.nombre AS candidato, n.texto,
+            n.postulacion_id::int AS "postulacionId", (n.fecha AT TIME ZONE 'UTC') AS fecha
+         FROM notas_postulacion n
+         JOIN postulaciones p ON p.id_postulacion = n.postulacion_id
+         JOIN candidatos c ON c.id_candidato = p.candidato_id
+         ORDER BY n.fecha DESC LIMIT $1`,
+        [limite]
+    );
+    const porCerrar = await consulta(
+        `SELECT 'cierre' AS tipo, titulo AS vacante, id_vacante::int AS "vacanteId",
+            (fecha_cierre - CURRENT_DATE)::int AS dias
+         FROM vacantes
+         WHERE estado = 'publicada' AND fecha_cierre BETWEEN CURRENT_DATE AND CURRENT_DATE + 7
+         ORDER BY fecha_cierre`
+    );
+
+    const actividad = [...postulaciones, ...notas]
+        .map(a => ({ ...a, estado: capitalizar(a.estado) }))
+        .sort((a, b) => b.fecha - a.fecha)
+        .slice(0, limite);
+
+    // los cierres van primero
+    return [...porCerrar, ...actividad].slice(0, limite);
+}
+
+async function obtenerPanel(rango = 30) {
+    const rangoValido = [7, 30, 90].includes(Number(rango)) ? Number(rango) : 30;
+    const vacantesActivas = await listarVacantes({ estado: 'Activa' });
+    const hoy = new Date();
+
+    return {
+        rango: rangoValido,
+        indicadores: await obtenerIndicadores(),
+        grafica: await obtenerGrafica(rangoValido),
+        actividad: await obtenerActividad(),
+        vacantes: vacantesActivas.slice(0, 5).map(v => {
+            const dias = v.fechaCierre ? Math.ceil((new Date(v.fechaCierre + 'T23:59:59') - hoy) / DIA) : null;
+            return { ...v, porCerrar: dias !== null && dias >= 0 && dias <= 7 };
+        }),
+        totalVacantesActivas: vacantesActivas.length
+    };
+}
+
 module.exports = {
     empleadorActual,
+    obtenerPanel,
+    armarGrafica,
     ESTADOS_EMPRESA,
     ESTADOS_VACANTE,
     ESTADOS_POSTULACION,

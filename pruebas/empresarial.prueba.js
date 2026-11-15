@@ -125,6 +125,22 @@ async function ejecutar(conexion) {
         servicio.habilidadesCoincidentes({ habilidades: ['Figma', 'Motion'] }, { habilidades: ['Dominio de Figma'] }).join() === 'Figma');
     prueba('Postulación inexistente devuelve null', (await servicio.obtenerPostulacion(999999)) === null);
 
+    console.log('\nPanel de empresa');
+    const panel = await servicio.obtenerPanel(30);
+    prueba('Cuenta postulaciones en los KPIs', panel.indicadores.postulaciones >= 3);
+    prueba('Cuenta vacantes activas', panel.indicadores.vacantesActivas === (await servicio.listarVacantes({ estado: 'Activa' })).length);
+    prueba('Tasa de respuesta entre 0 y 100', panel.indicadores.tasaRespuesta >= 0 && panel.indicadores.tasaRespuesta <= 100);
+    prueba('Muestra la actividad reciente', panel.actividad.some(a => a.nombre === 'Ana Prueba' || a.candidato === 'Ana Prueba'));
+    prueba('Lista máximo 5 vacantes activas', panel.vacantes.length <= 5 && panel.vacantes.every(v => v.estado === 'Activa'));
+    prueba('Rango inválido usa 30 días', (await servicio.obtenerPanel('abc')).rango === 30);
+    const hoy = new Date(2026, 10, 15, 12);
+    const grafica7 = servicio.armarGrafica([new Date(2026, 10, 15, 9), new Date(2026, 10, 15, 10), new Date(2026, 10, 14, 9)], 7, hoy);
+    prueba('Gráfica de 7 días tiene 7 barras', grafica7.length === 7);
+    prueba('Agrupa postulaciones por día', grafica7[6].total === 2 && grafica7[5].total === 1 && grafica7[6].altura === 100);
+    const grafica90 = servicio.armarGrafica([new Date(2026, 7, 1)], 90, hoy);
+    prueba('Gráfica de 90 días es por semana (13 barras)', grafica90.length === 13);
+    prueba('Ignora postulaciones fuera del rango', grafica90.every(b => b.total === 0));
+
     let duplicada = false;
     try {
         await conexion.query('SAVEPOINT dup');

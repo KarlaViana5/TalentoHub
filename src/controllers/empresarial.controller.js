@@ -7,10 +7,27 @@ const mensajes = {
     activada: 'Empresa activada.'
 };
 
-function mostrarInicio(req, res) {
+// EMP-01
+function saludo(hora = new Date().getHours()) {
+    if (hora < 12) return 'Buenos días';
+    if (hora < 19) return 'Buenas tardes';
+    return 'Buenas noches';
+}
+
+function formatoFecha(fecha) {
+    if (!fecha) return '-';
+    return new Date(fecha + 'T00:00:00').toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+async function mostrarInicio(req, res) {
+    const panel = await servicio.obtenerPanel(req.query.rango);
+
     res.render('empresarial/index', {
-        titulo: 'Módulo empresarial',
-        descripcion: 'Gestiona tu empresa, publica empleos y administra postulaciones.'
+        titulo: 'Panel de empresa',
+        saludo: `${saludo()}, ${servicio.empleadorActual.nombre.split(' ')[0]}`,
+        ...panel,
+        haceCuanto,
+        formatoFecha
     });
 }
 
