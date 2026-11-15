@@ -60,6 +60,16 @@ prueba('Rechaza a un candidato', servicio.obtenerPostulacion(2).estado === 'Rech
 prueba('No acepta estados inválidos', servicio.cambiarEstadoPostulacion(1, 'Inventado') === null);
 servicio.agregarNota(1, 'Nota de prueba');
 prueba('Agrega una nota interna', servicio.obtenerPostulacion(1).notas.length === 2);
+prueba('Filtra por estado', servicio.listarPostulaciones(101, { estado: 'Rechazado' }).length === 2);
+prueba('Busca candidato por nombre', servicio.listarPostulaciones(101, { q: 'karla' }).length === 1);
+prueba('Filtra por experiencia minima', servicio.listarPostulaciones(101, { experienciaMin: 4 }).length === 2);
+prueba('Filtra por compatibilidad minima', servicio.listarPostulaciones(101, { compatibilidadMin: 70 })
+    .every(p => p.compatibilidad >= 70));
+prueba('Ordena por compatibilidad', servicio.listarPostulaciones(101, { orden: 'compatibilidad' })[0].candidato.nombre === 'Alex Moreno');
+prueba('Cambia estado a varios a la vez', servicio.cambiarEstadoVariasPostulaciones(['5', '6'], 'Preseleccionado') === 2 &&
+    servicio.contarPostulacionesPorEstado(102).Preseleccionado === 2);
+servicio.eliminarVacante(103);
+prueba('Al eliminar vacante borra sus postulaciones', servicio.obtenerPostulacion(7) === null);
 
 console.log(`\nResultado: ${aprobadas} aprobadas, ${fallidas} fallidas\n`);
 process.exitCode = fallidas > 0 ? 1 : 0;

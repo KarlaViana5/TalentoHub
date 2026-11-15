@@ -255,8 +255,106 @@ function eliminarVacante(req, res) {
     res.redirect('/empresarial/vacantes?ok=eliminada');
 }
 
+// EMP-04
+const mensajesPostulaciones = {
+    preseleccionado: 'Candidato preseleccionado.',
+    rechazado: 'Candidato rechazado.',
+    masivo: 'Estado actualizado a los candidatos seleccionados.'
+};
+
+function haceCuanto(fecha) {
+    const horas = Math.floor((Date.now() - new Date(fecha)) / 3600000);
+    if (horas < 1) return 'Hace un momento';
+    if (horas < 24) return `Hace ${horas} h`;
+    const dias = Math.floor(horas / 24);
+    return dias === 1 ? 'Ayer' : `Hace ${dias} días`;
+}
+
+function vacantesConPostulaciones() {
+    return servicio.listarVacantes().filter(v => v.estado !== 'Borrador');
+}
+
+// solo rutas internas
+function urlVolver(body) {
+    const volver = body.volver || '';
+    return volver.startsWith('/empresarial/postulaciones') ? volver : '/empresarial/postulaciones';
+}
+
+function conMensaje(url, ok) {
+    const limpia = url.replace(/[?&]ok=[^&]*/, '');
+    return limpia + (limpia.includes('?') ? '&' : '?') + 'ok=' + ok;
+}
+
+function mostrarPostulaciones(req, res) {
+    const lista = vacantesConPostulaciones();
+    const vacante = req.query.vacante ? servicio.obtenerVacante(req.query.vacante) : lista[0];
+
+    if (!vacante || vacante.estado === 'Borrador') return noEncontrado(req, res);
+
+    const filtros = {
+        estado: servicio.ESTADOS_POSTULACION.includes(req.query.estado) ? req.query.estado : '',
+        q: req.query.q || '',
+        experienciaMin: req.query.experienciaMin || '',
+        compatibilidadMin: req.query.compatibilidadMin || '',
+        orden: req.query.orden === 'compatibilidad' ? 'compatibilidad' : 'fecha'
+    };
+
+    const postulaciones = servicio.listarPostulaciones(vacante.id, filtros)
+        .map(p => ({ ...p, hace: haceCuanto(p.fecha) }));
+
+    res.render('empresarial/postulaciones', {
+        titulo: 'Postulaciones',
+        vacante,
+        vacantes: lista,
+        filtros,
+        postulaciones,
+        conteo: servicio.contarPostulacionesPorEstado(vacante.id),
+        estados: servicio.ESTADOS_POSTULACION,
+        volver: req.originalUrl,
+        mensaje: mensajesPostulaciones[req.query.ok] || ''
+    });
+}
+
+function cambiarEstadoPostulacion(req, res) {
+    const estado = req.body.estado;
+    if (!servicio.cambiarEstadoPostulacion(req.params.id, estado)) return noEncontrado(req, res);
+    res.redirect(conMensaje(urlVolver(req.body), estado.toLowerCase()));
+}
+
+function cambiarEstadoMasivo(req, res) {
+    const volver = urlVolver(req.body);
+    if (!req.body.ids) return res.redirect(volver);
+
+    servicio.cambiarEstadoVariasPostulaciones(req.body.ids, req.body.estado);
+    res.redirect(conMensaje(volver, 'masivo'));
+}
+
+function csv(valor) {
+    return `"${String(valor).replace(/"/g, '""')}"`;
+}
+
+function exportarPostulaciones(req, res) {
+    const vacante = servicio.obtenerVacante(req.query.vacante);
+    if (!vacante) return noEncontrado(req, res);
+
+    const filas = [['Candidato', 'Cargo', 'Correo', 'Teléfono', 'Experiencia (años)', 'Compatibilidad (%)', 'Fecha', 'Estado']];
+    servicio.listarPostulaciones(vacante.id).forEach(p => {
+        filas.push([p.candidato.nombre, p.candidato.cargo, p.candidato.correo, p.candidato.telefono,
+            p.candidato.aniosExperiencia, p.compatibilidad, p.fecha.slice(0, 10), p.estado]);
+    });
+
+    // bom pa excel
+    const contenido = '\ufeff' + filas.map(f => f.map(csv).join(',')).join('\r\n');
+    res.attachment(`postulaciones-${vacante.id}.csv`);
+    res.type('text/csv').send(contenido);
+}
+
 module.exports = {
     mostrarInicio,
+    mostrarPostulaciones,
+    cambiarEstadoPostulacion,
+    cambiarEstadoMasivo,
+    exportarPostulaciones,
     mostrarEmpresas,
     crearEmpresa,
     actualizarEmpresa,

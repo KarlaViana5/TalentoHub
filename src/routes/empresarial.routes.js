@@ -19,4 +19,10 @@ router.post('/vacantes/:id', empresarialController.actualizarVacante);
 router.post('/vacantes/:id/estado', empresarialController.cambiarEstadoVacante);
 router.post('/vacantes/:id/eliminar', empresarialController.eliminarVacante);
 
+// postulaciones
+router.get('/postulaciones', empresarialController.mostrarPostulaciones);
+router.get('/postulaciones/exportar', empresarialController.exportarPostulaciones);
+router.post('/postulaciones/estado', empresarialController.cambiarEstadoMasivo);
+router.post('/postulaciones/:id/estado', empresarialController.cambiarEstadoPostulacion);
+
 module.exports = router;

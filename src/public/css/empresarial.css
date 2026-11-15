@@ -591,3 +591,45 @@ footer {
     .emp-publicar { grid-template-columns: 1fr; }
     .emp-stepper { flex-wrap: wrap; }
 }
+
+/* postulasiones */
+.emp-selector-oferta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    background: #fff;
+    border: 1px solid var(--emp-borde);
+    border-radius: 10px;
+}
+
+.emp-selector-oferta select {
+    border: none;
+    font: inherit;
+    font-weight: 700;
+    font-size: 16px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.emp-btn-exito { color: var(--emp-verde); }
+.emp-btn-exito:hover { background: var(--emp-verde-claro); }
+
+.emp-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.emp-compatibilidad {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.emp-compatibilidad .emp-barra { width: 70px; margin: 0; }
+.texto-buena { color: var(--emp-verde); }
+.texto-media { color: var(--emp-amarillo); }
+.texto-baja { color: var(--emp-rojo); }
+
+.emp-nombre a { color: var(--emp-texto); text-decoration: none; }
+.emp-nombre a:hover strong { color: var(--emp-azul); }
+.emp-tabla td small { color: var(--emp-gris); }
+
+#form-masivo { align-items: center; }
