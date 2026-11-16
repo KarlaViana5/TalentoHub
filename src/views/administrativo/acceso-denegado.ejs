@@ -1,0 +1,28 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+<link rel="stylesheet" href="/css/administrativo.css">
+
+<body class="adm-body" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px;">
+    <section class="adm-tarjeta" style="max-width: 540px; text-align: center; padding: 36px;">
+        <div class="adm-acceso-icono"><i class="fa-solid fa-lock" aria-hidden="true"></i></div>
+        <span class="adm-badge adm-badge-suspendida">ERROR 403 · SEPARACIÓN DE MÓDULOS POR ROL</span>
+        <h1 style="margin: 12px 0 8px;">Acceso restringido para tu rol actual</h1>
+        <p style="color: var(--adm-texto-suave); line-height: 1.6;">
+            Intentaste acceder a <code><%= ruta %></code> con el perfil <strong><%= rolIntentado %></strong>.
+            Este módulo es exclusivo para el rol <strong><%= typeof rolesRequeridos !== 'undefined' ? rolesRequeridos : 'Administrador' %></strong>.
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
+            <a class="adm-btn" href="/">Ir al inicio público</a>
+            <% if (locals.usuarioActual) { %>
+                <a class="adm-btn adm-btn-primario" href="<%= usuarioActual.rutaPanel %>">
+                    Ir a mi panel (<%= usuarioActual.rolEtiqueta %>)
+                </a>
+                <a class="adm-btn adm-btn-peligro" href="/auth/logout">Cambiar de cuenta</a>
+            <% } else { %>
+                <a class="adm-btn adm-btn-primario" href="/auth/login?volver=<%= encodeURIComponent(ruta) %>">
+                    Iniciar sesión con el rol requerido
+                </a>
+            <% } %>
+        </div>
+    </section>
+</body>
+</html>

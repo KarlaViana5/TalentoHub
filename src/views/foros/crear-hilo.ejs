@@ -1,0 +1,72 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="foros-body">
+    <%- include('partials/header-foros') %>
+
+    <main class="for-contenedor for-contenedor-lectura">
+        <div class="for-migas">
+            <a href="/foros?<%= queryActor %>">Comunidad</a> /
+            <a href="/foros/<%= foro.slug %>?<%= queryActor %>"><%= foro.nombre %></a> /
+            <strong>Nueva discusión</strong>
+        </div>
+
+        <section class="for-tarjeta">
+            <h1 class="for-form-title">Iniciar nueva discusión</h1>
+            <p class="for-form-intro">
+                Tu hilo se publicará inmediatamente en <strong><%= foro.nombre %></strong> y estará disponible para que candidatos y empresas aprobadas participen.
+            </p>
+
+            <% if (error) { %>
+                <div class="for-alerta error"><span>⚠ <%= error %></span></div>
+            <% } %>
+
+            <% if (!actorActual.puedeParticipar) { %>
+                <div class="for-alerta aviso">
+                    <span><%= actorActual.motivoBloqueo %></span>
+                </div>
+                <a class="for-btn" href="/foros/<%= foro.slug %>?<%= queryActor %>">← Volver al foro</a>
+            <% } else { %>
+                <form class="for-form" method="post" action="/foros/<%= foro.slug %>/hilos">
+                    <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+
+                    <div>
+                        <label for="foroSlug">Espacio de destino *</label>
+                        <select id="foroSlug" name="foroSlug" required>
+                            <% forosActivos.forEach(f => { %>
+                                <option value="<%= f.slug %>" <%= f.slug === foro.slug ? 'selected' : '' %>>
+                                    <%= f.icono %> <%= f.nombre %> (<%= f.origen %>)
+                                </option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="titulo">Título de la discusión *</label>
+                        <input id="titulo" name="titulo" type="text" required minlength="5" maxlength="200"
+                               value="<%= valores.titulo %>"
+                               placeholder="Ej. ¿Qué proyectos recomiendan incluir en un portafolio Junior?">
+                    </div>
+
+                    <div>
+                        <label for="contenido">Contenido del mensaje *</label>
+                        <textarea id="contenido" name="contenido" rows="7" required minlength="10"
+                                  placeholder="Explica tu consulta, experiencia o consejo con claridad para recibir mejores respuestas..."><%= valores.contenido %></textarea>
+                    </div>
+
+                    <div class="for-form-actions">
+                        <small class="for-form-note">
+                            Publicando como: <strong><%= actorActual.nombre %></strong> (<%= actorActual.etiquetaRol %>)
+                        </small>
+                        <div class="for-form-actions">
+                            <a class="for-btn" href="/foros/<%= foro.slug %>?<%= queryActor %>">Cancelar</a>
+                            <button type="submit" class="for-btn for-btn-primario">Publicar discusión</button>
+                        </div>
+                    </div>
+                </form>
+            <% } %>
+        </section>
+    </main>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

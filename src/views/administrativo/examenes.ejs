@@ -1,0 +1,225 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="adm-body">
+    <div class="adm-layout">
+        <%- include('partials/menu-admin') %>
+
+        <div class="adm-contenedor-principal">
+            <%- include('partials/topbar-admin') %>
+
+            <main class="adm-main">
+                <div class="adm-cabecera">
+                    <div>
+                        <h1>Exámenes y Evaluaciones (LMS)</h1>
+                        <p>Configura evaluaciones vinculadas a cursos, administra preguntas y consulta resultados de los aplicantes.</p>
+                    </div>
+                    <% if (examenDetalle) { %>
+                        <a href="/administrativo/examenes" class="adm-btn">← Volver al listado de evaluaciones</a>
+                    <% } %>
+                </div>
+
+                <% if (mensaje) { %>
+                    <div class="adm-flash exito">✓ <%= mensaje %></div>
+                <% } %>
+                <% if (error) { %>
+                    <div class="adm-flash error">⚠ <%= error %></div>
+                <% } %>
+
+                <% if (!examenDetalle) { %>
+                    <div class="adm-cabecera-acciones">
+                        <a class="adm-btn adm-btn-primario" href="#examen-form-modal">
+                            <i class="fa-solid fa-plus" aria-hidden="true"></i> Nueva evaluación
+                        </a>
+                    </div>
+                    <div>
+                        <section class="adm-tarjeta">
+                            <h3>Evaluaciones registradas (<%= examenes.length %>)</h3>
+                            <div class="adm-tabla-wrap">
+                                <table class="adm-tabla">
+                                    <thead>
+                                        <tr>
+                                            <th>Evaluación / Curso</th>
+                                            <th>Nota Mínima</th>
+                                            <th>Preguntas</th>
+                                            <th>Intentos</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% examenes.forEach(ex => { %>
+                                            <tr>
+                                                <td>
+                                                    <strong><%= ex.titulo %></strong><br>
+                                                    <small style="color: var(--adm-gris);">Curso: <%= ex.curso %></small>
+                                                </td>
+                                                <td><strong><%= ex.notaMinima %>%</strong></td>
+                                                <td><%= ex.totalPreguntas %></td>
+                                                <td><%= ex.intentosAprobados %> / <%= ex.totalIntentos %> aprob.</td>
+                                                <td>
+                                                    <a class="adm-btn adm-btn-primario" href="/administrativo/examenes/<%= ex.id %>">Gestionar →</a>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                    </div>
+                    <div id="examen-form-modal" class="adm-modal adm-modal-toggle" role="dialog" aria-modal="true" aria-labelledby="examen-form-titulo">
+                        <a class="adm-modal-backdrop" href="/administrativo/examenes" aria-label="Cerrar formulario"></a>
+                        <section class="adm-modal-panel adm-modal-form-panel">
+                            <header class="adm-modal-cabecera">
+                                <div>
+                                    <span class="adm-modal-kicker">Evaluación del curso</span>
+                                    <h2 id="examen-form-titulo">Configurar evaluación</h2>
+                                </div>
+                                <a class="adm-modal-cerrar" href="/administrativo/examenes" aria-label="Cerrar formulario">&times;</a>
+                            </header>
+                            <div class="adm-modal-form-body">
+                            <form class="adm-form" method="post" action="/administrativo/examenes">
+                                <div>
+                                    <label>Curso asociado *</label>
+                                    <select name="cursoId" required>
+                                        <% cursos.forEach(c => { %>
+                                            <option value="<%= c.id %>"><%= c.titulo %></option>
+                                        <% }) %>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Título del examen *</label>
+                                    <input type="text" name="titulo" required placeholder="Ej. Evaluación Final de Competencias">
+                                </div>
+                                <div>
+                                    <label>Descripción / Instrucciones</label>
+                                    <textarea name="descripcion" rows="2" placeholder="Indicaciones para el aplicante..."></textarea>
+                                </div>
+                                <div class="adm-grid-2">
+                                    <div>
+                                        <label>Nota mínima de aprobación (%)</label>
+                                        <input type="number" name="notaMinima" value="70" min="1" max="100">
+                                    </div>
+                                    <div>
+                                        <label>Intentos máximos permitidos</label>
+                                        <input type="number" name="intentosMaximos" value="3" min="1" max="10">
+                                    </div>
+                                </div>
+                                <button type="submit" class="adm-btn adm-btn-primario">Crear evaluación</button>
+                            </form>
+                            </div>
+                        </section>
+                    </div>
+                <% } else { %>
+                    <div class="adm-grid-2">
+                        <section class="adm-tarjeta">
+                            <h3><%= examenDetalle.titulo %> (<%= examenDetalle.preguntas.length %> preguntas)</h3>
+                            <p style="font-size: 13px; color: var(--adm-texto-suave);">
+                                Curso: <strong><%= examenDetalle.curso %></strong> · Nota mínima: <strong><%= examenDetalle.notaMinima %>%</strong> · Máx. intentos: <strong><%= examenDetalle.intentosMaximos %></strong>
+                            </p>
+
+                            <% examenDetalle.preguntas.forEach((p, idx) => { %>
+                                <div style="border: 1px solid var(--adm-borde); border-radius: 10px; padding: 12px; margin-bottom: 10px; background: #f8fafc;">
+                                    <strong><%= idx + 1 %>. <%= p.enunciado %></strong> <small>(<%= p.puntos %> pts · <%= p.tipo %>)</small>
+                                    <ul style="margin: 6px 0 0; padding-left: 18px; font-size: 13px;">
+                                        <% p.opciones.forEach(o => { %>
+                                            <li style="color: <%= o.esCorrecta ? 'var(--adm-verde)' : 'inherit' %>; font-weight: <%= o.esCorrecta ? '700' : '400' %>;">
+                                                <%= o.texto %> <%= o.esCorrecta ? '✓ (Correcta)' : '' %>
+                                            </li>
+                                        <% }) %>
+                                    </ul>
+                                </div>
+                            <% }) %>
+
+                            <h4>+ Agregar pregunta</h4>
+                            <form class="adm-form" method="post" action="/administrativo/examenes/<%= examenDetalle.id %>/preguntas">
+                                <div>
+                                    <label>Enunciado de la pregunta *</label>
+                                    <input type="text" name="enunciado" required placeholder="Escribe la pregunta...">
+                                </div>
+                                <div class="adm-grid-2">
+                                    <div>
+                                        <label>Tipo</label>
+                                        <select name="tipo">
+                                            <option value="verdadero_falso">Verdadero / Falso</option>
+                                            <option value="opcion_unica">Opción única</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label>Puntos</label>
+                                        <input type="number" name="puntos" value="25" min="1">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label>Respuesta correcta (para Verdadero/Falso)</label>
+                                    <select name="respuestaCorrecta">
+                                        <option value="verdadero">Verdadero</option>
+                                        <option value="falso">Falso</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="adm-btn">Guardar pregunta</button>
+                            </form>
+                        </section>
+
+                        <section class="adm-tarjeta">
+                            <h3>Simulador / Registro de Intentos (<%= examenDetalle.intentos.length %>)</h3>
+
+                            <% if (examenDetalle.preguntas.length > 0) { %>
+                                <form class="adm-form" method="post" action="/administrativo/examenes/<%= examenDetalle.id %>/presentar" style="background: #f8fafc; padding: 14px; border-radius: 10px; margin-bottom: 18px;">
+                                    <strong>Presentar y calificar intento en servidor:</strong>
+                                    <div>
+                                        <label>Aplicante evaluado</label>
+                                        <select name="candidatoId" required>
+                                            <% candidatosDisponibles.forEach(cand => { %>
+                                                <option value="<%= cand.id %>"><%= cand.nombre %></option>
+                                            <% }) %>
+                                        </select>
+                                    </div>
+                                    <% examenDetalle.preguntas.forEach(p => { %>
+                                        <div>
+                                            <label><%= p.enunciado %></label>
+                                            <% p.opciones.forEach(o => { %>
+                                                <label style="font-weight: 400; display: flex; align-items: center; gap: 6px;">
+                                                    <input type="<%= p.tipo === 'opcion_multiple' ? 'checkbox' : 'radio' %>" name="pregunta_<%= p.id %>" value="<%= o.id %>">
+                                                    <%= o.texto %>
+                                                </label>
+                                            <% }) %>
+                                        </div>
+                                    <% }) %>
+                                    <button type="submit" class="adm-btn adm-btn-verde">Calificar intento</button>
+                                </form>
+                            <% } %>
+
+                            <div class="adm-tabla-wrap">
+                                <table class="adm-tabla">
+                                    <thead>
+                                        <tr>
+                                            <th>Aplicante</th>
+                                            <th>Intento</th>
+                                            <th>Calificación</th>
+                                            <th>Resultado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% examenDetalle.intentos.forEach(it => { %>
+                                            <tr>
+                                                <td><strong><%= it.candidato %></strong></td>
+                                                <td>#<%= it.numeroIntento %></td>
+                                                <td><strong><%= it.calificacion %>%</strong></td>
+                                                <td>
+                                                    <span class="adm-badge adm-badge-<%= it.aprobado ? 'aprobada' : 'rechazada' %>">
+                                                        <%= it.aprobado ? 'APROBADO' : 'REPROBADO' %>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                <% } %>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

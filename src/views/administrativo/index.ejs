@@ -1,17 +1,227 @@
-<%- include('../modulo4/inicio', { titulo }) %>
-<div class="panel-administrativo">
-    <nav class="menu-admin" aria-label="Secciones administrativas">
-        <a href="/administrativo" <%- pagina === 'panel' ? 'aria-current="page"' : '' %>>Panel y estadísticas</a>
-        <% for (const [ruta, item] of Object.entries(menu)) { %>
-            <a href="/administrativo/<%= ruta %>" <%- pagina === 'lista' && ruta === nombre ? 'aria-current="page"' : '' %>><%= item.titulo %></a>
-        <% } %>
-        <a href="/administrativo/configuracion" <%- pagina === 'configuracion' ? 'aria-current="page"' : '' %>>Configuración y avisos</a>
-    </nav>
-    <section class="contenido-admin">
-        <h1><%= titulo %></h1>
-        <% if (pagina === 'panel') { %><%- include('panel') %><% } %>
-        <% if (pagina === 'lista') { %><%- include('lista') %><% } %>
-        <% if (pagina === 'configuracion') { %><%- include('configuracion') %><% } %>
-    </section>
-</div>
-<%- include('../modulo4/fin') %>
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="adm-body">
+    <div class="adm-layout">
+        <%- include('partials/menu-admin') %>
+
+        <div class="adm-contenedor-principal">
+            <%- include('partials/topbar-admin') %>
+
+            <main class="adm-main">
+                <div class="adm-dashboard-cabecera">
+                    <div>
+                        <span class="adm-eyebrow">Resumen operativo</span>
+                        <h1>Panel de control</h1>
+                        <p>Una vista clara de lo que necesita atención en TalentoHub.</p>
+                    </div>
+
+                    <div class="adm-periodos adm-periodos-limpios" aria-label="Periodo de estadísticas">
+                        <% [7, 30, 90].forEach(d => { %>
+                            <a href="/administrativo?periodo=<%= d %>" class="adm-btn <%= periodoDias === d ? 'adm-btn-primario' : '' %>">
+                                <%= d %> días
+                            </a>
+                        <% }) %>
+                    </div>
+                </div>
+
+                <% if (mensaje) { %>
+                    <div class="adm-flash exito">✓ <%= mensaje %></div>
+                <% } %>
+                <% if (error) { %>
+                    <div class="adm-flash error">⚠ <%= error %></div>
+                <% } %>
+
+                <div class="adm-alertas-grid">
+                    <a href="/administrativo/empresas?estado=pendiente" class="adm-alerta-card">
+                        <span class="adm-alerta-icono"><i class="fa-solid fa-building" aria-hidden="true"></i></span>
+                        <div>
+                            <small>Solicitudes de empresas</small>
+                            <strong><%= kpis.empresasPendientes %></strong>
+                            <span>Empresas pendientes o en corrección</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right adm-alerta-flecha" aria-hidden="true"></i>
+                    </a>
+                    <a href="/administrativo/foros?tab=solicitudes" class="adm-alerta-card">
+                        <span class="adm-alerta-icono"><i class="fa-solid fa-comments" aria-hidden="true"></i></span>
+                        <div>
+                            <small>Solicitudes de foros</small>
+                            <strong><%= kpis.solicitudesForosPendientes %></strong>
+                            <span>Propuestas comunitarias por aprobar</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right adm-alerta-flecha" aria-hidden="true"></i>
+                    </a>
+                    <a href="/administrativo/moderacion" class="adm-alerta-card">
+                        <span class="adm-alerta-icono"><i class="fa-solid fa-flag" aria-hidden="true"></i></span>
+                        <div>
+                            <small>Denuncias pendientes</small>
+                            <strong><%= kpis.reportesPendientes %></strong>
+                            <span>Casos que requieren moderación</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right adm-alerta-flecha" aria-hidden="true"></i>
+                    </a>
+                </div>
+
+                <section class="adm-kpis">
+                    <div class="adm-kpi adm-kpi-usuarios">
+                        <span class="adm-kpi-icono"><i class="fa-solid fa-users" aria-hidden="true"></i></span>
+                        <small>Total Candidatos</small>
+                        <strong><%= kpis.totalCandidatos %></strong>
+                        <span><%= kpis.candidatosActivos %> activos · <%= kpis.candidatosSuspendidos %> suspendidos</span>
+                    </div>
+                    <div class="adm-kpi">
+                        <span class="adm-kpi-icono"><i class="fa-solid fa-building" aria-hidden="true"></i></span>
+                        <small>Empresas Aprobadas</small>
+                        <strong><%= kpis.empresasAprobadas %> / <%= kpis.totalEmpresas %></strong>
+                        <span><%= kpis.empresasSuspendidas %> suspendidas</span>
+                    </div>
+                    <div class="adm-kpi">
+                        <span class="adm-kpi-icono"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></span>
+                        <small>Vacantes Publicadas</small>
+                        <strong><%= kpis.vacantesPublicadas %></strong>
+                        <span><%= kpis.vacantesCerradas %> cerradas · <%= kpis.vacantesOcultas %> ocultas</span>
+                    </div>
+                    <div class="adm-kpi">
+                        <span class="adm-kpi-icono"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></span>
+                        <small>Total Postulaciones</small>
+                        <strong><%= kpis.totalPostulaciones %></strong>
+                        <span>Solicitudes enviadas por candidatos</span>
+                    </div>
+                    <div class="adm-kpi">
+                        <span class="adm-kpi-icono"><i class="fa-solid fa-comments" aria-hidden="true"></i></span>
+                        <small>Foros y Comunidad</small>
+                        <strong><%= kpis.forosActivos %></strong>
+                        <span><%= kpis.hilosActivos %> hilos de discusión activos</span>
+                    </div>
+                    <div class="adm-kpi">
+                        <span class="adm-kpi-icono"><i class="fa-solid fa-book-open" aria-hidden="true"></i></span>
+                        <small>Biblioteca y Recursos</small>
+                        <strong><%= kpis.recursosDisponibles %></strong>
+                        <span>Guías, plantillas y artículos publicados</span>
+                    </div>
+                    <div class="adm-kpi">
+                        <span class="adm-kpi-icono"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i></span>
+                        <small>Cursos Publicados</small>
+                        <strong><%= kpis.cursosPublicados %></strong>
+                        <span><%= kpis.totalInscripciones %> inscripciones · <%= kpis.cursosCompletados %> finalizados</span>
+                    </div>
+                    <div class="adm-kpi">
+                        <span class="adm-kpi-icono"><i class="fa-solid fa-user-group" aria-hidden="true"></i></span>
+                        <small>Usuarios Totales</small>
+                        <strong><%= kpis.usuariosRegistrados %></strong>
+                        <span>Candidatos y cuentas empresariales</span>
+                    </div>
+                </section>
+
+                <section class="adm-acciones adm-tarjeta">
+                    <div>
+                        <span class="adm-eyebrow">Atajos</span>
+                        <strong>Acciones frecuentes</strong>
+                    </div>
+                    <div class="adm-acciones-lista">
+                        <a href="/administrativo/articulos" class="adm-btn adm-btn-primario"><i class="fa-solid fa-plus" aria-hidden="true"></i> Artículo</a>
+                        <a href="/administrativo/cursos" class="adm-btn"><i class="fa-solid fa-plus" aria-hidden="true"></i> Capacitación</a>
+                        <a href="/administrativo/recursos" class="adm-btn"><i class="fa-solid fa-plus" aria-hidden="true"></i> Recurso</a>
+                        <a href="/administrativo/moderacion" class="adm-btn adm-btn-peligro"><i class="fa-solid fa-flag" aria-hidden="true"></i> Reportes</a>
+                    </div>
+                </section>
+
+                <div class="adm-grid-2">
+                    <section class="adm-tarjeta">
+                        <div class="adm-seccion-cabecera"><div><span class="adm-eyebrow">Demanda laboral</span><h3>Vacantes</h3></div><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></div>
+                        <h4>Por categoría / sector</h4>
+                        <% const maxVacSector = Math.max(1, ...graficos.vacantesPorSector.map(x => x.total)); %>
+                        <% graficos.vacantesPorSector.forEach(item => { %>
+                            <div class="adm-barra-item">
+                                <div class="adm-barra-cabecera">
+                                    <span><%= item.etiqueta %></span>
+                                    <strong><%= item.total %></strong>
+                                </div>
+                                <div class="adm-barra-pista">
+                                    <div class="adm-barra-relleno" style="width: <%= Math.round((item.total / maxVacSector) * 100) %>%;"></div>
+                                </div>
+                            </div>
+                        <% }) %>
+
+                        <h4>Por departamento / ubicación</h4>
+                        <% const maxVacUbic = Math.max(1, ...graficos.vacantesPorUbicacion.map(x => x.total)); %>
+                        <% graficos.vacantesPorUbicacion.forEach(item => { %>
+                            <div class="adm-barra-item">
+                                <div class="adm-barra-cabecera">
+                                    <span><%= item.etiqueta %></span>
+                                    <strong><%= item.total %></strong>
+                                </div>
+                                <div class="adm-barra-pista">
+                                    <div class="adm-barra-relleno adm-barra-azul-secundaria" style="width: <%= Math.round((item.total / maxVacUbic) * 100) %>%;"></div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </section>
+
+                    <section class="adm-tarjeta">
+                        <div class="adm-seccion-cabecera"><div><span class="adm-eyebrow">Contenido</span><h3>Actividad de la plataforma</h3></div><i class="fa-solid fa-chart-line" aria-hidden="true"></i></div>
+                        <h4>Inscripciones por curso</h4>
+                        <% const maxInsc = Math.max(1, ...graficos.inscripcionesPorCurso.map(x => x.inscritos)); %>
+                        <% graficos.inscripcionesPorCurso.forEach(c => { %>
+                            <div class="adm-barra-item">
+                                <div class="adm-barra-cabecera">
+                                    <span><%= c.etiqueta %></span>
+                                    <span><strong><%= c.inscritos %></strong> inscritos · <strong class="adm-texto-ok"><%= c.completados %></strong> finalizados</span>
+                                </div>
+                                <div class="adm-barra-pista">
+                                    <div class="adm-barra-relleno" style="width: <%= Math.round((c.inscritos / maxInsc) * 100) %>%;"></div>
+                                </div>
+                            </div>
+                        <% }) %>
+
+                        <h4>Participación en Comunidad</h4>
+                        <% const maxForo = Math.max(1, ...graficos.participacionForos.map(x => x.hilos + x.comentarios)); %>
+                        <% graficos.participacionForos.forEach(f => { %>
+                            <div class="adm-barra-item">
+                                <div class="adm-barra-cabecera">
+                                    <span><%= f.etiqueta %></span>
+                                    <span><%= f.hilos %> hilos · <%= f.comentarios %> respuestas</span>
+                                </div>
+                                <div class="adm-barra-pista">
+                                    <div class="adm-barra-relleno adm-barra-azul-secundaria" style="width: <%= Math.round(((f.hilos + f.comentarios) / maxForo) * 100) %>%;"></div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </section>
+                </div>
+
+                <!-- Bandeja de Solicitudes -->
+                <div class="adm-dashboard-solicitudes">
+                    <section class="adm-tarjeta">
+                        <h3>📥 Centro unificado de solicitudes</h3>
+                        <div class="adm-tabla-wrap">
+                            <table class="adm-tabla">
+                                <thead>
+                                    <tr>
+                                        <th>Solicitud</th>
+                                        <th>Tipo</th>
+                                        <th>Estado</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% bandejaSolicitudes.forEach(s => { %>
+                                        <tr>
+                                            <td>
+                                                <strong><%= s.titulo %></strong><br>
+                                                <small style="color: var(--adm-gris);"><%= s.solicitante %> (<%= s.rolSolicitante %>)</small>
+                                            </td>
+                                            <td><%= s.tipo === 'empresa' ? 'Empresa' : 'Comunidad' %></td>
+                                            <td><span class="adm-badge adm-badge-<%= s.estado %>"><%= s.estado %></span></td>
+                                            <td><a href="<%= s.enlace %>" class="adm-btn">Revisar</a></td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

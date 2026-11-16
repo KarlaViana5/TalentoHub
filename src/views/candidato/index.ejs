@@ -8,36 +8,13 @@
 
     <link rel="stylesheet" href="/css/busqueda.css">
     <link rel="stylesheet" href="/css/candidato.css">
+    <link rel="stylesheet" href="/css/navigation.css">
+    <link rel="stylesheet" href="/css/design-system.css">
 </head>
 
 <body>
 
-    <!-- =====================================
-         NAVEGACIÓN PRINCIPAL
-    ====================================== -->
-
-    <header class="main-header">
-        <div class="header-container">
-
-            <a href="/" class="brand">
-                <span class="brand-icon">T</span>
-                <span>Talento<span class="brand-highlight">Hub</span></span>
-            </a>
-
-            <nav class="main-nav">
-                <a href="/">Inicio</a>
-                <a href="/busqueda">Vacantes</a>
-                <a href="/candidato" class="active">Candidato</a>
-                <a href="/recursos">Recursos</a>
-                <a href="/foros">Foros</a>
-            </nav>
-
-            <div class="header-actions">
-                <a href="/busqueda" class="header-link">Explorar empleos</a>
-            </div>
-
-        </div>
-    </header>
+    <%- include('../partials/navigation', { activo: 'candidato' }) %>
 
 
     <!-- =====================================
@@ -500,6 +477,47 @@
                                 </div>
                             <% } %>
 
+                        </article>
+
+                        <!-- 5. CURSOS Y CAPACITACIONES (LMS CONECTADO CON ADMINISTRACIÓN) -->
+                        <article class="candidate-card">
+                            <div class="card-header-flex">
+                                <div>
+                                    <span class="card-tag">FORMACIÓN Y EMPLEABILIDAD</span>
+                                    <h3>Mis cursos y capacitaciones</h3>
+                                </div>
+                                <a href="/foros" class="btn-secondary" style="text-decoration: none; font-size: 0.85rem;">💬 Ir a Foros</a>
+                            </div>
+
+                            <% if (typeof cursos !== 'undefined' && cursos.length > 0) { %>
+                                <div class="inner-list">
+                                    <% cursos.forEach(c => { %>
+                                        <div class="inner-item-column">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                                                <h4 style="margin: 0; color: #0f172a;"><%= c.titulo %></h4>
+                                                <% if (c.inscripcionId) { %>
+                                                    <span class="stars-tag" style="background: #ecfdf5; color: #059669;">
+                                                        <%= c.estadoInscripcion === 'completada' ? '✓ Completado (100%)' : `En curso (${c.porcentajeAvance}%)` %>
+                                                    </span>
+                                                <% } else { %>
+                                                    <span class="stars-tag"><%= c.nivel %> · <%= c.duracionMinutos %> min</span>
+                                                <% } %>
+                                            </div>
+                                            <p style="margin: 0.3rem 0; color: #475569; font-size: 0.9rem;"><%= c.descripcion %></p>
+                                            <% if (!c.inscripcionId) { %>
+                                                <form action="/candidato/cursos/<%= c.id %>/inscribir" method="POST" style="margin-top: 0.4rem;">
+                                                    <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
+                                                    <button type="submit" class="btn-primary" style="width: fit-content; padding: 0.45rem 0.9rem; font-size: 0.85rem;">
+                                                        Inscribirme al curso
+                                                    </button>
+                                                </form>
+                                            <% } %>
+                                        </div>
+                                    <% }) %>
+                                </div>
+                            <% } else { %>
+                                <p style="color: #64748b; font-size: 0.92rem;">No hay cursos publicados en este momento.</p>
+                            <% } %>
                         </article>
 
                     </div>

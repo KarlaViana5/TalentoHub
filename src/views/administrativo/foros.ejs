@@ -1,0 +1,231 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="adm-body">
+    <div class="adm-layout">
+        <%- include('partials/menu-admin') %>
+
+        <div class="adm-contenedor-principal">
+            <%- include('partials/topbar-admin') %>
+
+            <main class="adm-main">
+                <div class="adm-cabecera">
+                    <div>
+                        <h1>Administración de Foros y Comunidad</h1>
+                        <p>Aprueba o rechaza propuestas de nuevos foros comunitarios, administra las categorías oficiales y modera hilos y comentarios.</p>
+                    </div>
+                    <a href="/foros" class="adm-btn"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Ver Comunidad pública</a>
+                </div>
+
+                <% if (mensaje) { %>
+                    <div class="adm-flash exito">✓ <%= mensaje %></div>
+                <% } %>
+                <% if (error) { %>
+                    <div class="adm-flash error">⚠ <%= error %></div>
+                <% } %>
+
+                <nav class="adm-pestanas">
+                    <a href="/administrativo/foros?tab=solicitudes" class="<%= pestanaActiva === 'solicitudes' ? 'activo' : '' %>">
+                        Solicitudes de Foros (<%= solicitudes.filter(s => s.estado === 'pendiente').length %> pendientes)
+                    </a>
+                    <a href="/administrativo/foros?tab=categorias" class="<%= pestanaActiva === 'categorias' ? 'activo' : '' %>">
+                        Categorías de Foros (<%= foros.length %>)
+                    </a>
+                    <a href="/administrativo/foros?tab=hilos" class="<%= pestanaActiva === 'hilos' ? 'activo' : '' %>">
+                        Moderación de Hilos (<%= hilos.length %>)
+                    </a>
+                    <a href="/administrativo/foros?tab=comentarios" class="<%= pestanaActiva === 'comentarios' ? 'activo' : '' %>">
+                        Comentarios Recientes (<%= comentarios.length %>)
+                    </a>
+                </nav>
+
+                <% if (pestanaActiva === 'solicitudes') { %>
+                    <section class="adm-tarjeta">
+                        <h3>Propuestas de Nuevos Foros enviadas por Aplicantes y Empresas</h3>
+                        <div class="adm-tabla-wrap">
+                            <table class="adm-tabla">
+                                <thead>
+                                    <tr>
+                                        <th>Foro Propuesto</th>
+                                        <th>Solicitante</th>
+                                        <th>Justificación</th>
+                                        <th>Estado</th>
+                                        <th>Decisión Administrativa</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% solicitudes.forEach(s => { %>
+                                        <tr>
+                                            <td>
+                                                <strong><%= s.icono %> <%= s.nombre %></strong><br>
+                                                <small style="color: var(--adm-gris);"><%= s.descripcion %></small>
+                                            </td>
+                                            <td>
+                                                <strong><%= s.solicitanteNombre %></strong><br>
+                                                <span class="adm-badge adm-badge-borrador"><%= s.solicitanteTipo %></span>
+                                            </td>
+                                            <td><small><%= s.motivo %></small></td>
+                                            <td><span class="adm-badge adm-badge-<%= s.estado %>"><%= s.estado %></span></td>
+                                            <td>
+                                                <% if (s.estado === 'pendiente') { %>
+                                                    <form method="post" action="/administrativo/foros/solicitudes/<%= s.id %>/revisar" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                                        <input type="text" name="notasRevision" placeholder="Nota o motivo (obligatorio al rechazar)" style="padding: 6px 8px; border: 1px solid var(--adm-borde); border-radius: 6px; font-size: 12px;">
+                                                        <button type="submit" name="accion" value="aprobar" class="adm-btn adm-btn-verde">✓ Aprobar y crear foro</button>
+                                                        <button type="submit" name="accion" value="rechazar" class="adm-btn adm-btn-peligro">✕ Rechazar</button>
+                                                    </form>
+                                                <% } else { %>
+                                                    <small style="color: var(--adm-gris);">Revisado por <%= s.revisadoPor || 'Admin' %>: <%= s.notasRevision || '-' %></small>
+                                                <% } %>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                <% } else if (pestanaActiva === 'categorias') { %>
+                    <div class="adm-grid-2">
+                        <section class="adm-tarjeta">
+                            <h3>Foros Oficiales y Comunitarios</h3>
+                            <div class="adm-tabla-wrap">
+                                <table class="adm-tabla">
+                                    <thead>
+                                        <tr>
+                                            <th>Foro</th>
+                                            <th>Origen</th>
+                                            <th>Actividad</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% foros.forEach(f => { %>
+                                            <tr>
+                                                <td>
+                                                    <strong><a href="/foros/<%= f.slug %>" target="_blank"><%= f.icono %> <%= f.nombre %></a></strong><br>
+                                                    <small style="color: var(--adm-gris);"><%= f.descripcion %></small>
+                                                </td>
+                                                <td><span class="adm-badge adm-badge-borrador"><%= f.origen %></span></td>
+                                                <td><%= f.totalHilos %> hilos / <%= f.totalComentarios %> resp.</td>
+                                                <td><span class="adm-badge adm-badge-<%= f.estado %>"><%= f.estado %></span></td>
+                                                <td>
+                                                    <form method="post" action="/administrativo/foros/<%= f.id %>/estado" style="display: inline;">
+                                                        <input type="hidden" name="estado" value="<%= f.estado === 'activo' ? 'archivado' : 'activo' %>">
+                                                        <button type="submit" class="adm-btn"><%= f.estado === 'activo' ? 'Archivar' : 'Reactivar' %></button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <section class="adm-tarjeta">
+                            <h3>+ Crear Nuevo Foro Oficial</h3>
+                            <form class="adm-form" method="post" action="/administrativo/foros">
+                                <div>
+                                    <label>Nombre del foro *</label>
+                                    <input type="text" name="nombre" required placeholder="Ej. Habilidades Blandas y Liderazgo">
+                                </div>
+                                <div class="adm-grid-2">
+                                    <div>
+                                        <label>Icono</label>
+                                        <input type="text" name="icono" value="comments">
+                                    </div>
+                                    <div>
+                                        <label>Orden de aparición</label>
+                                        <input type="number" name="orden" value="<%= foros.length + 1 %>" min="1">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label>Descripción temática *</label>
+                                    <textarea name="descripcion" rows="3" required placeholder="Describe el propósito de este foro..."></textarea>
+                                </div>
+                                <button type="submit" class="adm-btn adm-btn-primario">Publicar foro oficial</button>
+                            </form>
+                        </section>
+                    </div>
+                <% } else if (pestanaActiva === 'hilos') { %>
+                    <section class="adm-tarjeta">
+                        <h3>Supervisión y Moderación de Hilos</h3>
+                        <div class="adm-tabla-wrap">
+                            <table class="adm-tabla">
+                                <thead>
+                                    <tr>
+                                        <th>Hilo / Foro</th>
+                                        <th>Autor</th>
+                                        <th>Estado</th>
+                                        <th>Acciones de Moderación</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% hilos.forEach(h => { %>
+                                        <tr>
+                                            <td>
+                                                <strong><a href="/foros/<%= h.foroSlug %>/hilos/<%= h.id %>" target="_blank"><%= h.titulo %></a></strong>
+                                                <% if (h.fijado) { %> 📌 <% } %>
+                                                <% if (h.bloqueado) { %><i class="fa-solid fa-lock" aria-label="Bloqueado"></i><% } %><br>
+                                                <small style="color: var(--adm-gris);">Foro: <%= h.foro %> · <%= h.totalComentarios %> comentarios</small>
+                                            </td>
+                                            <td><%= h.autor %> (<%= h.autorTipo %>)</td>
+                                            <td><span class="adm-badge adm-badge-<%= h.estado %>"><%= h.estado %></span></td>
+                                            <td>
+                                                <form method="post" action="/administrativo/foros/hilos/<%= h.id %>/moderacion" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                                    <button type="submit" name="accion" value="<%= h.fijado ? 'desfijar' : 'fijar' %>" class="adm-btn">
+                                                        <%= h.fijado ? 'Desfijar' : '📌 Fijar' %>
+                                                    </button>
+                                                    <button type="submit" name="accion" value="<%= h.bloqueado ? 'desbloquear' : 'bloquear' %>" class="adm-btn">
+                                                        <%= h.bloqueado ? 'Abrir respuestas' : 'Cerrar respuestas' %>
+                                                    </button>
+                                                    <button type="submit" name="accion" value="<%= h.estado === 'visible' ? 'ocultar' : 'restaurar' %>" class="adm-btn <%= h.estado === 'visible' ? 'adm-btn-peligro' : 'adm-btn-verde' %>">
+                                                        <%= h.estado === 'visible' ? 'Ocultar' : 'Restaurar' %>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                <% } else { %>
+                    <section class="adm-tarjeta">
+                        <h3>Moderación de Comentarios</h3>
+                        <div class="adm-tabla-wrap">
+                            <table class="adm-tabla">
+                                <thead>
+                                    <tr>
+                                        <th>Comentario</th>
+                                        <th>Hilo</th>
+                                        <th>Autor</th>
+                                        <th>Estado</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% comentarios.forEach(c => { %>
+                                        <tr>
+                                            <td><%= c.contenido %></td>
+                                            <td><a href="/foros/<%= c.foroSlug %>/hilos/<%= c.hiloId %>" target="_blank"><%= c.hilo %></a></td>
+                                            <td><%= c.autor %> (<%= c.autorTipo %>)</td>
+                                            <td><span class="adm-badge adm-badge-<%= c.estado %>"><%= c.estado %></span></td>
+                                            <td>
+                                                <form method="post" action="/administrativo/foros/comentarios/<%= c.id %>/moderacion" style="margin: 0;">
+                                                    <input type="hidden" name="accion" value="<%= c.estado === 'visible' ? 'ocultar' : 'restaurar' %>">
+                                                    <button type="submit" class="adm-btn <%= c.estado === 'visible' ? 'adm-btn-peligro' : 'adm-btn-verde' %>">
+                                                        <%= c.estado === 'visible' ? 'Ocultar' : 'Restaurar' %>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                <% } %>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

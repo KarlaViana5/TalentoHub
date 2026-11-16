@@ -1,7 +1,13 @@
-<%- include('../modulo4/inicio', { titulo }) %>
-<section class="tarjeta estrecha">
-    <h1><%= titulo %></h1>
-    <p><%= mensaje %></p>
-    <a href="/foros">Volver a los foros</a>
-</section>
-<%- include('../modulo4/fin') %>
+<%- include('../partials/head', { titulo: titulo }) %>
+<body class="foros-body">
+    <%- include('partials/header-foros') %>
+    <main class="for-contenedor for-contenedor-lectura">
+        <section class="for-tarjeta for-empty">
+            <h1><%= titulo %></h1>
+            <p><%= mensaje %></p>
+            <a class="for-btn for-btn-primario" href="/foros">Volver a Comunidad</a>
+        </section>
+    </main>
+    <%- include('../partials/footer') %>
+</body>
+</html>

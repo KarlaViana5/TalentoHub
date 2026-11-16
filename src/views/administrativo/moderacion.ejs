@@ -1,0 +1,152 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="adm-body">
+    <div class="adm-layout">
+        <%- include('partials/menu-admin') %>
+
+        <div class="adm-contenedor-principal">
+            <%- include('partials/topbar-admin') %>
+
+            <main class="adm-main">
+                <div class="adm-cabecera">
+                    <div>
+                        <h1>Denuncias y moderación</h1>
+                        <p>Revisa únicamente el contenido denunciado, incluyendo vacantes, Comunidad y valoraciones empresariales. Así la moderación se concentra en casos que requieren atención.</p>
+                    </div>
+                </div>
+
+                <% if (mensaje) { %>
+                    <div class="adm-flash exito">✓ <%= mensaje %></div>
+                <% } %>
+                <% if (error) { %>
+                    <div class="adm-flash error">⚠ <%= error %></div>
+                <% } %>
+
+                <!-- Bandeja de Reportes / Denuncias -->
+                <section class="adm-tarjeta">
+                    <h3><i class="fa-solid fa-flag" aria-hidden="true"></i> Casos denunciados (<%= reportes.length %>)</h3>
+
+                    <form class="adm-filtros" method="get" action="/administrativo/moderacion">
+                        <select name="estado" onchange="this.form.submit()">
+                            <option value="">Todos los estados</option>
+                            <option value="pendiente" <%= filtros.estado === 'pendiente' ? 'selected' : '' %>>Pendiente</option>
+                            <option value="en_revision" <%= filtros.estado === 'en_revision' ? 'selected' : '' %>>En revisión</option>
+                            <option value="resuelta" <%= filtros.estado === 'resuelta' ? 'selected' : '' %>>Resuelta</option>
+                            <option value="desestimada" <%= filtros.estado === 'desestimada' ? 'selected' : '' %>>Desestimada</option>
+                        </select>
+                        <select name="tipoContenido" onchange="this.form.submit()">
+                            <option value="">Todos los tipos de contenido</option>
+                            <option value="vacante" <%= filtros.tipoContenido === 'vacante' ? 'selected' : '' %>>Vacante</option>
+                            <option value="hilo" <%= filtros.tipoContenido === 'hilo' ? 'selected' : '' %>>Hilo de foro</option>
+                            <option value="comentario" <%= filtros.tipoContenido === 'comentario' ? 'selected' : '' %>>Comentario</option>
+                            <option value="opinion" <%= filtros.tipoContenido === 'opinion' ? 'selected' : '' %>>Opinión / Valoración</option>
+                        </select>
+                    </form>
+
+                    <div class="adm-tabla-wrap">
+                        <table class="adm-tabla">
+                            <thead>
+                                <tr>
+                                    <th>Contenido y contexto</th>
+                                    <th>Motivo y evidencia</th>
+                                    <th>Estado</th>
+                                    <th>Decisión y medida</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% reportes.forEach(r => { %>
+                                    <tr>
+                                        <td>
+                                            <span class="adm-badge adm-badge-borrador"><%= r.tipoContenido %> #<%= r.contenidoId %></span><br>
+                                            <strong><%= r.contenidoResumen || 'Contenido reportado' %></strong><br>
+                                            <small style="color: var(--adm-gris);">Autor: <%= r.usuarioReportado || '-' %></small>
+                                            <% if (r.reportesRelacionados > 1) { %>
+                                                <br><small class="adm-reporte-relacionado"><i class="fa-solid fa-layer-group" aria-hidden="true"></i> <%= r.reportesRelacionados %> reportes sobre este contenido</small>
+                                            <% } %>
+                                            <% if (r.enlaceContenido) { %>
+                                                <br><a href="<%= r.enlaceContenido %>" target="_blank" rel="noopener">Ver contenido <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <strong><%= r.motivo %></strong><br>
+                                            <small style="color: var(--adm-texto-suave);"><%= r.descripcion || '' %></small><br>
+                                            <small style="color: var(--adm-gris);">Por: <%= r.denunciante %> (<%= r.denuncianteTipo %>)</small>
+                                        </td>
+                                        <td><span class="adm-badge adm-badge-<%= r.estado %>"><%= r.estado %></span></td>
+                                        <td>
+                                            <% if (r.estado === 'pendiente') { %>
+                                                <form method="post" action="/administrativo/moderacion/reportes/<%= r.id %>" class="adm-reporte-form">
+                                                    <button type="submit" name="estado" value="en_revision" class="adm-btn">Tomar caso</button>
+                                                </form>
+                                            <% } else if (r.estado === 'en_revision') { %>
+                                                <form method="post" action="/administrativo/moderacion/reportes/<%= r.id %>" class="adm-reporte-form">
+                                                    <select name="medidaTomada" required>
+                                                        <option value="">Selecciona una medida...</option>
+                                                        <option>Sin medida</option>
+                                                        <option>Advertencia a la empresa</option>
+                                                        <option>Corrección solicitada</option>
+                                                        <option>Contenido ocultado</option>
+                                                    </select>
+                                                    <textarea name="resolucion" required rows="3" placeholder="Explica la evidencia revisada y la decisión tomada"></textarea>
+                                                    <label><input type="checkbox" name="ocultarContenido" value="1"> Ocultar el contenido ahora</label>
+                                                    <div class="adm-reporte-acciones">
+                                                        <button type="submit" name="estado" value="resuelta" class="adm-btn adm-btn-verde">Resolver caso</button>
+                                                        <button type="submit" name="estado" value="desestimada" class="adm-btn">Desestimar</button>
+                                                    </div>
+                                                </form>
+                                            <% } else { %>
+                                                <small><strong><%= r.medidaTomada || 'Sin medida' %>:</strong> <%= r.resolucion || 'Sin resolución registrada' %></small>
+                                                <br><small>Revisado por <%= r.revisadoPor || 'Administración' %></small>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Moderación de Opiniones Empresariales -->
+                <section class="adm-tarjeta">
+                    <h3>Moderación de valoraciones y opiniones empresariales</h3>
+                    <div class="adm-tabla-wrap">
+                        <table class="adm-tabla">
+                            <thead>
+                                <tr>
+                                    <th>Empresa Evaluada</th>
+                                    <th>Aplicante</th>
+                                    <th>Puntuación y Reseña</th>
+                                    <th>Estado</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% opiniones.forEach(op => { %>
+                                    <tr>
+                                        <td><strong><%= op.empresa %></strong></td>
+                                        <td><%= op.candidato %></td>
+                                        <td>
+                                            <strong>★ <%= op.puntuacion %>/5 · <%= op.titulo || 'Valoración' %></strong><br>
+                                            <small style="color: var(--adm-texto-suave);"><%= op.comentario %></small>
+                                        </td>
+                                        <td><span class="adm-badge adm-badge-<%= op.estadoModeracion %>"><%= op.estadoModeracion %></span></td>
+                                        <td>
+                                            <form method="post" action="/administrativo/moderacion/valoraciones/<%= op.id %>" style="display: flex; gap: 6px;">
+                                                <input type="hidden" name="estado" value="<%= op.estadoModeracion === 'visible' ? 'oculta' : 'visible' %>">
+                                                <input type="hidden" name="motivo" value="Moderación administrativa de reseña empresarial">
+                                                <button type="submit" class="adm-btn <%= op.estadoModeracion === 'visible' ? 'adm-btn-peligro' : 'adm-btn-verde' %>">
+                                                    <%= op.estadoModeracion === 'visible' ? 'Ocultar reseña' : 'Restaurar' %>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

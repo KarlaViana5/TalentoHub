@@ -492,3 +492,27 @@
     );
     transition: width 0.1s linear;
 }
+.detalle-material-destacado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 24px;
+    padding: 16px;
+    background: var(--brand-soft, #eff6ff);
+    border: 1px solid var(--line, #e2e8f0);
+    border-radius: var(--radius, 10px);
+}
+
+.detalle-material-destacado p {
+    margin: 4px 0 0;
+    color: var(--text, #475569);
+    font-size: 13px;
+}
+
+@media (max-width: 640px) {
+    .detalle-material-destacado {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

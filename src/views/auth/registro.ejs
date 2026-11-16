@@ -1,0 +1,144 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+<link rel="stylesheet" href="/css/auth.css">
+
+<body class="auth-body">
+    <%- include('../partials/navigation', { activo: '' }) %>
+
+    <main class="auth-contenedor auth-contenedor-registro">
+        <section class="auth-card">
+            <span class="auth-etiqueta">REGISTRO DE CUENTAS POR ROL</span>
+            <h1>Crear cuenta en TalentoHub</h1>
+            <p class="auth-subtitulo">
+                Elige tu tipo de cuenta para configurar tu espacio personalizado en la plataforma.
+            </p>
+
+            <% if (error) { %>
+                <div class="auth-alerta error">⚠ <%= error %></div>
+            <% } %>
+
+            <!-- Selector de Rol -->
+            <div class="auth-selector-rol">
+                <a href="/auth/registro?rol=candidato" class="auth-rol-tab <%= rolSeleccionado === 'candidato' ? 'activo' : '' %>">
+                    👤 Soy Aplicante / Candidato
+                </a>
+                <a href="/auth/registro?rol=empresa" class="auth-rol-tab <%= rolSeleccionado === 'empresa' ? 'activo' : '' %>">
+                    🏢 Soy Empresa Reclutadora
+                </a>
+            </div>
+
+            <form class="auth-form" method="post" action="/auth/registro">
+                <input type="hidden" name="rol" value="<%= rolSeleccionado %>">
+
+                <% if (rolSeleccionado === 'empresa') { %>
+                    <div class="auth-form-fila">
+                        <div class="auth-campo">
+                            <label for="nombreEmpresa">Nombre comercial de la empresa *</label>
+                            <input type="text" id="nombreEmpresa" name="nombreEmpresa" value="<%= valores.nombreEmpresa || '' %>" placeholder="Ej. Soluciones Digitales S.A." required>
+                        </div>
+
+                        <div class="auth-campo">
+                            <label for="sector">Sector o industria *</label>
+                            <select id="sector" name="sector" required>
+                                <% sectores.forEach(s => { %>
+                                    <option value="<%= s %>" <%= valores.sector === s ? 'selected' : '' %>><%= s %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="auth-form-fila">
+                        <div class="auth-campo">
+                            <label for="nombre">Nombre del representante / reclutador *</label>
+                            <input type="text" id="nombre" name="nombre" value="<%= valores.nombre || '' %>" placeholder="Ej. Roberto Castellanos" required>
+                        </div>
+
+                        <div class="auth-campo">
+                            <label for="nit">NIT empresarial</label>
+                            <input type="text" id="nit" name="nit" value="<%= valores.nit || '' %>" placeholder="0614-000000-101-0">
+                        </div>
+                    </div>
+
+                    <div class="auth-form-fila">
+                        <div class="auth-campo">
+                            <label for="ubicacion">Ubicación principal *</label>
+                            <input type="text" id="ubicacion" name="ubicacion" value="<%= valores.ubicacion || '' %>" placeholder="San Salvador, El Salvador" required>
+                        </div>
+
+                        <div class="auth-campo">
+                            <label for="telefono">Teléfono corporativo</label>
+                            <input type="text" id="telefono" name="telefono" value="<%= valores.telefono || '' %>" placeholder="+503 2200-0000">
+                        </div>
+                    </div>
+
+                    <div class="auth-campo">
+                        <label for="descripcion">Descripción de la empresa</label>
+                        <textarea id="descripcion" name="descripcion" rows="2" placeholder="Describe brevemente a qué se dedica tu empresa..."><%= valores.descripcion || '' %></textarea>
+                    </div>
+                <% } else { %>
+                    <div class="auth-form-fila">
+                        <div class="auth-campo">
+                            <label for="nombre">Nombre completo *</label>
+                            <input type="text" id="nombre" name="nombre" value="<%= valores.nombre || '' %>" placeholder="Ej. Andrea Morales" required>
+                        </div>
+
+                        <div class="auth-campo">
+                            <label for="cargo">Profesión o cargo objetivo *</label>
+                            <input type="text" id="cargo" name="cargo" value="<%= valores.cargo || '' %>" placeholder="Ej. Desarrolladora Full Stack / Contador" required>
+                        </div>
+                    </div>
+
+                    <div class="auth-form-fila">
+                        <div class="auth-campo">
+                            <label for="ubicacion">Ciudad / Departamento *</label>
+                            <input type="text" id="ubicacion" name="ubicacion" value="<%= valores.ubicacion || '' %>" placeholder="San Salvador, El Salvador" required>
+                        </div>
+
+                        <div class="auth-campo">
+                            <label for="telefono">Teléfono de contacto</label>
+                            <input type="text" id="telefono" name="telefono" value="<%= valores.telefono || '' %>" placeholder="+503 7000-0000">
+                        </div>
+                    </div>
+
+                    <div class="auth-form-fila">
+                        <div class="auth-campo">
+                            <label for="aniosExperiencia">Años de experiencia</label>
+                            <input type="number" id="aniosExperiencia" name="aniosExperiencia" min="0" max="40" value="<%= valores.aniosExperiencia || 0 %>">
+                        </div>
+
+                        <div class="auth-campo">
+                            <label for="habilidades">Habilidades principales (separadas por coma)</label>
+                            <input type="text" id="habilidades" name="habilidades" value="<%= valores.habilidades || '' %>" placeholder="Ej. JavaScript, SQL, Liderazgo, Inglés">
+                        </div>
+                    </div>
+                <% } %>
+
+                <div class="auth-campo">
+                    <label for="correo">Correo electrónico de acceso *</label>
+                    <input type="email" id="correo" name="correo" value="<%= valores.correo || '' %>" placeholder="correo@ejemplo.com" required>
+                </div>
+
+                <div class="auth-form-fila">
+                    <div class="auth-campo">
+                        <label for="clave">Contraseña (mínimo 6 caracteres) *</label>
+                        <input type="password" id="clave" name="clave" minlength="6" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="auth-campo">
+                        <label for="confirmarClave">Confirmar contraseña *</label>
+                        <input type="password" id="confirmarClave" name="confirmarClave" minlength="6" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-btn auth-btn-primario" style="margin-top: 8px;">
+                    <i class="fa-solid fa-user-plus"></i>
+                    Crear mi cuenta como <%= rolSeleccionado === 'empresa' ? 'Empresa' : 'Aplicante' %>
+                </button>
+            </form>
+
+            <p style="text-align: center; margin-top: 18px; font-size: 14px; color: #475569;">
+                ¿Ya tienes una cuenta? <a href="/auth/login" style="color: #2563eb; font-weight: 700;">Inicia sesión aquí</a>
+            </p>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,8 +1,10 @@
-
 const {
     buscarVacantes,
     obtenerVacantePorId,
-    obtenerVacantesSimilares
+    obtenerVacantesSimilares,
+    obtenerPostulacionCandidato,
+    postularCandidatoAVacante,
+    reportarVacantePublica
 } = require('../services/vacantes.service');
 
 // ============================================
@@ -11,7 +13,6 @@ const {
 
 async function mostrarResultados(req, res) {
     try {
-        // Recopilar los filtros enviados desde la URL.
         const filtros = {
             q: req.query.q || '',
             ubicacion: req.query.ubicacion || '',
@@ -25,39 +26,29 @@ async function mostrarResultados(req, res) {
             orden: req.query.orden || 'recientes'
         };
 
-        // Configuración de paginación.
         const resultadosPorPagina = 10;
-
         let paginaActual = Number.parseInt(req.query.pagina, 10);
 
         if (!Number.isInteger(paginaActual) || paginaActual < 1) {
             paginaActual = 1;
         }
 
-        // Consultar las vacantes en PostgreSQL.
         let resultado = await buscarVacantes(filtros, {
             limite: resultadosPorPagina,
             pagina: paginaActual
         });
 
         const totalResultados = resultado.totalResultados;
+        const totalPaginas = Math.max(1, Math.ceil(totalResultados / resultadosPorPagina));
 
-        const totalPaginas = Math.max(
-            1,
-            Math.ceil(totalResultados / resultadosPorPagina)
-        );
-
-        // Evitar solicitar una página que no existe.
         if (paginaActual > totalPaginas) {
             paginaActual = totalPaginas;
-
             resultado = await buscarVacantes(filtros, {
                 limite: resultadosPorPagina,
                 pagina: paginaActual
             });
         }
 
-        // Enviar los resultados a la vista.
         res.render('busqueda/index', {
             titulo: 'Resultados de búsqueda | TalentoHub',
             filtros,
@@ -66,64 +57,81 @@ async function mostrarResultados(req, res) {
             paginaActual,
             totalPaginas
         });
-
     } catch (error) {
         console.error('Error al mostrar resultados de búsqueda:', error);
-
-        res.status(500).send(
-            'Ocurrió un error al consultar las vacantes. Inténtalo nuevamente.'
-        );
+        res.status(500).send('Ocurrió un error al consultar las vacantes. Inténtalo nuevamente.');
     }
 }
 
 // ============================================
-// BUS-02: DETALLE DE EMPLEO
+// BUS-02: DETALLE DE EMPLEO Y POSTULACIÓN
 // ============================================
 
 async function mostrarDetalle(req, res) {
     try {
         const id = req.params.id;
 
-        // Validar que el identificador sea numérico.
         if (!/^\d+$/.test(id)) {
-            return res.status(404).send(
-                'Error 404: La vacante que buscas no existe.'
-            );
+            return res.status(404).send('Error 404: La vacante que buscas no existe.');
         }
 
-        // Consultar la vacante en PostgreSQL.
         const vacante = await obtenerVacantePorId(id);
 
         if (!vacante) {
-            return res.status(404).send(
-                'Error 404: La vacante que buscas no existe.'
-            );
+            return res.status(404).send('Error 404: La vacante que buscas no existe o fue retirada.');
         }
 
-        // Consultar vacantes similares.
-        const vacantesSimilares = await obtenerVacantesSimilares(vacante);
+        const [vacantesSimilares, postulacionActual] = await Promise.all([
+            obtenerVacantesSimilares(vacante),
+            req.usuario && req.usuario.rol === 'candidato' && req.usuario.candidatoId
+                ? obtenerPostulacionCandidato(id, req.usuario.candidatoId)
+                : Promise.resolve(null)
+        ]);
 
-        // Mostrar el detalle.
         res.render('busqueda/detalle', {
             titulo: `${vacante.titulo} | TalentoHub`,
             vacante,
-            vacantesSimilares
+            vacantesSimilares,
+            postulacionActual,
+            mensaje: req.query.mensaje || null,
+            error: req.query.error || null
         });
-
     } catch (error) {
         console.error('Error al mostrar el detalle de la vacante:', error);
-
-        res.status(500).send(
-            'Ocurrió un error al consultar el detalle del empleo.'
-        );
+        res.status(500).send('Ocurrió un error al consultar el detalle del empleo.');
     }
 }
 
-// ============================================
-// EXPORTAR CONTROLADORES
-// ============================================
+async function postularVacante(req, res) {
+    const id = req.params.id;
+    try {
+        if (!req.usuario) {
+            return res.redirect(`/auth/login?volver=${encodeURIComponent(`/busqueda/empleo/${id}`)}&aviso=${encodeURIComponent('Inicia sesión como Aplicante para postularte a este empleo.')}`);
+        }
+        if (req.usuario.rol !== 'candidato' || !req.usuario.candidatoId) {
+            return res.redirect(`/busqueda/empleo/${id}?error=${encodeURIComponent('Solo las cuentas con rol de Aplicante (Candidato) pueden postularse a vacantes.')}`);
+        }
+
+        await postularCandidatoAVacante(id, req.usuario.candidatoId);
+        res.redirect(`/busqueda/empleo/${id}?mensaje=${encodeURIComponent('¡Postulación enviada con éxito! Ya puedes dar seguimiento al estado de tu solicitud en tu Panel de Aplicante.')}`);
+    } catch (error) {
+        res.redirect(`/busqueda/empleo/${id}?error=${encodeURIComponent(error.message)}`);
+    }
+}
+
+async function reportarVacante(req, res) {
+    const id = req.params.id;
+    try {
+        await reportarVacantePublica(id, req.usuario, req.body);
+        res.redirect(`/busqueda/empleo/${id}?mensaje=${encodeURIComponent('Reporte enviado al Centro de Moderación Administrativa.')}`);
+    } catch (error) {
+        res.redirect(`/busqueda/empleo/${id}?error=${encodeURIComponent(error.message)}`);
+    }
+}
 
 module.exports = {
     mostrarResultados,
-    mostrarDetalle
+    mostrarDetalle,
+    postularVacante,
+    reportarVacante
 };

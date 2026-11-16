@@ -25,10 +25,7 @@ const SELECT_RECURSOS = `
         ON c.id_categoria = r.categoria_id
 `;
 
-const RECURSO_VISIBLE = `NOT EXISTS (
-    SELECT 1 FROM modulo4.recursos_moderacion m
-    WHERE m.id = r.id_recurso AND m.oculto
-)`;
+const RECURSO_VISIBLE = `COALESCE(r.visibilidad, 'publico') = 'publico'`;
 
 // ==========================================
 // OBTENER CATEGORÍAS DISPONIBLES
@@ -114,7 +111,8 @@ function construirFiltros(filtros = {}) {
     const tiposPermitidos = [
         'articulo',
         'tutorial',
-        'video'
+        'video',
+        'audio'
     ];
 
     if (tiposPermitidos.includes(filtros.tipo)) {

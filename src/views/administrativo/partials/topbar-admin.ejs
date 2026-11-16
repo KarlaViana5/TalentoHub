@@ -1,0 +1,29 @@
+<header class="adm-topbar">
+    <div class="adm-topbar-izq">
+        <strong>Centro de Control TalentoHub</strong>
+    </div>
+
+    <div class="adm-topbar-der">
+        <details class="adm-perfil">
+            <summary class="adm-perfil-boton" aria-label="Abrir menú de administrador">
+                <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+                <span class="adm-perfil-nombre"><%= locals.adminActual ? adminActual.nombre : 'Administrador Principal' %></span>
+                <i class="fa-solid fa-chevron-down adm-perfil-flecha" aria-hidden="true"></i>
+            </summary>
+            <div class="adm-perfil-menu">
+                <div class="adm-perfil-identidad">
+                    <strong><%= locals.adminActual ? adminActual.nombre : 'Administrador Principal' %></strong>
+                    <span>Administrador</span>
+                </div>
+                <a href="/administrativo/configuracion">
+                    <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                    Configuración general
+                </a>
+                <a href="/auth/logout" class="adm-perfil-salir">
+                    <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
+                    Cerrar sesión
+                </a>
+            </div>
+        </details>
+    </div>
+</header>

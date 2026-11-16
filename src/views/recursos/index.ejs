@@ -6,12 +6,7 @@
 
 <body>
 
-    <%- include('../partials/header', {
-        titulo: titulo,
-        descripcion: descripcion
-    }) %>
-
-    <%- include('../partials/navigation') %>
+    <%- include('../partials/navigation', { activo: 'recursos' }) %>
 
     <main class="recursos-container">
 
@@ -127,6 +122,13 @@
                                 <%= filtros.tipo === 'video' ? 'selected' : '' %>
                             >
                                 Videos
+                            </option>
+
+                            <option
+                                value="audio"
+                                <%= filtros.tipo === 'audio' ? 'selected' : '' %>
+                            >
+                                Audios
                             </option>
 
                         </select>

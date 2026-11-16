@@ -1,0 +1,198 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="adm-body">
+    <div class="adm-layout">
+        <%- include('partials/menu-admin') %>
+
+        <div class="adm-contenedor-principal">
+            <%- include('partials/topbar-admin') %>
+
+            <main class="adm-main">
+                <div class="adm-cabecera">
+                    <div>
+                        <h1>Usuarios y actividad</h1>
+                        <p>Consulta cuentas, historial y actividad para atender incidencias. Este módulo es de solo lectura; las empresas gestionan sus vacantes y los candidatos gestionan su propio perfil.</p>
+                    </div>
+                </div>
+
+                <% if (mensaje) { %>
+                    <div class="adm-flash exito">✓ <%= mensaje %></div>
+                <% } %>
+                <% if (error) { %>
+                    <div class="adm-flash error">⚠ <%= error %></div>
+                <% } %>
+
+                <section class="adm-tarjeta">
+                    <form class="adm-filtros" method="get" action="/administrativo/usuarios">
+                        <input class="adm-filtro-busqueda" type="search" name="q" value="<%= filtros.q %>" placeholder="Buscar por nombre o correo...">
+                        <select name="rolFiltro" onchange="this.form.submit()">
+                            <option value="">Todos los roles</option>
+                            <option value="candidato" <%= filtros.rol === 'candidato' ? 'selected' : '' %>>Candidato</option>
+                            <option value="empresa" <%= filtros.rol === 'empresa' ? 'selected' : '' %>>Empresa</option>
+                        </select>
+                        <select name="estado" onchange="this.form.submit()">
+                            <option value="">Todos los estados</option>
+                            <option value="Activo" <%= filtros.estado === 'Activo' ? 'selected' : '' %>>Activo</option>
+                            <option value="Suspendido" <%= filtros.estado === 'Suspendido' ? 'selected' : '' %>>Suspendido</option>
+                            <option value="Pendiente" <%= filtros.estado === 'Pendiente' ? 'selected' : '' %>>Pendiente</option>
+                        </select>
+                        <button type="submit" class="adm-btn adm-btn-primario">Filtrar</button>
+                    </form>
+
+                    <div class="adm-tabla-wrap">
+                        <table class="adm-tabla">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                    <th>Rol</th>
+                                    <th>Fecha de registro</th>
+                                    <th>Estado</th>
+                                    <th>Consulta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% usuarios.forEach(u => { %>
+                                    <tr>
+                                        <td>#<%= u.id %></td>
+                                        <td>
+                                            <strong><%= u.nombre %></strong><br>
+                                            <small class="adm-texto-secundario"><%= u.subtitulo %></small>
+                                        </td>
+                                        <td><%= u.correo %></td>
+                                        <td><span class="adm-badge adm-badge-publicado"><%= u.rolEtiqueta %></span></td>
+                                        <td><%= formatearFecha(u.fechaRegistro) %></td>
+                                        <td><span class="adm-badge adm-badge-<%= u.estado.toLowerCase() %>"><%= u.estado %></span></td>
+                                        <td>
+                                            <% if (u.rol === 'candidato') { %>
+                                                <a class="adm-btn" href="/administrativo/usuarios/candidato/<%= u.id %>">Ver historial</a>
+                                            <% } else { %>
+                                                <a class="adm-btn" href="/administrativo/empresas?ver=<%= u.id %>">Ver empresa</a>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <% if (detalle) { %>
+                    <div class="adm-modal" role="dialog" aria-modal="true" aria-labelledby="historial-titulo">
+                        <a class="adm-modal-backdrop" href="/administrativo/usuarios" aria-label="Cerrar historial"></a>
+                        <section class="adm-modal-panel">
+                            <header class="adm-modal-cabecera">
+                                <div class="adm-modal-identidad">
+                                    <span class="adm-modal-avatar"><%= detalle.usuario.nombre.charAt(0).toUpperCase() %></span>
+                                    <div>
+                                        <span class="adm-badge adm-badge-<%= detalle.usuario.estado %>">Cuenta: <%= detalle.usuario.estado %></span>
+                                        <h2 id="historial-titulo">Historial de <%= detalle.usuario.nombre %></h2>
+                                        <p><%= detalle.usuario.correo %> · <%= detalle.usuario.cargo || 'Candidato' %></p>
+                                    </div>
+                                </div>
+                                <a class="adm-modal-cerrar" href="/administrativo/usuarios" aria-label="Cerrar historial">&times;</a>
+                            </header>
+
+                            <div class="adm-modal-nota">
+                                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                                Consulta de solo lectura para soporte, trazabilidad y revisión de incidencias.
+                            </div>
+
+                            <div class="adm-modal-resumen">
+                                <article><strong><%= detalle.postulaciones.length %></strong><span>Postulaciones</span></article>
+                                <article><strong><%= detalle.inscripciones.length %></strong><span>Cursos inscritos</span></article>
+                                <article><strong><%= detalle.hilos.length + detalle.comentarios.length %></strong><span>Interacciones</span></article>
+                                <article><strong><%= detalle.reportes.length %></strong><span>Reportes</span></article>
+                            </div>
+
+                            <div class="adm-modal-contenido">
+                                <section class="adm-modal-bloque">
+                                    <h3><i class="fa-solid fa-id-card" aria-hidden="true"></i> Información de cuenta</h3>
+                                    <dl class="adm-detalle-lista">
+                                        <dt>Nombre completo</dt><dd><%= detalle.usuario.nombre %></dd>
+                                        <dt>Ubicación</dt><dd><%= detalle.usuario.ubicacion || 'No especificada' %></dd>
+                                        <dt>Teléfono</dt><dd><%= detalle.usuario.telefono || 'No registrado' %></dd>
+                                        <dt>Empresa actual</dt><dd><%= detalle.usuario.empresaActual || 'No especificada' %></dd>
+                                        <dt>Experiencia</dt><dd><%= detalle.usuario.aniosExperiencia || 0 %> años</dd>
+                                    </dl>
+                                </section>
+
+                                <section class="adm-modal-bloque">
+                                    <h3><i class="fa-solid fa-briefcase" aria-hidden="true"></i> Actividad profesional</h3>
+                                    <% if (detalle.postulaciones.length || detalle.inscripciones.length) { %>
+                                        <% detalle.postulaciones.forEach(p => { %>
+                                            <div class="adm-historial-item">
+                                                <span class="adm-historial-icono"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></span>
+                                                <div><strong><%= p.vacante %></strong><small><%= p.empresa %> · <%= formatearFecha(p.fecha) %></small></div>
+                                                <span class="adm-badge adm-badge-<%= p.estado %>"><%= p.estado %></span>
+                                            </div>
+                                        <% }) %>
+                                        <% detalle.inscripciones.forEach(i => { %>
+                                            <div class="adm-historial-item">
+                                                <span class="adm-historial-icono"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i></span>
+                                                <div><strong><%= i.curso %></strong><small>Avance: <%= i.porcentajeAvance %>%</small></div>
+                                                <span class="adm-badge adm-badge-<%= i.estado %>"><%= i.estado %></span>
+                                            </div>
+                                        <% }) %>
+                                    <% } else { %><p class="adm-modal-vacio">No hay actividad profesional registrada.</p><% } %>
+                                </section>
+
+                                <section class="adm-modal-bloque">
+                                    <h3><i class="fa-solid fa-comments" aria-hidden="true"></i> Participación en Comunidad</h3>
+                                    <% if (detalle.hilos.length || detalle.comentarios.length) { %>
+                                        <% detalle.hilos.forEach(h => { %>
+                                            <div class="adm-historial-item">
+                                                <span class="adm-historial-icono"><i class="fa-regular fa-comment" aria-hidden="true"></i></span>
+                                                <div><strong><a href="/foros/<%= h.foroSlug %>/hilos/<%= h.id %>" target="_blank"><%= h.titulo %></a></strong><small>Hilo en <%= h.foro %> · <%= h.estado %></small></div>
+                                            </div>
+                                        <% }) %>
+                                        <% detalle.comentarios.forEach(c => { %>
+                                            <div class="adm-historial-item">
+                                                <span class="adm-historial-icono"><i class="fa-regular fa-message" aria-hidden="true"></i></span>
+                                                <div><strong><%= c.hilo %></strong><small><%= c.estado %> · <%= c.contenido %></small></div>
+                                            </div>
+                                        <% }) %>
+                                    <% } else { %><p class="adm-modal-vacio">No hay participación registrada.</p><% } %>
+                                </section>
+
+                                <section class="adm-modal-bloque">
+                                    <h3><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Reportes y auditoría</h3>
+                                    <% if (detalle.reportes.length || detalle.sanciones.length) { %>
+                                        <% detalle.reportes.forEach(r => { %>
+                                            <div class="adm-historial-item">
+                                                <span class="adm-historial-icono adm-historial-icono-alerta"><i class="fa-solid fa-flag" aria-hidden="true"></i></span>
+                                                <div><strong><%= r.motivo %></strong><small><%= r.tipoContenido %> · Estado: <%= r.estado %></small></div>
+                                            </div>
+                                        <% }) %>
+                                        <% detalle.sanciones.forEach(s => { %>
+                                            <div class="adm-historial-item">
+                                                <span class="adm-historial-icono adm-historial-icono-alerta"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span>
+                                                <div><strong><%= s.accion %></strong><small><%= s.descripcion %> · <%= formatearFechaHora(s.fecha) %></small></div>
+                                            </div>
+                                        <% }) %>
+                                    <% } else { %><p class="adm-modal-vacio">No hay reportes ni incidencias registradas.</p><% } %>
+                                </section>
+                            </div>
+
+                            <footer class="adm-modal-pie">
+                                <a class="adm-btn adm-btn-primario" href="/administrativo/usuarios">Cerrar historial</a>
+                            </footer>
+                        </section>
+                    </div>
+                <% } %>
+            </main>
+        </div>
+    </div>
+</body>
+</html>
+
+<% if (detalle) { %>
+    <script>
+        document.body.classList.add('adm-modal-abierto');
+        document.querySelector('.adm-modal-cerrar').focus();
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') window.location.href = '/administrativo/usuarios';
+        });
+    </script>
+<% } %>
