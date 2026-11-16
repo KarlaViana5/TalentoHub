@@ -1,0 +1,1073 @@
+
+/* ==========================================
+   TALENTOHUB - PÁGINA DE INICIO
+========================================== */
+
+:root {
+    --primario: #142d4e;
+    --primario-oscuro: #0b1c33;
+    --secundario: #2563eb;
+    --turquesa: #14b8a6;
+    --fondo: #f5f8fc;
+    --blanco: #ffffff;
+    --texto: #172b4d;
+    --texto-secundario: #64748b;
+    --borde: #e2e8f0;
+    --sombra: 0 10px 35px rgba(15, 23, 42, 0.06);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body.pagina-inicio {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+}
+
+.pagina-inicio a {
+    text-decoration: none;
+}
+
+.pagina-inicio button,
+.pagina-inicio input {
+    font: inherit;
+}
+
+.pagina-inicio .contenedor {
+    width: min(1180px, 92%);
+    margin: 0 auto;
+}
+
+/* ==========================================
+   NAVEGACIÓN
+========================================== */
+
+.pagina-inicio nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 25px;
+    padding: 18px max(4%, calc((100% - 1180px) / 2));
+    background: var(--blanco);
+    border-bottom: 1px solid var(--borde);
+}
+
+.pagina-inicio nav h2 {
+    margin: 0;
+    color: var(--primario);
+    font-size: 23px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.pagina-inicio nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pagina-inicio nav a {
+    color: var(--texto);
+    font-size: 13px;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.pagina-inicio nav a:hover {
+    color: var(--secundario);
+}
+
+/* ==========================================
+   HERO
+========================================== */
+
+.pagina-inicio .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 105px 20px 110px;
+    background:
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(20, 184, 166, 0.18),
+            transparent 35%
+        ),
+        linear-gradient(135deg, #0b1c33, #183e69);
+    color: var(--blanco);
+}
+
+.pagina-inicio .hero-contenido {
+    position: relative;
+    z-index: 1;
+    max-width: 1050px;
+    margin: auto;
+    text-align: center;
+}
+
+.pagina-inicio .hero-etiqueta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50px;
+    background: rgba(255,255,255,0.08);
+    color: #d7f9f4;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.pagina-inicio .hero h1 {
+    max-width: 850px;
+    margin: 28px auto 20px;
+    font-size: clamp(36px, 5vw, 62px);
+    line-height: 1.15;
+    letter-spacing: -1.8px;
+    font-weight: 800;
+}
+
+.pagina-inicio .hero h1 span {
+    color: #5eead4;
+}
+
+.pagina-inicio .hero-contenido > p {
+    max-width: 650px;
+    margin: 0 auto;
+    color: #d0deef;
+    font-size: 17px;
+    line-height: 1.8;
+}
+
+/* ==========================================
+   BUSCADOR
+========================================== */
+
+.pagina-inicio .buscador {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    max-width: 960px;
+    margin: 40px auto 0;
+    padding: 10px;
+    border-radius: 16px;
+    background: var(--blanco);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+}
+
+.pagina-inicio .campo-busqueda {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+    gap: 12px;
+    padding: 0 15px;
+    color: var(--texto-secundario);
+}
+
+.pagina-inicio .campo-busqueda + .campo-busqueda {
+    border-left: 1px solid var(--borde);
+}
+
+.pagina-inicio .campo-busqueda i {
+    color: var(--secundario);
+    font-size: 17px;
+}
+
+.pagina-inicio .campo-busqueda input {
+    width: 100%;
+    min-width: 0;
+    padding: 15px 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--texto);
+    font-size: 13px;
+}
+
+.pagina-inicio .buscador button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 25px;
+    border: none;
+    border-radius: 10px;
+    background: var(--secundario);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.pagina-inicio .buscador button:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+/* ==========================================
+   ESTADÍSTICAS
+========================================== */
+
+.pagina-inicio .hero-estadisticas {
+    display: flex;
+    justify-content: center;
+    gap: 65px;
+    margin-top: 42px;
+}
+
+.pagina-inicio .hero-estadisticas div {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.pagina-inicio .hero-estadisticas strong {
+    font-size: 27px;
+    font-weight: 800;
+}
+
+.pagina-inicio .hero-estadisticas span {
+    color: #cbd5e1;
+    font-size: 12px;
+}
+
+/* ==========================================
+   SECCIONES GENERALES
+========================================== */
+
+.pagina-inicio .seccion {
+    padding: 90px 0;
+}
+
+.pagina-inicio .seccion-etiqueta {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: var(--secundario);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.pagina-inicio .seccion h2 {
+    margin: 0 0 15px;
+    color: var(--primario);
+    font-size: clamp(26px, 3vw, 36px);
+    letter-spacing: -0.7px;
+}
+
+.pagina-inicio .seccion p {
+    color: var(--texto-secundario);
+    line-height: 1.7;
+}
+
+.pagina-inicio .seccion-encabezado {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 25px;
+    margin-bottom: 35px;
+}
+
+.pagina-inicio .seccion-encabezado p {
+    margin-bottom: 0;
+}
+
+.pagina-inicio .enlace-ver-todos {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    color: var(--secundario);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.pagina-inicio .enlace-ver-todos:hover {
+    color: var(--primario);
+}
+
+/* ==========================================
+   TARJETAS DE VACANTES
+========================================== */
+
+.pagina-inicio .vacantes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.pagina-inicio .vacante-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 28px;
+    border: 1px solid var(--borde);
+    border-radius: 18px;
+    background: var(--blanco);
+    box-shadow: var(--sombra);
+    transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.pagina-inicio .vacante-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 45px rgba(15,23,42,0.12);
+}
+
+.pagina-inicio .vacante-superior {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.pagina-inicio .empresa-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: #eaf2ff;
+    color: var(--secundario);
+    font-size: 23px;
+}
+
+.pagina-inicio .vacante-modalidad {
+    padding: 8px 12px;
+    border-radius: 30px;
+    background: #e6f8f3;
+    color: #0f766e;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.pagina-inicio .vacante-card h3 {
+    margin: 0 0 9px;
+    color: var(--primario);
+    font-size: 19px;
+    line-height: 1.4;
+}
+
+.pagina-inicio .vacante-empresa {
+    margin: 0 0 24px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.pagina-inicio .vacante-informacion {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 25px;
+}
+
+.pagina-inicio .vacante-informacion span {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+.pagina-inicio .vacante-informacion i {
+    width: 16px;
+    color: var(--secundario);
+}
+
+.pagina-inicio .vacante-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--borde);
+}
+
+.pagina-inicio .vacante-sector {
+    padding: 7px 10px;
+    border-radius: 7px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 11px;
+}
+
+.pagina-inicio .vacante-footer a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--secundario);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.pagina-inicio .vacante-footer a:hover {
+    color: var(--primario);
+}
+
+.pagina-inicio .sin-vacantes {
+    grid-column: 1 / -1;
+    padding: 55px 20px;
+    border: 1px dashed var(--borde);
+    border-radius: 16px;
+    background: white;
+    text-align: center;
+}
+
+.pagina-inicio .sin-vacantes > i {
+    color: var(--secundario);
+    font-size: 35px;
+}
+
+/* ==========================================
+   SERVICIOS
+========================================== */
+
+.pagina-inicio .servicios-seccion {
+    background: white;
+}
+
+.pagina-inicio .seccion-titulo-centrado {
+    max-width: 750px;
+    margin: 0 auto 45px;
+    text-align: center;
+}
+
+.pagina-inicio .servicios-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 25px;
+}
+
+.pagina-inicio .servicio-card {
+    display: flex;
+    flex-direction: column;
+    padding: 35px 30px;
+    border: 1px solid var(--borde);
+    border-radius: 18px;
+    background: #fff;
+    transition: transform 0.25s, border-color 0.25s;
+}
+
+.pagina-inicio .servicio-card:hover {
+    transform: translateY(-5px);
+    border-color: #93c5fd;
+}
+
+.pagina-inicio .servicio-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 65px;
+    height: 65px;
+    margin-bottom: 25px;
+    border-radius: 16px;
+    background: #eaf2ff;
+    color: var(--secundario);
+    font-size: 26px;
+}
+
+.pagina-inicio .servicio-card h3 {
+    margin: 0 0 12px;
+    color: var(--primario);
+    font-size: 20px;
+}
+
+.pagina-inicio .servicio-card p {
+    margin: 0 0 25px;
+    font-size: 14px;
+}
+
+.pagina-inicio .servicio-card a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: auto;
+    color: var(--secundario);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* ==========================================
+   LLAMADO A LA ACCIÓN
+========================================== */
+
+.pagina-inicio .cta-seccion {
+    padding: 65px 0;
+    background: linear-gradient(135deg, #142d4e, #1d4d80);
+    color: white;
+}
+
+.pagina-inicio .cta-contenido {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 35px;
+}
+
+.pagina-inicio .cta-contenido h2 {
+    margin: 0 0 12px;
+    font-size: 30px;
+}
+
+.pagina-inicio .cta-contenido p {
+    max-width: 650px;
+    margin: 0;
+    color: #d5e4f3;
+    line-height: 1.7;
+}
+
+.pagina-inicio .cta-boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-shrink: 0;
+    padding: 16px 24px;
+    border-radius: 10px;
+    background: white;
+    color: var(--primario);
+    font-weight: 700;
+    transition: transform 0.2s;
+}
+
+.pagina-inicio .cta-boton:hover {
+    transform: translateY(-3px);
+}
+
+/* ==========================================
+   FOOTER
+========================================== */
+
+.pagina-inicio footer {
+    padding: 35px 20px;
+    background: var(--primario-oscuro);
+    color: #cbd5e1;
+    text-align: center;
+}
+
+.pagina-inicio footer hr {
+    max-width: 1180px;
+    margin: 0 auto 25px;
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.15);
+}
+
+.pagina-inicio footer p {
+    margin: 8px 0;
+    font-size: 13px;
+}
+
+/* ==========================================
+   RESPONSIVE - TABLETS
+========================================== */
+
+@media (max-width: 1000px) {
+
+    .pagina-inicio nav {
+        flex-direction: column;
+    }
+
+    .pagina-inicio nav ul {
+        justify-content: center;
+    }
+
+    .pagina-inicio .vacantes-grid,
+    .pagina-inicio .servicios-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pagina-inicio .cta-contenido {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ==========================================
+   RESPONSIVE - CELULARES
+========================================== */
+
+@media (max-width: 650px) {
+
+    .pagina-inicio nav {
+        padding: 18px 15px;
+    }
+
+    .pagina-inicio nav ul {
+        gap: 12px;
+    }
+
+    .pagina-inicio nav a {
+        font-size: 12px;
+    }
+
+    .pagina-inicio .hero {
+        padding: 70px 16px;
+    }
+
+    .pagina-inicio .hero h1 {
+        letter-spacing: -0.7px;
+    }
+
+    .pagina-inicio .hero-contenido > p {
+        font-size: 14px;
+    }
+
+    .pagina-inicio .buscador {
+        flex-direction: column;
+        padding: 12px;
+    }
+
+    .pagina-inicio .campo-busqueda {
+        min-height: 52px;
+        border: 1px solid var(--borde);
+        border-radius: 9px;
+    }
+
+    .pagina-inicio .campo-busqueda + .campo-busqueda {
+        border-left: 1px solid var(--borde);
+    }
+
+    .pagina-inicio .buscador button {
+        width: 100%;
+    }
+
+    .pagina-inicio .hero-estadisticas {
+        gap: 30px;
+    }
+
+    .pagina-inicio .seccion {
+        padding: 65px 0;
+    }
+
+    .pagina-inicio .seccion-encabezado {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pagina-inicio .vacantes-grid,
+    .pagina-inicio .servicios-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pagina-inicio .vacante-card,
+    .pagina-inicio .servicio-card {
+        padding: 25px;
+    }
+
+    .pagina-inicio .cta-contenido h2 {
+        font-size: 25px;
+    }
+
+    .pagina-inicio .cta-boton {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pagina-inicio *,
+    .pagina-inicio *::before,
+    .pagina-inicio *::after {
+        transition: none !important;
+    }
+}
+
+
+/* ==========================================
+   NAVEGACIÓN PERSONALIZADA DE INICIO
+========================================== */
+
+.pagina-inicio .navbar-inicio {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row;
+    gap: 25px;
+    padding: 18px max(4%, calc((100% - 1180px) / 2));
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.pagina-inicio .navbar-marca {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    flex-shrink: 0;
+    color: #142d4e;
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+}
+
+.pagina-inicio .navbar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #2563eb;
+    color: white;
+    font-size: 19px;
+}
+
+.pagina-inicio .marca-acento {
+    color: #2563eb;
+}
+
+.pagina-inicio .navbar-enlaces {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px 23px;
+}
+
+.pagina-inicio .navbar-enlaces a {
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.pagina-inicio .navbar-enlaces a:hover {
+    color: #2563eb;
+}
+
+.pagina-inicio .navbar-enlaces .navbar-activo {
+    color: #2563eb;
+}
+
+/* TABLETS */
+
+@media (max-width: 1000px) {
+
+    .pagina-inicio .navbar-inicio {
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .pagina-inicio .navbar-enlaces {
+        justify-content: center;
+    }
+}
+
+/* CELULARES */
+
+@media (max-width: 650px) {
+
+    .pagina-inicio .navbar-inicio {
+        padding: 16px;
+    }
+
+    .pagina-inicio .navbar-marca {
+        font-size: 21px;
+    }
+
+    .pagina-inicio .navbar-enlaces {
+        gap: 12px 16px;
+    }
+
+    .pagina-inicio .navbar-enlaces a {
+        font-size: 12px;
+    }
+}
+
+
+
+.pagina-inicio .vacante-card-mejorada {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.pagina-inicio .vacante-card-mejorada:hover {
+    transform: translateY(-7px);
+    border-color: #bfdbfe;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+}
+
+.pagina-inicio .empresa-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.pagina-inicio .vacante-card-mejorada .vacante-informacion {
+    margin-bottom: 22px;
+}
+
+.pagina-inicio .vacante-salario {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 22px;
+    padding: 16px;
+    border-radius: 12px;
+    background: #f0f7ff;
+}
+
+.pagina-inicio .salario-etiqueta {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pagina-inicio .vacante-salario strong {
+    color: #142d4e;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.pagina-inicio .vacante-salario .salario-no-disponible {
+    font-size: 16px;
+    color: #64748b;
+}
+
+.pagina-inicio .vacante-footer .boton-ver-empleo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 11px 15px;
+    border-radius: 9px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    transition: background 0.2s ease;
+}
+
+.pagina-inicio .vacante-footer .boton-ver-empleo:hover {
+    background: #1d4ed8;
+    color: #ffffff;
+}
+
+@media (max-width: 650px) {
+
+    .pagina-inicio .vacante-salario strong {
+        font-size: 18px;
+    }
+
+    .pagina-inicio .vacante-footer {
+        align-items: stretch;
+    }
+
+    .pagina-inicio .vacante-footer .boton-ver-empleo {
+        width: 100%;
+    }
+}
+
+.pagina-inicio .recursos-inicio-seccion {
+    background: #f5f8fc;
+}
+
+.pagina-inicio .recursos-inicio-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 25px;
+}
+
+.pagina-inicio .recurso-inicio-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 10px 35px rgba(15, 23, 42, 0.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.pagina-inicio .recurso-inicio-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+}
+
+.pagina-inicio .recurso-inicio-imagen {
+    position: relative;
+    height: 205px;
+    overflow: hidden;
+    background: #eaf2ff;
+}
+
+.pagina-inicio .recurso-inicio-imagen > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.pagina-inicio .recurso-inicio-card:hover .recurso-inicio-imagen > img {
+    transform: scale(1.05);
+}
+
+.pagina-inicio .recurso-imagen-alternativa {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #dbeafe, #ccfbf1);
+    color: #2563eb;
+    font-size: 55px;
+}
+
+.pagina-inicio .recurso-tipo {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 13px;
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.88);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.pagina-inicio .recurso-inicio-contenido {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 25px;
+}
+
+.pagina-inicio .recurso-inicio-etiquetas {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-bottom: 15px;
+}
+
+.pagina-inicio .recurso-categoria {
+    padding: 7px 11px;
+    border-radius: 7px;
+    background: #eaf2ff;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.pagina-inicio .recurso-destacado {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #b45309;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.pagina-inicio .recurso-inicio-contenido h3 {
+    margin: 0 0 13px;
+    color: #142d4e;
+    font-size: 19px;
+    line-height: 1.45;
+}
+
+.pagina-inicio .recurso-inicio-contenido .recurso-resumen {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    margin: 0 0 20px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.pagina-inicio .recurso-inicio-metadatos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: auto;
+    padding-bottom: 20px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.pagina-inicio .recurso-inicio-metadatos span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.pagina-inicio .recurso-inicio-metadatos i {
+    color: #2563eb;
+}
+
+.pagina-inicio .recurso-inicio-enlace {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 18px;
+    border-top: 1px solid #e2e8f0;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.pagina-inicio .recurso-inicio-enlace:hover {
+    color: #142d4e;
+}
+
+.pagina-inicio .sin-recursos-inicio {
+    grid-column: 1 / -1;
+    padding: 55px 20px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 16px;
+    background: white;
+    text-align: center;
+}
+
+.pagina-inicio .sin-recursos-inicio > i {
+    color: #2563eb;
+    font-size: 36px;
+}
+
+.pagina-inicio .sin-recursos-inicio h3 {
+    margin: 18px 0 10px;
+    color: #142d4e;
+}
+
+@media (max-width: 1000px) {
+    .pagina-inicio .recursos-inicio-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .pagina-inicio .recursos-inicio-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pagina-inicio .recurso-inicio-imagen {
+        height: 220px;
+    }
+
+    .pagina-inicio .recurso-inicio-contenido {
+        padding: 22px;
+    }
+}

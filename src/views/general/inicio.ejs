@@ -1,32 +1,537 @@
 
 <%- include('../partials/head', { titulo: titulo }) %>
 
-<body>
+<link rel="stylesheet" href="/css/inicio.css">
 
-    <%- include('../partials/header', {
-        titulo: titulo,
-        descripcion: mensaje
-    }) %>
+<body class="pagina-inicio">
 
+    <!-- NAVEGACIÓN -->
     <%- include('../partials/navigation') %>
 
     <main>
 
-        <h2>Portal de trabajo</h2>
+        <!-- SECCIÓN PRINCIPAL -->
+        <section class="hero">
+            <div class="hero-contenido">
 
-        <p>
-            Bienvenido al portal de oportunidades laborales TalentoHub.
-        </p>
+                <span class="hero-etiqueta">
+                    <i class="fa-solid fa-briefcase"></i>
+                    Tu futuro profesional comienza aquí
+                </span>
 
-        <h2>Bienvenido a TalentoHub</h2>
+                <h1>
+                    Encuentra el empleo que
+                    <span>impulsará tu futuro.</span>
+                </h1>
 
-        <p>
-            Explora las diferentes secciones disponibles en nuestra plataforma.
-        </p>
+                <p>
+                    Descubre oportunidades laborales, conecta con
+                    empresas y encuentra el trabajo ideal para ti
+                    en TalentoHub.
+                </p>
+
+                <!-- BUSCADOR DE EMPLEOS -->
+                <form action="/busqueda" method="GET" class="buscador">
+
+                    <div class="campo-busqueda">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            type="text"
+                            name="q"
+                            placeholder="Puesto, empresa o palabra clave"
+                            aria-label="Buscar empleo"
+                        >
+                    </div>
+
+                    <div class="campo-busqueda">
+                        <i class="fa-solid fa-location-dot"></i>
+
+                        <input
+                            type="text"
+                            name="ubicacion"
+                            placeholder="Ciudad o ubicación"
+                            aria-label="Ubicación del empleo"
+                        >
+                    </div>
+
+                    <button type="submit">
+                        <i class="fa-solid fa-search"></i>
+                        Buscar empleos
+                    </button>
+
+                </form>
+
+                <div class="hero-estadisticas">
+                    <div>
+                        <strong><%= totalVacantes %></strong>
+                        <span>Vacantes disponibles</span>
+                    </div>
+
+                    <div>
+                        <strong>100%</strong>
+                        <span>Oportunidades para explorar</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- VACANTES RECIENTES -->
+        <section class="seccion vacantes-seccion">
+
+            <div class="contenedor">
+
+                <div class="seccion-encabezado">
+
+                    <div>
+                        <span class="seccion-etiqueta">
+                            Oportunidades laborales
+                        </span>
+
+                        <h2>Empleos recientes</h2>
+
+                        <p>
+                            Explora algunas de las últimas oportunidades
+                            publicadas por las empresas.
+                        </p>
+                    </div>
+
+                    <a href="/busqueda" class="enlace-ver-todos">
+                        Ver todos los empleos
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+
+                </div>
+
+                
+<div class="vacantes-grid">
+
+    <% if (vacantes && vacantes.length > 0) { %>
+
+        <% vacantes.forEach(vacante => { %>
+
+            <article class="vacante-card vacante-card-mejorada">
+
+                <!-- EMPRESA Y MODALIDAD -->
+                <div class="vacante-superior">
+
+                    <div class="empresa-icono">
+
+                        <% if (vacante.logoEmpresa) { %>
+
+                            <img
+                                src="<%= vacante.logoEmpresa %>"
+                                alt="Logo de <%= vacante.empresa %>"
+                                class="empresa-logo"
+                                loading="lazy"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"
+                            >
+
+                            <i
+                                class="fa-solid fa-building"
+                                style="display: none;"
+                                aria-hidden="true"
+                            ></i>
+
+                        <% } else { %>
+
+                            <i class="fa-solid fa-building"></i>
+
+                        <% } %>
+
+                    </div>
+
+                    <span class="vacante-modalidad">
+                        <%= vacante.modalidad || 'No especificada' %>
+                    </span>
+
+                </div>
+
+                <!-- INFORMACIÓN PRINCIPAL -->
+                <h3><%= vacante.titulo %></h3>
+
+                <p class="vacante-empresa">
+                    <%= vacante.empresa %>
+                </p>
+
+                <!-- DETALLES -->
+                <div class="vacante-informacion">
+
+                    <span>
+                        <i class="fa-solid fa-location-dot"></i>
+                        <%= vacante.ubicacion || 'Ubicación no especificada' %>
+                    </span>
+
+                    <span>
+                        <i class="fa-solid fa-briefcase"></i>
+                        <%= vacante.tipoContrato || 'Contrato no especificado' %>
+                    </span>
+
+                    <% if (vacante.fechaPublicacion) { %>
+
+                        <span>
+                            <i class="fa-regular fa-calendar"></i>
+
+                            Publicado:
+                            <%= new Date(vacante.fechaPublicacion).toLocaleDateString('es-SV', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                timeZone: 'UTC'
+                            }) %>
+                        </span>
+
+                    <% } %>
+
+                </div>
+
+                <!-- SALARIO -->
+                <div class="vacante-salario">
+
+                    <span class="salario-etiqueta">
+                        Salario ofrecido
+                    </span>
+
+                    <% if (vacante.salarioMinimo != null && vacante.salarioMaximo != null) { %>
+
+                        <strong>
+                            $<%= Number(vacante.salarioMinimo).toLocaleString('en-US') %>
+                            –
+                            $<%= Number(vacante.salarioMaximo).toLocaleString('en-US') %>
+                        </strong>
+
+                    <% } else if (vacante.salarioMinimo != null) { %>
+
+                        <strong>
+                            Desde $<%= Number(vacante.salarioMinimo).toLocaleString('en-US') %>
+                        </strong>
+
+                    <% } else if (vacante.salarioMaximo != null) { %>
+
+                        <strong>
+                            Hasta $<%= Number(vacante.salarioMaximo).toLocaleString('en-US') %>
+                        </strong>
+
+                    <% } else { %>
+
+                        <strong class="salario-no-disponible">
+                            A convenir
+                        </strong>
+
+                    <% } %>
+
+                </div>
+
+                <!-- PIE DE TARJETA -->
+                <div class="vacante-footer">
+
+                    <span class="vacante-sector">
+                        <%= vacante.sector || 'General' %>
+                    </span>
+
+                    <a
+                        href="/busqueda/empleo/<%= vacante.id %>"
+                        class="boton-ver-empleo"
+                    >
+                        Ver empleo
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </article>
+
+        <% }) %>
+
+    <% } else { %>
+
+        <div class="sin-vacantes">
+
+            <i class="fa-solid fa-briefcase"></i>
+
+            <h3>No hay vacantes disponibles</h3>
+
+            <p>
+                Próximamente encontrarás nuevas
+                oportunidades laborales.
+            </p>
+
+        </div>
+
+    <% } %>
+
+</div>
+
+
+            </div>
+
+        </section>
+
+        <!-- SECCIÓN DE SERVICIOS -->
+        <section class="seccion servicios-seccion">
+
+            <div class="contenedor">
+
+                <div class="seccion-titulo-centrado">
+                    <span class="seccion-etiqueta">
+                        Nuestra plataforma
+                    </span>
+
+                    <h2>Todo lo que necesitas en un solo lugar</h2>
+
+                    <p>
+                        TalentoHub conecta a profesionales y empresas
+                        para crear nuevas oportunidades.
+                    </p>
+                </div>
+
+                <div class="servicios-grid">
+
+                    <article class="servicio-card">
+
+                        <div class="servicio-icono">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+
+                        <h3>Para candidatos</h3>
+
+                        <p>
+                            Explora oportunidades laborales y accede
+                            a las herramientas disponibles para
+                            impulsar tu carrera profesional.
+                        </p>
+
+                        <a href="/candidato">
+                            Explorar sección
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+
+                    </article>
+
+                    <article class="servicio-card">
+
+                        <div class="servicio-icono">
+                            <i class="fa-solid fa-building"></i>
+                        </div>
+
+                        <h3>Para empresas</h3>
+
+                        <p>
+                            Publica oportunidades laborales y
+                            conoce las herramientas disponibles
+                            para gestionar tus vacantes.
+                        </p>
+
+                        <a href="/empresarial">
+                            Explorar sección
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+
+                    </article>
+
+                    <article class="servicio-card">
+
+                        <div class="servicio-icono">
+                            <i class="fa-solid fa-book-open-reader"></i>
+                        </div>
+
+                        <h3>Recursos profesionales</h3>
+
+                        <p>
+                            Encuentra artículos, tutoriales y
+                            materiales que te ayudarán a
+                            desarrollar tus habilidades.
+                        </p>
+
+                        <a href="/recursos">
+                            Explorar recursos
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+<section class="seccion recursos-inicio-seccion">
+
+    <div class="contenedor">
+
+        <div class="seccion-encabezado">
+
+            <div>
+                <span class="seccion-etiqueta">
+                    Aprende y crece
+                </span>
+
+                <h2>Recursos para tu desarrollo profesional</h2>
+
+                <p>
+                    Descubre artículos, tutoriales y videos que te ayudarán
+                    a fortalecer tus habilidades y prepararte para nuevas
+                    oportunidades laborales.
+                </p>
+            </div>
+
+            <a href="/recursos" class="enlace-ver-todos">
+                Ver todos los recursos
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+
+        </div>
+
+        <div class="recursos-inicio-grid">
+
+            <% if (recursos && recursos.length > 0) { %>
+
+                <% recursos.forEach(recurso => { %>
+
+                    <article class="recurso-inicio-card">
+
+                        <div class="recurso-inicio-imagen">
+
+                            <% if (recurso.imagenUrl) { %>
+
+                                <img
+                                    src="<%= recurso.imagenUrl %>"
+                                    alt="<%= recurso.titulo %>"
+                                    loading="lazy"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                >
+
+                                <div class="recurso-imagen-alternativa" style="display: none;">
+                                    <i class="fa-solid fa-book-open"></i>
+                                </div>
+
+                            <% } else { %>
+
+                                <div class="recurso-imagen-alternativa">
+                                    <i class="fa-solid fa-book-open"></i>
+                                </div>
+
+                            <% } %>
+
+                            <span class="recurso-tipo">
+                                <% if (recurso.tipo === 'video') { %>
+                                    <i class="fa-solid fa-video"></i>
+                                <% } else if (recurso.tipo === 'tutorial') { %>
+                                    <i class="fa-solid fa-laptop-code"></i>
+                                <% } else { %>
+                                    <i class="fa-solid fa-file-lines"></i>
+                                <% } %>
+
+                                <%= recurso.tipo || 'Recurso' %>
+                            </span>
+
+                        </div>
+
+                        <div class="recurso-inicio-contenido">
+
+                            <div class="recurso-inicio-etiquetas">
+
+                                <span class="recurso-categoria">
+                                    <%= recurso.categoria %>
+                                </span>
+
+                                <% if (recurso.destacado) { %>
+                                    <span class="recurso-destacado">
+                                        <i class="fa-solid fa-star"></i>
+                                        Destacado
+                                    </span>
+                                <% } %>
+
+                            </div>
+
+                            <h3><%= recurso.titulo %></h3>
+
+                            <p class="recurso-resumen">
+                                <%= recurso.resumen || 'Explora este recurso profesional disponible en TalentoHub.' %>
+                            </p>
+
+                            <div class="recurso-inicio-metadatos">
+
+                                <% if (recurso.autor) { %>
+                                    <span>
+                                        <i class="fa-regular fa-user"></i>
+                                        <%= recurso.autor %>
+                                    </span>
+                                <% } %>
+
+                                <% if (recurso.tiempoLectura) { %>
+                                    <span>
+                                        <i class="fa-regular fa-clock"></i>
+                                        <%= recurso.tiempoLectura %> min
+                                    </span>
+                                <% } %>
+
+                            </div>
+
+                            <a
+                                href="/recursos/<%= recurso.id %>"
+                                class="recurso-inicio-enlace"
+                            >
+                                Leer recurso
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+
+                        </div>
+
+                    </article>
+
+                <% }) %>
+
+            <% } else { %>
+
+                <div class="sin-recursos-inicio">
+                    <i class="fa-solid fa-book-open-reader"></i>
+
+                    <h3>Próximamente habrá nuevos recursos</h3>
+
+                    <p>
+                        Estamos preparando contenido para ayudarte
+                        en tu desarrollo profesional.
+                    </p>
+                </div>
+
+            <% } %>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+        <!-- LLAMADO A LA ACCIÓN -->
+        <section class="cta-seccion">
+
+            <div class="contenedor cta-contenido">
+
+                <div>
+                    <h2>Tu próxima oportunidad te está esperando</h2>
+
+                    <p>
+                        Da el siguiente paso en tu carrera profesional
+                        y descubre las vacantes disponibles.
+                    </p>
+                </div>
+
+                <a href="/busqueda" class="cta-boton">
+                    Explorar oportunidades
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+
+            </div>
+
+        </section>
 
     </main>
 
-    <%- include('../partials/footer') %>
-
+<%- include('../partials/navigation-inicio') %>
 </body>
 </html>
