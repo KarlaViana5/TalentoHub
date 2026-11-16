@@ -1,0 +1,10 @@
+<details class="for-tarjeta">
+    <summary><%= etiqueta %></summary>
+    <form class="for-form" action="/foros/hilos/<%= hilo.id %>/reportar" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <% if (comentarioId) { %><input type="hidden" name="comentario_id" value="<%= comentarioId %>"><% } %>
+        <label for="motivo">Motivo</label>
+        <textarea id="motivo" name="motivo" rows="2" minlength="5" maxlength="1000" required></textarea>
+        <button class="for-btn for-btn-peligro" type="submit">Enviar reporte</button>
+    </form>
+</details>

@@ -45,7 +45,7 @@ body.pagina-inicio {
    NAVEGACIÓN
 ========================================== */
 
-.pagina-inicio nav {
+.pagina-inicio > nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -55,7 +55,7 @@ body.pagina-inicio {
     border-bottom: 1px solid var(--borde);
 }
 
-.pagina-inicio nav h2 {
+.pagina-inicio > nav h2 {
     margin: 0;
     color: var(--primario);
     font-size: 23px;
@@ -63,7 +63,7 @@ body.pagina-inicio {
     white-space: nowrap;
 }
 
-.pagina-inicio nav ul {
+.pagina-inicio > nav ul {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -74,14 +74,14 @@ body.pagina-inicio {
     list-style: none;
 }
 
-.pagina-inicio nav a {
+.pagina-inicio > nav a {
     color: var(--texto);
     font-size: 13px;
     font-weight: 600;
     transition: color 0.2s;
 }
 
-.pagina-inicio nav a:hover {
+.pagina-inicio > nav a:hover {
     color: var(--secundario);
 }
 
@@ -574,11 +574,11 @@ body.pagina-inicio {
 
 @media (max-width: 1000px) {
 
-    .pagina-inicio nav {
+    .pagina-inicio > nav {
         flex-direction: column;
     }
 
-    .pagina-inicio nav ul {
+    .pagina-inicio > nav ul {
         justify-content: center;
     }
 
@@ -599,15 +599,15 @@ body.pagina-inicio {
 
 @media (max-width: 650px) {
 
-    .pagina-inicio nav {
+    .pagina-inicio > nav {
         padding: 18px 15px;
     }
 
-    .pagina-inicio nav ul {
+    .pagina-inicio > nav ul {
         gap: 12px;
     }
 
-    .pagina-inicio nav a {
+    .pagina-inicio > nav a {
         font-size: 12px;
     }
 

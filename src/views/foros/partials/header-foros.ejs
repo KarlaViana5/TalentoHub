@@ -1,0 +1,45 @@
+<link rel="stylesheet" href="/css/foros.css">
+
+<div class="for-topbar">
+    <div>
+        <span class="for-context-label">Comunidad</span>
+        <strong><%= actorActual.nombre %></strong>
+        <% if (actorActual.etiquetaRol !== 'Visitante (Solo lectura)') { %>
+            <span class="for-context-role"><%= actorActual.etiquetaRol %></span>
+        <% } %>
+        <% if (!actorActual.puedeParticipar) { %>
+            <span class="for-badge for-badge-pendiente">Solo lectura</span>
+        <% } else { %>
+            <span class="for-badge for-badge-abierto">Participación habilitada</span>
+        <% } %>
+    </div>
+
+    <div class="for-session-actions">
+        <% if (locals.usuarioActual) { %>
+            <a href="/auth/logout" class="for-context-link">Cerrar sesión</a>
+        <% } else { %>
+            <a href="/auth/login?volver=/foros" class="for-context-link">Iniciar sesión para participar</a>
+            <a href="/auth/registro" class="for-context-link for-context-link-primary">Crear cuenta</a>
+        <% } %>
+    </div>
+</div>
+
+<%- include('../../partials/navigation', { activo: 'foros' }) %>
+
+<div class="for-actions">
+        <% if (actorActual.tipo !== 'visitante') { %>
+            <a class="for-btn for-btn-pequeno" href="/foros/mis-solicitudes<%= queryActor ? '?' + queryActor : '' %>">
+                Mis propuestas
+            </a>
+        <% } %>
+        <% if (actorActual.puedeProponerForo && ['candidato', 'empresa'].includes(actorActual.tipo)) { %>
+            <a class="for-btn for-btn-pequeno for-btn-primario" href="/foros/solicitar<%= queryActor ? '?' + queryActor : '' %>">
+                Proponer un espacio
+            </a>
+        <% } %>
+        <% if (actorActual.esAdmin) { %>
+            <a class="for-btn for-btn-pequeno for-btn-verde" href="/administrativo/foros">
+                Administrar comunidad
+            </a>
+        <% } %>
+</div>

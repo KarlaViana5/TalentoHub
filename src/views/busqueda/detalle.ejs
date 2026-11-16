@@ -37,37 +37,13 @@
 
     <link rel="stylesheet" href="/css/busqueda.css">
     <link rel="stylesheet" href="/css/detalle.css">
+    <link rel="stylesheet" href="/css/navigation.css">
+    <link rel="stylesheet" href="/css/design-system.css">
 </head>
 
 <body>
 
-    <!-- =====================================
-         NAVEGACIÓN
-    ====================================== -->
-
-    <header class="main-header">
-        <div class="header-container">
-
-            <a href="/" class="brand">
-                <span class="brand-icon">T</span>
-                <span>Talento<span class="brand-highlight">Hub</span></span>
-            </a>
-
-            <nav class="main-nav">
-                <a href="/">Inicio</a>
-                <a href="/busqueda" class="active">Vacantes</a>
-                <a href="/recursos">Recursos</a>
-                <a href="/foros">Foros</a>
-            </nav>
-
-            <div class="header-actions">
-                <a href="/busqueda" class="header-link">
-                    Explorar empleos
-                </a>
-            </div>
-
-        </div>
-    </header>
+    <%- include('../partials/navigation', { activo: 'busqueda' }) %>
 
 
     <!-- =====================================
@@ -75,6 +51,21 @@
     ====================================== -->
 
     <main class="detail-page">
+
+        <% if (typeof mensaje !== 'undefined' && mensaje) { %>
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 14px 18px; border-radius: 12px; margin-bottom: 18px; font-weight: 600;">
+                ✓ <%= mensaje %>
+                <% if (locals.usuarioActual && usuarioActual.rol === 'candidato') { %>
+                    — <a href="/candidato" style="color: #047857; text-decoration: underline;">Ver mis postulaciones →</a>
+                <% } %>
+            </div>
+        <% } %>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 14px 18px; border-radius: 12px; margin-bottom: 18px; font-weight: 600;">
+                ⚠ <%= error %>
+            </div>
+        <% } %>
 
         <!-- RUTA DE NAVEGACIÓN -->
 
@@ -377,23 +368,46 @@
 
                     <p>
                         Da el siguiente paso en tu carrera profesional.
-                        Consulta esta oportunidad y prepárate para postularte.
+                        Consulta esta oportunidad y postúlate con tu perfil de TalentoHub.
                     </p>
 
-                    <button
-                        type="button"
-                        class="apply-button"
-                        onclick="mostrarMensajePostulacion()"
-                    >
-                        Postularme ahora
-                        <span>→</span>
-                    </button>
-
-                    <div
-                        id="mensajePostulacion"
-                        class="application-message"
-                        aria-live="polite"
-                    ></div>
+                    <% if (!locals.usuarioActual) { %>
+                        <a
+                            href="/auth/login?volver=/busqueda/empleo/<%= vacante.id %>"
+                            class="apply-button"
+                            style="display: flex; justify-content: center; align-items: center; gap: 8px; text-decoration: none;"
+                        >
+                            Iniciar sesión para postularme
+                            <span>→</span>
+                        </a>
+                        <p class="pending-message" style="margin-top: 10px;">
+                            ¿No tienes cuenta? <a href="/auth/registro?rol=candidato" style="color: #38bdf8; font-weight: 700;">Regístrate como Aplicante</a>
+                        </p>
+                    <% } else if (usuarioActual.rol === 'candidato') { %>
+                        <% if (postulacionActual) { %>
+                            <div style="background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(16, 185, 129, 0.45); color: #d1fae5; padding: 12px 14px; border-radius: 10px; margin-bottom: 12px; font-size: 13.5px;">
+                                <strong>✓ Ya te postulaste a este empleo</strong><br>
+                                Estado actual: <span style="text-transform: uppercase; font-weight: 800;"><%= postulacionActual.estado %></span>
+                            </div>
+                            <a href="/candidato" class="apply-button" style="display: flex; justify-content: center; text-decoration: none;">
+                                Ver mi postulación en Mi Panel →
+                            </a>
+                        <% } else { %>
+                            <form method="post" action="/busqueda/empleo/<%= vacante.id %>/postular" style="margin: 0;">
+                                <button type="submit" class="apply-button">
+                                    Postularme ahora como <%= usuarioActual.nombreMostrar %>
+                                    <span>→</span>
+                                </button>
+                            </form>
+                        <% } %>
+                    <% } else if (usuarioActual.rol === 'empresa') { %>
+                        <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 10px; font-size: 13px; margin-bottom: 12px;">
+                            Estás navegando con la cuenta empresarial <strong><%= usuarioActual.nombreMostrar %></strong>.
+                        </div>
+                        <a href="/empresarial/vacantes" class="apply-button" style="display: flex; justify-content: center; text-decoration: none;">
+                            Ir a mis vacantes empresariales →
+                        </a>
+                    <% } %>
 
                     <div class="application-divider"></div>
 
@@ -406,19 +420,24 @@
                         Compartir vacante
                     </button>
 
-                    <button
-                        type="button"
-                        class="save-button"
-                        disabled
-                        title="Disponible cuando implementemos las cuentas de usuario"
-                    >
-                        ♡ Guardar vacante
-                    </button>
-
-                    <p class="pending-message">
-                        Guardar y reportar vacantes estará disponible
-                        cuando implementemos las cuentas de usuario.
-                    </p>
+                    <details style="margin-top: 12px; background: rgba(255,255,255,0.06); padding: 10px 12px; border-radius: 10px;">
+                        <summary style="cursor: pointer; font-size: 13px; font-weight: 600; color: #fca5a5;">
+                            🚩 Reportar irregularidad en esta vacante
+                        </summary>
+                        <form method="post" action="/busqueda/empleo/<%= vacante.id %>/reportar" style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                            <select name="motivo" required style="padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px;">
+                                <option value="">Selecciona motivo...</option>
+                                <option value="Información salarial o requisitos engañosos">Información salarial o requisitos engañosos</option>
+                                <option value="Oferta fraudulenta o cobro indebido">Oferta fraudulenta o cobro indebido</option>
+                                <option value="Contenido discriminatorio o inapropiado">Contenido discriminatorio o inapropiado</option>
+                                <option value="Vacante duplicada o spam">Vacante duplicada o spam</option>
+                            </select>
+                            <textarea name="descripcion" rows="2" placeholder="Describe el motivo (opcional)..." style="padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px;"></textarea>
+                            <button type="submit" style="padding: 8px 12px; border-radius: 6px; background: #dc2626; color: #fff; border: none; font-weight: 700; cursor: pointer; font-size: 12.5px;">
+                                Enviar reporte a Moderación
+                            </button>
+                        </form>
+                    </details>
 
                 </section>
 

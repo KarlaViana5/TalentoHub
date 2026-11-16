@@ -1,0 +1,86 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="adm-body">
+    <div class="adm-layout">
+        <%- include('partials/menu-admin') %>
+
+        <div class="adm-contenedor-principal">
+            <%- include('partials/topbar-admin') %>
+
+            <main class="adm-main">
+                <div class="adm-cabecera">
+                    <div>
+                        <h1>Gestión de Notificaciones y Avisos</h1>
+                        <p>Envía comunicados oficiales por rol (Aplicantes, Empresas, Comunidad o General) y consulta el historial de avisos del sistema.</p>
+                    </div>
+                </div>
+
+                <% if (mensaje) { %>
+                    <div class="adm-flash exito">✓ <%= mensaje %></div>
+                <% } %>
+                <% if (error) { %>
+                    <div class="adm-flash error">⚠ <%= error %></div>
+                <% } %>
+
+                <div class="adm-grid-2">
+                    <section class="adm-tarjeta">
+                        <h3>Historial de notificaciones (<%= notificaciones.length %>)</h3>
+                        <div class="adm-tabla-wrap">
+                            <table class="adm-tabla">
+                                <thead>
+                                    <tr>
+                                        <th>Destinatario</th>
+                                        <th>Título y Mensaje</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% notificaciones.forEach(n => { %>
+                                        <tr>
+                                            <td><span class="adm-badge adm-badge-publicado"><%= n.destinatarioTipo %></span></td>
+                                            <td>
+                                                <strong><%= n.titulo %></strong><br>
+                                                <small style="color: var(--adm-texto-suave);"><%= n.mensaje %></small>
+                                            </td>
+                                            <td><small><%= formatearFechaHora(n.fechaCreacion) %></small></td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section class="adm-tarjeta">
+                        <h3>+ Emitir Nueva Notificación</h3>
+                        <form class="adm-form" method="post" action="/administrativo/notificaciones">
+                            <div>
+                                <label>Audiencia / Rol destinatario *</label>
+                                <select name="destinatarioTipo" required>
+                                    <option value="general">Toda la plataforma (General)</option>
+                                    <option value="candidatos">Rol: Aplicantes / Candidatos</option>
+                                    <option value="empresas">Rol: Empresas Reclutadoras</option>
+                                    <option value="comunidad">Comunidad y Foros</option>
+                                    <option value="cursos">Inscritos en Cursos (LMS)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Título del aviso *</label>
+                                <input type="text" name="titulo" required placeholder="Ej. Nuevas capacitaciones habilitadas">
+                            </div>
+                            <div>
+                                <label>Mensaje detallado *</label>
+                                <textarea name="mensaje" rows="3" required placeholder="Escribe el contenido de la notificación..."></textarea>
+                            </div>
+                            <div>
+                                <label>Enlace de referencia (opcional)</label>
+                                <input type="text" name="referenciaUrl" value="/busqueda" placeholder="/busqueda, /foros, /recursos...">
+                            </div>
+                            <button type="submit" class="adm-btn adm-btn-primario">Publicar notificación</button>
+                        </form>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

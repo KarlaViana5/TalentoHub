@@ -1,0 +1,261 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="adm-body">
+    <div class="adm-layout">
+        <%- include('partials/menu-admin') %>
+
+        <div class="adm-contenedor-principal">
+            <%- include('partials/topbar-admin') %>
+
+            <main class="adm-main">
+                <div class="adm-cabecera">
+                    <div>
+                        <h1>Cursos y Capacitaciones (LMS)</h1>
+                        <p>Diseña cursos por módulos y lecciones, vincúlalos con recursos de la biblioteca, publica capacitaciones y supervisa el progreso de los aplicantes.</p>
+                    </div>
+                    <% if (cursoDetalle) { %>
+                        <a href="/administrativo/cursos" class="adm-btn">← Volver al listado de cursos</a>
+                    <% } %>
+                </div>
+
+                <% if (mensaje) { %>
+                    <div class="adm-flash exito">✓ <%= mensaje %></div>
+                <% } %>
+                <% if (error) { %>
+                    <div class="adm-flash error">⚠ <%= error %></div>
+                <% } %>
+
+                <% if (!cursoDetalle) { %>
+                    <div class="adm-cabecera-acciones">
+                        <a class="adm-btn adm-btn-primario" href="#curso-form-modal">
+                            <i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo curso
+                        </a>
+                    </div>
+                    <div>
+                        <!-- Catálogo de Cursos -->
+                        <section class="adm-tarjeta">
+                            <h3>Cursos registrados (<%= cursos.length %>)</h3>
+                            <div class="adm-tabla-wrap">
+                                <table class="adm-tabla">
+                                    <thead>
+                                        <tr>
+                                            <th>Curso</th>
+                                            <th>Estructura</th>
+                                            <th>Inscritos</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% cursos.forEach(c => { %>
+                                            <tr>
+                                                <td>
+                                                    <strong><%= c.titulo %></strong><br>
+                                                    <small style="color: var(--adm-gris);"><%= c.categoria || 'General' %> · Nivel <%= c.nivel %> · <%= c.duracionMinutos %> min</small>
+                                                </td>
+                                                <td><%= c.totalModulos %> mód. / <%= c.totalLecciones %> lecc.</td>
+                                                <td><%= c.totalInscritos %> (<%= c.totalCompletados %> compl.)</td>
+                                                <td><span class="adm-badge adm-badge-<%= c.estado %>"><%= c.estado %></span></td>
+                                                <td>
+                                                    <a class="adm-btn adm-btn-primario" href="/administrativo/cursos/<%= c.id %>">Gestionar →</a>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                    </div>
+                    <div id="curso-form-modal" class="adm-modal adm-modal-toggle" role="dialog" aria-modal="true" aria-labelledby="curso-form-titulo">
+                        <a class="adm-modal-backdrop" href="/administrativo/cursos" aria-label="Cerrar formulario"></a>
+                        <section class="adm-modal-panel adm-modal-form-panel">
+                            <header class="adm-modal-cabecera">
+                                <div>
+                                    <span class="adm-modal-kicker">Nuevo contenido educativo</span>
+                                    <h2 id="curso-form-titulo">Crear curso</h2>
+                                </div>
+                                <a class="adm-modal-cerrar" href="/administrativo/cursos" aria-label="Cerrar formulario">&times;</a>
+                            </header>
+                            <div class="adm-modal-form-body">
+                            <form class="adm-form" method="post" action="/administrativo/cursos">
+                                <div>
+                                    <label>Título del curso *</label>
+                                    <input type="text" name="titulo" required placeholder="Ej. Dominio de Entrevistas por Competencias">
+                                </div>
+                                <div class="adm-grid-2">
+                                    <div>
+                                        <label>Categoría</label>
+                                        <select name="categoriaId">
+                                            <% categorias.forEach(cat => { %>
+                                                <option value="<%= cat.id %>"><%= cat.nombre %></option>
+                                            <% }) %>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label>Nivel</label>
+                                        <select name="nivel">
+                                            <option value="basico">Básico</option>
+                                            <option value="intermedio">Intermedio</option>
+                                            <option value="avanzado">Avanzado</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label>Descripción general *</label>
+                                    <textarea name="descripcion" rows="2" required placeholder="Resumen del propósito del curso..."></textarea>
+                                </div>
+                                <div>
+                                    <label>Objetivos de aprendizaje *</label>
+                                    <textarea name="objetivos" rows="2" required placeholder="1. Objetivo uno..."></textarea>
+                                </div>
+                                <div class="adm-grid-2">
+                                    <div>
+                                        <label>Duración estimada (minutos)</label>
+                                        <input type="number" name="duracionMinutos" value="90" min="15">
+                                    </div>
+                                    <div>
+                                        <label>Instructor / Autor</label>
+                                        <input type="text" name="autor" value="Dirección Académica TalentoHub">
+                                    </div>
+                                </div>
+                                <button type="submit" class="adm-btn adm-btn-verde">Crear curso en borrador</button>
+                            </form>
+                            </div>
+                        </section>
+                    </div>
+                <% } else { %>
+                    <!-- Vista Detalle de un Curso -->
+                    <section class="adm-tarjeta" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+                        <div>
+                            <span class="adm-badge adm-badge-<%= cursoDetalle.estado %>">Estado: <%= cursoDetalle.estado %></span>
+                            <h2 style="margin: 6px 0 4px;"><%= cursoDetalle.titulo %></h2>
+                            <small style="color: var(--adm-gris);"><%= cursoDetalle.descripcion %></small>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <form method="post" action="/administrativo/cursos/<%= cursoDetalle.id %>/estado" style="margin: 0;">
+                                <input type="hidden" name="estado" value="publicado">
+                                <button type="submit" class="adm-btn adm-btn-verde">✓ Publicar curso</button>
+                            </form>
+                            <form method="post" action="/administrativo/cursos/<%= cursoDetalle.id %>/estado" style="margin: 0;">
+                                <input type="hidden" name="estado" value="archivado">
+                                <button type="submit" class="adm-btn adm-btn-amarillo">Archivar</button>
+                            </form>
+                        </div>
+                    </section>
+
+                    <div class="adm-grid-2">
+                        <!-- Módulos y Lecciones -->
+                        <section class="adm-tarjeta">
+                            <h3>Módulos y Lecciones (<%= cursoDetalle.modulos.length %> módulos)</h3>
+                            <% cursoDetalle.modulos.forEach(m => { %>
+                                <div style="border: 1px solid var(--adm-borde); border-radius: 10px; padding: 14px; margin-bottom: 14px; background: #f8fafc;">
+                                    <strong><%= m.titulo %></strong>
+                                    <p style="margin: 4px 0 10px; font-size: 12.5px; color: var(--adm-texto-suave);"><%= m.descripcion || '' %></p>
+
+                                    <ul class="adm-lecciones-list">
+                                        <% m.lecciones.forEach(l => { %>
+                                        <li class="adm-leccion-item">
+                                            <div>
+                                                <strong><%= l.titulo %></strong>
+                                                <span class="adm-leccion-meta"><%= l.duracionMinutos %> min · <%= l.estado %></span>
+                                            </div>
+                                            <% if (l.recursoBibliotecaTitulo) { %>
+                                                <span class="adm-media-tag"><i class="fa-solid fa-book-open" aria-hidden="true"></i> <%= l.recursoBibliotecaTitulo %></span>
+                                            <% } %>
+                                            <% if (l.videoUrl) { %><span class="adm-media-tag"><i class="fa-solid fa-video" aria-hidden="true"></i> Video</span><% } %>
+                                            <% if (l.adjuntoUrl) { %><a class="adm-media-tag" href="<%= l.adjuntoUrl %>" target="_blank" rel="noopener"><i class="fa-solid fa-paperclip" aria-hidden="true"></i> Adjunto</a><% } %>
+                                        </li>
+                                        <% }) %>
+                                    </ul>
+
+                                    <details>
+                                        <summary style="cursor: pointer; font-size: 12.5px; font-weight: 700; color: var(--adm-primario);">+ Agregar lección a este módulo</summary>
+                                        <form class="adm-form" method="post" action="/administrativo/cursos/<%= cursoDetalle.id %>/modulos/<%= m.id %>/lecciones" style="margin-top: 10px;">
+                                            <input type="text" name="titulo" placeholder="Título de la lección *" required>
+                                            <input type="text" name="descripcion" placeholder="Descripción breve de la lección">
+                                            <textarea name="contenido" rows="2" placeholder="Contenido formativo de la lección *" required></textarea>
+                                            <div class="adm-media-fields">
+                                                <label>Video (URL)
+                                                    <input type="url" name="videoUrl" placeholder="https://...">
+                                                </label>
+                                                <label>Audio, PDF o material adjunto (URL)
+                                                    <input type="url" name="adjuntoUrl" placeholder="https://...">
+                                                </label>
+                                            </div>
+                                            <select name="recursoBibliotecaId">
+                                                <option value="">Vincular recurso de biblioteca (opcional)...</option>
+                                                <% recursosBiblioteca.forEach(rb => { %>
+                                                    <option value="<%= rb.id %>"><%= rb.titulo %></option>
+                                                <% }) %>
+                                            </select>
+                                            <button type="submit" class="adm-btn adm-btn-primario">Guardar lección</button>
+                                        </form>
+                                    </details>
+                                </div>
+                            <% }) %>
+
+                            <h4>+ Agregar nuevo módulo</h4>
+                            <form class="adm-form" method="post" action="/administrativo/cursos/<%= cursoDetalle.id %>/modulos">
+                                <input type="text" name="titulo" placeholder="Ej. Módulo 3: Negociación salarial" required>
+                                <input type="text" name="descripcion" placeholder="Descripción del módulo">
+                                <button type="submit" class="adm-btn">Agregar módulo</button>
+                            </form>
+                        </section>
+
+                        <!-- Inscripciones de Candidatos y Progreso -->
+                        <section class="adm-tarjeta">
+                            <h3>Aplicantes inscritos (<%= cursoDetalle.inscritos.length %>)</h3>
+
+                            <form class="adm-filtros" method="post" action="/administrativo/cursos/<%= cursoDetalle.id %>/inscribir">
+                                <select name="candidatoId" required style="flex: 1;">
+                                    <option value="">Inscribir aplicante al curso...</option>
+                                    <% candidatosDisponibles.forEach(cand => { %>
+                                        <option value="<%= cand.id %>"><%= cand.nombre %> (<%= cand.cargo || 'Aplicante' %>)</option>
+                                    <% }) %>
+                                </select>
+                                <button type="submit" class="adm-btn adm-btn-primario">Inscribir</button>
+                            </form>
+
+                            <div class="adm-tabla-wrap">
+                                <table class="adm-tabla">
+                                    <thead>
+                                        <tr>
+                                            <th>Aplicante</th>
+                                            <th>Avance</th>
+                                            <th>Estado</th>
+                                            <th>Registrar avance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% cursoDetalle.inscritos.forEach(ins => { %>
+                                            <tr>
+                                                <td>
+                                                    <strong><%= ins.candidato %></strong><br>
+                                                    <small style="color: var(--adm-gris);"><%= ins.correo %></small>
+                                                </td>
+                                                <td><strong><%= ins.porcentajeAvance %>%</strong></td>
+                                                <td><span class="adm-badge adm-badge-<%= ins.estado %>"><%= ins.estado %></span></td>
+                                                <td>
+                                                    <% if (cursoDetalle.lecciones.length > 0 && ins.porcentajeAvance < 100) { %>
+                                                        <form method="post" action="/administrativo/cursos/<%= cursoDetalle.id %>/inscripciones/<%= ins.id %>/lecciones/<%= cursoDetalle.lecciones[cursoDetalle.lecciones.length - 1].id %>" style="margin: 0;">
+                                                            <button type="submit" class="adm-btn">Marcar lección completada</button>
+                                                        </form>
+                                                    <% } else { %>
+                                                        <small style="color: var(--adm-verde); font-weight: 700;">✓ Completado</small>
+                                                    <% } %>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                <% } %>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="adm-body">
+    <div class="adm-layout">
+        <%- include('partials/menu-admin') %>
+
+        <div class="adm-contenedor-principal">
+            <%- include('partials/topbar-admin') %>
+
+            <main class="adm-main">
+                <div class="adm-cabecera">
+                    <div>
+                        <h1>Empresas y aprobaciones</h1>
+                        <p>Consulta solicitudes empresariales, revisa su historial y toma decisiones de aprobación o suspensión cuando corresponda.</p>
+                    </div>
+                </div>
+
+                <% if (mensaje) { %>
+                    <div class="adm-flash exito">✓ <%= mensaje %></div>
+                <% } %>
+                <% if (error) { %>
+                    <div class="adm-flash error">⚠ <%= error %></div>
+                <% } %>
+
+                <!-- Pestañas de estados empresariales (Pág. 38 y 98) -->
+                <nav class="adm-pestanas">
+                    <a href="/administrativo/empresas" class="<%= !filtros.estadoAprobacion ? 'activo' : '' %>">Todas (<%= conteos.todas %>)</a>
+                    <a href="/administrativo/empresas?estado=pendiente" class="<%= filtros.estadoAprobacion === 'pendiente' ? 'activo' : '' %>">Pendientes (<%= conteos.pendientes %>)</a>
+                    <a href="/administrativo/empresas?estado=en_correccion" class="<%= filtros.estadoAprobacion === 'en_correccion' ? 'activo' : '' %>">En corrección (<%= conteos.enCorreccion %>)</a>
+                    <a href="/administrativo/empresas?estado=aprobada" class="<%= filtros.estadoAprobacion === 'aprobada' ? 'activo' : '' %>">Aprobadas (<%= conteos.aprobadas %>)</a>
+                    <a href="/administrativo/empresas?estado=rechazada" class="<%= filtros.estadoAprobacion === 'rechazada' ? 'activo' : '' %>">Rechazadas (<%= conteos.rechazadas %>)</a>
+                    <a href="/administrativo/empresas?estado=suspendida" class="<%= filtros.estadoAprobacion === 'suspendida' ? 'activo' : '' %>">Suspendidas (<%= conteos.suspendidas %>)</a>
+                </nav>
+
+                <section class="adm-tarjeta adm-empresas-panel">
+                    <div class="adm-panel-cabecera">
+                        <div>
+                            <h2>Directorio empresarial</h2>
+                            <p><%= empresas.length %> empresas en esta vista. Abre un expediente para revisar sus datos y tomar una decisión.</p>
+                        </div>
+                    </div>
+                        <form class="adm-filtros" method="get" action="/administrativo/empresas">
+                            <input type="hidden" name="estado" value="<%= filtros.estadoAprobacion %>">
+                            <input class="adm-filtro-busqueda" type="search" name="q" value="<%= filtros.q %>" placeholder="Buscar empresa, representante o correo...">
+                            <button type="submit" class="adm-btn adm-btn-primario"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Buscar</button>
+                        </form>
+
+                        <div class="adm-tabla-wrap">
+                            <table class="adm-tabla">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre Comercial</th>
+                                        <th>Representante / Correo</th>
+                                        <th>Estado Aprobación</th>
+                                        <th>Verificación</th>
+                                        <th>Vacantes</th>
+                                        <th>Expediente</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% empresas.forEach(e => { %>
+                                        <tr>
+                                            <td>
+                                                <strong><%= e.nombre %></strong><br>
+                                                <small class="adm-texto-secundario"><%= e.sector %> · <%= e.ubicacion %></small>
+                                            </td>
+                                            <td>
+                                                <%= e.representante %><br>
+                                                <small class="adm-texto-secundario"><%= e.correo %></small>
+                                            </td>
+                                            <td><span class="adm-badge adm-badge-<%= e.estadoAprobacion %>"><%= e.estadoAprobacion %></span></td>
+                                            <td><span class="adm-badge adm-badge-<%= e.estadoVerificacion === 'verificada' ? 'aprobada' : 'pendiente' %>"><%= e.estadoVerificacion %></span></td>
+                                            <td><%= e.vacantesActivas %> / <%= e.totalVacantes %></td>
+                                            <td>
+                                                <a class="adm-btn adm-btn-primario" href="/administrativo/empresas?estado=<%= filtros.estadoAprobacion %>&ver=<%= e.id %>">
+                                                    <i class="fa-solid fa-eye" aria-hidden="true"></i> Ver expediente
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                </section>
+
+                    <!-- El expediente se abre como modal para mantener la tabla como punto de consulta. -->
+                    <% if (expediente) { %>
+                                <% const emp = expediente.empresa; %>
+                                <div class="adm-modal" role="dialog" aria-modal="true" aria-labelledby="empresa-titulo">
+                                    <a class="adm-modal-backdrop" href="/administrativo/empresas?estado=<%= filtros.estadoAprobacion %>" aria-label="Cerrar expediente"></a>
+                                    <section class="adm-modal-panel">
+                                        <header class="adm-modal-cabecera">
+                                            <div class="adm-modal-identidad">
+                                                <span class="adm-modal-avatar"><%= emp.nombre.charAt(0).toUpperCase() %></span>
+                                                <div>
+                                        <span class="adm-badge adm-badge-<%= emp.estadoAprobacion %>">Estado: <%= emp.estadoAprobacion %></span>
+                                                    <h2 id="empresa-titulo"><%= emp.nombre %></h2>
+                                                    <p><%= emp.razonSocial %> · NIT: <%= emp.nit %></p>
+                                                </div>
+                                            </div>
+                                            <a class="adm-modal-cerrar" href="/administrativo/empresas?estado=<%= filtros.estadoAprobacion %>" aria-label="Cerrar expediente">&times;</a>
+                                        </header>
+
+                                        <div class="adm-modal-nota">
+                                            <i class="fa-solid fa-building-shield" aria-hidden="true"></i>
+                                            Expediente administrativo de solo lectura con acciones de aprobación y moderación.
+                                        </div>
+
+                                        <div class="adm-modal-contenido">
+                                            <section class="adm-modal-bloque">
+                                                <h3><i class="fa-solid fa-address-card" aria-hidden="true"></i> Datos de la empresa</h3>
+                                                <p class="adm-modal-descripcion"><%= emp.descripcion || 'Sin descripción registrada.' %></p>
+                                                <dl class="adm-detalle-lista">
+                                                    <dt>Representante</dt><dd><%= emp.representante %></dd>
+                                                    <dt>Correo</dt><dd><%= emp.correo %></dd>
+                                                    <dt>Teléfono</dt><dd><%= emp.telefono || '-' %></dd>
+                                                    <dt>Última revisión</dt><dd><%= emp.aprobadaPor ? `${emp.aprobadaPor} · ${formatearFechaHora(emp.aprobadaEn)}` : 'Sin revisión' %></dd>
+                                                </dl>
+                                                <% if (emp.motivoRechazo) { %>
+                                                    <p class="adm-modal-observacion"><strong>Observación:</strong> <%= emp.motivoRechazo %></p>
+                                                <% } %>
+                                            </section>
+
+                                            <section class="adm-modal-bloque">
+                                                <h3><i class="fa-solid fa-gavel" aria-hidden="true"></i> Decisión administrativa</h3>
+                                                <form class="adm-form" method="post" action="/administrativo/empresas/<%= emp.id %>/decision">
+                                                    <label for="motivo-emp">Motivo u observaciones</label>
+                                                    <textarea id="motivo-emp" name="motivo" rows="3" placeholder="Obligatorio para solicitar corrección, rechazar o suspender."></textarea>
+                                                    <div class="adm-modal-acciones">
+                                                        <button type="submit" name="accion" value="aprobar" class="adm-btn adm-btn-verde">Aprobar</button>
+                                                        <button type="submit" name="accion" value="correccion" class="adm-btn adm-btn-amarillo">Solicitar corrección</button>
+                                                        <button type="submit" name="accion" value="rechazar" class="adm-btn adm-btn-peligro">Rechazar</button>
+                                                        <% if (emp.estadoAprobacion !== 'suspendida') { %>
+                                                            <button type="submit" name="accion" value="suspender" class="adm-btn adm-btn-peligro">Suspender empresa</button>
+                                                        <% } else { %>
+                                                            <button type="submit" name="accion" value="reactivar" class="adm-btn adm-btn-primario">Reactivar empresa</button>
+                                                        <% } %>
+                                                    </div>
+                                                </form>
+                                            </section>
+
+                                            <section class="adm-modal-bloque">
+                                                <h3><i class="fa-solid fa-briefcase" aria-hidden="true"></i> Vacantes de la empresa (<%= expediente.vacantes.length %>)</h3>
+                                                <% if (expediente.vacantes.length) { %>
+                                                    <% expediente.vacantes.forEach(v => { %>
+                                                        <div class="adm-historial-item">
+                                                            <span class="adm-historial-icono"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></span>
+                                                            <div><strong><%= v.titulo %></strong><small><%= v.ubicacion %> · <%= v.postulaciones %> postulaciones</small></div>
+                                                            <span class="adm-badge adm-badge-<%= v.estadoModeracion %>"><%= v.estadoModeracion %></span>
+                                                        </div>
+                                                    <% }) %>
+                                                <% } else { %><p class="adm-modal-vacio">No hay vacantes registradas.</p><% } %>
+                                            </section>
+
+                                            <section class="adm-modal-bloque">
+                                                <h3><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historial de decisiones</h3>
+                                                <% if (expediente.historialDecisiones.length) { %>
+                                                    <% expediente.historialDecisiones.forEach(h => { %>
+                                                        <div class="adm-historial-item">
+                                                            <span class="adm-historial-icono"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                                            <div><strong><%= h.estado.toUpperCase() %></strong><small><%= h.revisadoPor || 'Administración' %> · <%= formatearFechaHora(h.fechaRevision || h.fechaSolicitud) %><br><%= h.motivoDecision %></small></div>
+                                                        </div>
+                                                    <% }) %>
+                                                <% } else { %><p class="adm-modal-vacio">No hay decisiones registradas.</p><% } %>
+                                            </section>
+                                        </div>
+
+                                        <footer class="adm-modal-pie">
+                                            <a class="adm-btn adm-btn-primario" href="/administrativo/empresas?estado=<%= filtros.estadoAprobacion %>">Cerrar expediente</a>
+                                        </footer>
+                                    </section>
+                                </div>
+                    <% } %>
+            </main>
+        </div>
+    </div>
+</body>
+</html>
+
+<% if (expediente) { %>
+    <script>
+        document.body.classList.add('adm-modal-abierto');
+        document.querySelector('.adm-modal-cerrar').focus();
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') window.location.href = '/administrativo/empresas?estado=<%= filtros.estadoAprobacion %>';
+        });
+    </script>
+<% } %>

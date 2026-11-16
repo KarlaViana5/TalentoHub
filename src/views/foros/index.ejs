@@ -1,28 +1,99 @@
+<%- include('../partials/head', { titulo: 'Comunidad | TalentoHub' }) %>
 
-<%- include('../partials/head', { titulo: titulo }) %>
+<body class="foros-body">
+    <%- include('partials/header-foros') %>
 
-<body>
+    <main class="for-contenedor comunidad-inicio">
+        <section class="comunidad-intro" aria-labelledby="comunidad-titulo">
+            <div>
+                <span class="comunidad-eyebrow">COMUNIDAD TALENTOHUB</span>
+                <h1 id="comunidad-titulo">Comparte experiencias. Encuentra respuestas.</h1>
+                <p>Conecta con candidatos y empresas, resuelve dudas y comparte experiencias sobre el mundo laboral.</p>
+            </div>
+            <a class="for-btn for-btn-primario comunidad-accion-principal"
+               href="<%= actorActual.puedeParticipar && foros.length ? '/foros/' + foros[0].slug + '/nuevo?' + queryActor : '/auth/login?volver=%2Fforos' %>">
+                <span aria-hidden="true">+</span> Nueva discusión
+            </a>
+        </section>
 
-    <%- include('../partials/header', {
-        titulo: titulo,
-        descripcion: descripcion
-    }) %>
+        <% if (mensaje) { %>
+            <div class="for-alerta exito" role="status"><span><%= mensaje %></span></div>
+        <% } %>
+        <% if (error) { %>
+            <div class="for-alerta error" role="alert"><span><%= error %></span></div>
+        <% } %>
+        <% if (actorActual.motivoBloqueo) { %>
+            <div class="for-alerta aviso" role="status"><span><%= actorActual.motivoBloqueo %></span></div>
+        <% } %>
 
-    <%- include('../partials/navigation') %>
+        <section class="comunidad-explorador" aria-label="Buscar espacios">
+            <form class="comunidad-busqueda" method="get" action="/foros">
+                <label class="sr-only" for="buscar-comunidad">Buscar espacios</label>
+                <span class="comunidad-busqueda-icono" aria-hidden="true"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input id="buscar-comunidad" type="search" name="q" value="<%= filtros.q %>"
+                       placeholder="Buscar discusiones, temas o palabras clave...">
+                <input type="hidden" name="orden" value="<%= filtros.orden %>">
+                <button type="submit" class="for-btn for-btn-primario">Buscar</button>
+            </form>
 
-    <main>
+            <nav class="comunidad-pestanas" aria-label="Explorar comunidad">
+                <a class="<%= !filtros.origen ? 'activa' : '' %>" href="/foros?<%= queryActor %>">Todos</a>
+                <a class="<%= filtros.orden === 'actividad' ? 'activa' : '' %>" href="/foros?orden=actividad&<%= queryActor %>">Recientes</a>
+                <a class="<%= filtros.origen === 'oficial' ? 'activa' : '' %>" href="/foros?origen=oficial&<%= queryActor %>">Oficiales</a>
+                <a class="<%= filtros.origen === 'comunitario' ? 'activa' : '' %>" href="/foros?origen=comunitario&<%= queryActor %>">Comunitarios</a>
+            </nav>
+        </section>
 
-        <h2>Opciones de los foros</h2>
+        <section class="comunidad-seccion" aria-labelledby="espacios-titulo">
+            <div class="comunidad-seccion-cabecera">
+                <div>
+                    <h2 id="espacios-titulo">Explora los espacios</h2>
+                    <p>Encuentra conversaciones organizadas por temas profesionales.</p>
+                </div>
+                <span class="comunidad-contador"><%= foros.length %> espacios</span>
+            </div>
 
-        <ul>
-            <li>Foros de discusión</li>
-            <li>Hilos de discusión</li>
-            <li>Participar en conversaciones</li>
-        </ul>
+            <% if (foros.length === 0) { %>
+                <div class="comunidad-vacio">
+                    <span class="comunidad-vacio-icono" aria-hidden="true"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <h3>No encontramos espacios con ese nombre</h3>
+                    <p>Prueba con otra palabra o explora todos los espacios.</p>
+                    <a class="for-btn" href="/foros?<%= queryActor %>">Limpiar búsqueda</a>
+                </div>
+            <% } else { %>
+                <div class="comunidad-espacios">
+                    <% foros.forEach(foro => { %>
+                        <a class="comunidad-espacio" href="/foros/<%= foro.slug %>?<%= queryActor %>">
+                            <span class="comunidad-espacio-icono" aria-hidden="true"><i class="fa-solid fa-comments"></i></span>
+                            <span class="comunidad-espacio-contenido">
+                                <span class="comunidad-espacio-meta">
+                                    <span class="comunidad-espacio-tipo"><%= foro.origen === 'comunitario' ? 'Comunitario' : 'Oficial' %></span>
+                                </span>
+                                <strong><%= foro.nombre %></strong>
+                                <span><%= foro.descripcion %></span>
+                            </span>
+                            <span class="comunidad-espacio-resumen">
+                                <strong><%= foro.totalHilos %></strong>
+                                <small><%= foro.totalHilos === 1 ? 'discusión' : 'discusiones' %></small>
+                            </span>
+                            <span class="comunidad-flecha" aria-hidden="true">→</span>
+                        </a>
+                    <% }) %>
+                </div>
+            <% } %>
+        </section>
 
+        <section class="comunidad-resumen" aria-labelledby="actividad-titulo">
+            <div>
+                <h2 id="actividad-titulo">La comunidad está creciendo</h2>
+                <p><%= estadisticas.totalHilos %> <%= estadisticas.totalHilos === 1 ? 'discusión' : 'discusiones' %> y <%= estadisticas.totalRespuestas %> <%= estadisticas.totalRespuestas === 1 ? 'respuesta' : 'respuestas' %> disponibles para consultar.</p>
+            </div>
+            <% if (actorActual.puedeProponerForo && ['candidato', 'empresa'].includes(actorActual.tipo)) { %>
+                <a class="for-btn" href="/foros/solicitar<%= queryActor ? '?' + queryActor : '' %>">Proponer un espacio</a>
+            <% } %>
+        </section>
     </main>
 
     <%- include('../partials/footer') %>
-
 </body>
 </html>

@@ -8,13 +8,18 @@
     <a class="emp-link <%= activo === 'publicar' ? 'activo' : '' %>" href="/empresarial/publicar">Publicar empleo</a>
     <a class="emp-link <%= activo === 'postulaciones' ? 'activo' : '' %>" href="/empresarial/postulaciones">Postulaciones</a>
     <a class="emp-link <%= activo === 'empresas' ? 'activo' : '' %>" href="/empresarial/empresas">Empresas</a>
+    <a class="emp-link" href="/foros">💬 Foros</a>
+    <a class="emp-link" href="/busqueda">🔍 Vacantes públicas</a>
 
-    <div class="emp-usuario">
-        <% const nombreEmpresa = locals.empresaActual ? empresaActual.nombre : 'Mi empresa'; %>
+    <div class="emp-usuario" style="gap: 10px;">
+        <% const nombreEmpresa = locals.empresaActual ? empresaActual.nombre : (locals.usuarioActual ? usuarioActual.nombreMostrar : 'Mi empresa'); %>
         <span class="emp-avatar"><%= nombreEmpresa.charAt(0) %></span>
         <div>
             <strong><%= nombreEmpresa %></strong><br>
-            <small>Empleador</small>
+            <small>Rol: <%= locals.usuarioActual ? usuarioActual.rolEtiqueta : 'Empresa' %></small>
         </div>
+        <a href="/auth/logout" style="margin-left: 8px; padding: 5px 10px; border-radius: 6px; background: #fef2f2; color: #dc2626; font-size: 12px; font-weight: 700; text-decoration: none;">
+            Salir
+        </a>
     </div>
 </nav>

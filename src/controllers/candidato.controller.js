@@ -1,43 +1,57 @@
 const candidatoService = require('../services/candidato.service');
+const adminService = require('../services/administrativo.service');
+
+function resolverIdCandidato(req, idExplicito = null) {
+    if (req.usuario && req.usuario.rol === 'candidato' && req.usuario.candidatoId) {
+        return Number(req.usuario.candidatoId);
+    }
+    if (idExplicito && Number.isFinite(Number(idExplicito))) {
+        return Number(idExplicito);
+    }
+    return null;
+}
 
 const candidatoController = {
     // Consultar toda la información del área del candidato
     mostrarInicio: async (req, res) => {
         try {
-            const idQuery = req.query.id ? Number(req.query.id) : null;
-            const perfil = idQuery
-                ? await candidatoService.obtenerPerfilPorId(idQuery)
+            const idResuelto = resolverIdCandidato(req, req.query.id);
+            const perfil = idResuelto
+                ? await candidatoService.obtenerPerfilPorId(idResuelto)
                 : await candidatoService.obtenerCandidatoPorDefecto();
 
             if (!perfil) {
                 return res.render('candidato/index', {
-                    titulo: 'Módulo de candidato',
-                    descripcion: 'Gestiona tu perfil profesional, postulaciones, alertas y valoraciones.',
+                    titulo: 'Módulo de Aplicante',
+                    descripcion: 'Gestiona tu perfil profesional, postulaciones, alertas, cursos y valoraciones.',
                     perfil: null,
                     postulaciones: [],
                     alertas: [],
                     valoraciones: [],
                     empresas: [],
+                    cursos: [],
                     mensaje: null,
                     error: 'No se encontró ningún candidato registrado en la base de datos.'
                 });
             }
 
-            const [postulaciones, alertas, valoraciones, empresas] = await Promise.all([
+            const [postulaciones, alertas, valoraciones, empresas, cursos] = await Promise.all([
                 candidatoService.obtenerHistorialPostulaciones(perfil.id_candidato),
                 candidatoService.obtenerAlertas(perfil.id_candidato),
                 candidatoService.obtenerValoraciones(perfil.id_candidato),
-                candidatoService.obtenerEmpresasActivas()
+                candidatoService.obtenerEmpresasActivas(),
+                candidatoService.obtenerCursosParaCandidato(perfil.id_candidato)
             ]);
 
             res.render('candidato/index', {
-                titulo: 'Módulo de candidato',
-                descripcion: 'Gestiona tu perfil profesional, postulaciones, alertas y valoraciones.',
+                titulo: 'Módulo de Aplicante',
+                descripcion: 'Gestiona tu perfil profesional, postulaciones, alertas, cursos y valoraciones.',
                 perfil,
                 postulaciones,
                 alertas,
                 valoraciones,
                 empresas,
+                cursos,
                 mensaje: req.query.mensaje || null,
                 error: req.query.error || null
             });
@@ -49,89 +63,101 @@ const candidatoController = {
 
     // Actualizar datos del perfil
     actualizarPerfil: async (req, res) => {
-        const idCandidato = Number(req.params.id);
+        const idCandidato = resolverIdCandidato(req, req.params.id);
         try {
             await candidatoService.actualizarPerfil(idCandidato, req.body);
-            res.redirect(`/candidato?id=${idCandidato}&mensaje=Perfil actualizado correctamente`);
+            res.redirect(`/candidato?mensaje=${encodeURIComponent('Perfil actualizado correctamente')}`);
         } catch (error) {
             console.error('Error al actualizar perfil:', error);
-            res.redirect(`/candidato?id=${idCandidato}&error=No se pudo actualizar el perfil`);
+            res.redirect(`/candidato?error=${encodeURIComponent('No se pudo actualizar el perfil')}`);
         }
     },
 
     // Cancelar una postulación si aún está en estado 'nuevo'
     cancelarPostulacion: async (req, res) => {
-        const idCandidato = Number(req.body.candidato_id);
+        const idCandidato = resolverIdCandidato(req, req.body.candidato_id);
         const idPostulacion = Number(req.params.idPostulacion);
         try {
             await candidatoService.cancelarPostulacion(idPostulacion, idCandidato);
-            res.redirect(`/candidato?id=${idCandidato}&mensaje=Postulación cancelada`);
+            res.redirect(`/candidato?mensaje=${encodeURIComponent('Postulación cancelada')}`);
         } catch (error) {
             console.error('Error al cancelar postulación:', error);
-            res.redirect(`/candidato?id=${idCandidato}&error=No se pudo cancelar la postulación`);
+            res.redirect(`/candidato?error=${encodeURIComponent('No se pudo cancelar la postulación')}`);
         }
     },
 
     // Crear alerta de empleo
     crearAlerta: async (req, res) => {
-        const idCandidato = Number(req.body.candidato_id);
+        const idCandidato = resolverIdCandidato(req, req.body.candidato_id);
         try {
             await candidatoService.crearAlerta(idCandidato, req.body);
-            res.redirect(`/candidato?id=${idCandidato}&mensaje=Alerta de empleo creada`);
+            res.redirect(`/candidato?mensaje=${encodeURIComponent('Alerta de empleo creada')}`);
         } catch (error) {
             console.error('Error al crear alerta:', error);
-            res.redirect(`/candidato?id=${idCandidato}&error=No se pudo crear la alerta`);
+            res.redirect(`/candidato?error=${encodeURIComponent('No se pudo crear la alerta')}`);
         }
     },
 
     // Activar o pausar alerta de empleo
     alternarAlerta: async (req, res) => {
-        const idCandidato = Number(req.body.candidato_id);
+        const idCandidato = resolverIdCandidato(req, req.body.candidato_id);
         const idAlerta = Number(req.params.idAlerta);
         try {
             await candidatoService.alternarEstadoAlerta(idAlerta, idCandidato);
-            res.redirect(`/candidato?id=${idCandidato}&mensaje=Estado de alerta actualizado`);
+            res.redirect(`/candidato?mensaje=${encodeURIComponent('Estado de alerta actualizado')}`);
         } catch (error) {
             console.error('Error al actualizar alerta:', error);
-            res.redirect(`/candidato?id=${idCandidato}&error=No se pudo actualizar la alerta`);
+            res.redirect(`/candidato?error=${encodeURIComponent('No se pudo actualizar la alerta')}`);
         }
     },
 
     // Eliminar alerta de empleo
     eliminarAlerta: async (req, res) => {
-        const idCandidato = Number(req.body.candidato_id);
+        const idCandidato = resolverIdCandidato(req, req.body.candidato_id);
         const idAlerta = Number(req.params.idAlerta);
         try {
             await candidatoService.eliminarAlerta(idAlerta, idCandidato);
-            res.redirect(`/candidato?id=${idCandidato}&mensaje=Alerta eliminada`);
+            res.redirect(`/candidato?mensaje=${encodeURIComponent('Alerta eliminada')}`);
         } catch (error) {
             console.error('Error al eliminar alerta:', error);
-            res.redirect(`/candidato?id=${idCandidato}&error=No se pudo eliminar la alerta`);
+            res.redirect(`/candidato?error=${encodeURIComponent('No se pudo eliminar la alerta')}`);
         }
     },
 
     // Crear valoración de empresa
     crearValoracion: async (req, res) => {
-        const idCandidato = Number(req.body.candidato_id);
+        const idCandidato = resolverIdCandidato(req, req.body.candidato_id);
         try {
             await candidatoService.crearValoracion(idCandidato, req.body);
-            res.redirect(`/candidato?id=${idCandidato}&mensaje=Valoración publicada`);
+            res.redirect(`/candidato?mensaje=${encodeURIComponent('Valoración publicada')}`);
         } catch (error) {
             console.error('Error al crear valoración:', error);
-            res.redirect(`/candidato?id=${idCandidato}&error=No se pudo publicar la valoración`);
+            res.redirect(`/candidato?error=${encodeURIComponent('No se pudo publicar la valoración')}`);
         }
     },
 
     // Actualizar valoración existente
     actualizarValoracion: async (req, res) => {
-        const idCandidato = Number(req.body.candidato_id);
+        const idCandidato = resolverIdCandidato(req, req.body.candidato_id);
         const idValoracion = Number(req.params.idValoracion);
         try {
             await candidatoService.actualizarValoracion(idValoracion, idCandidato, req.body);
-            res.redirect(`/candidato?id=${idCandidato}&mensaje=Valoración actualizada`);
+            res.redirect(`/candidato?mensaje=${encodeURIComponent('Valoración actualizada')}`);
         } catch (error) {
             console.error('Error al actualizar valoración:', error);
-            res.redirect(`/candidato?id=${idCandidato}&error=No se pudo actualizar la valoración`);
+            res.redirect(`/candidato?error=${encodeURIComponent('No se pudo actualizar la valoración')}`);
+        }
+    },
+
+    // Inscribir al candidato en un curso publicado (LMS)
+    inscribirCurso: async (req, res) => {
+        const idCandidato = resolverIdCandidato(req, req.body.candidato_id);
+        const idCurso = Number(req.params.idCurso);
+        try {
+            await adminService.inscribirCandidatoCurso(idCurso, idCandidato);
+            res.redirect(`/candidato?mensaje=${encodeURIComponent('Te has inscrito en el curso exitosamente')}`);
+        } catch (error) {
+            res.redirect(`/candidato?error=${encodeURIComponent(error.message)}`);
         }
     }
 };

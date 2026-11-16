@@ -1,0 +1,182 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="adm-body">
+    <div class="adm-layout">
+        <%- include('partials/menu-admin') %>
+
+        <div class="adm-contenedor-principal">
+            <%- include('partials/topbar-admin') %>
+
+            <main class="adm-main">
+                <div class="adm-cabecera">
+                    <div>
+                        <h1><%= esArticulos ? 'Gestión de Artículos y Guías' : 'Biblioteca Digital y Recursos Educativos' %></h1>
+                        <p>Publica recursos, plantillas, videos y artículos que se conectan directamente con el catálogo público (/recursos) y las lecciones de los cursos.</p>
+                    </div>
+                </div>
+
+                <% if (mensaje) { %>
+                    <div class="adm-flash exito">✓ <%= mensaje %></div>
+                <% } %>
+                <% if (error) { %>
+                    <div class="adm-flash error">⚠ <%= error %></div>
+                <% } %>
+
+                <div class="adm-cabecera-acciones">
+                    <a class="adm-btn adm-btn-primario" href="#recurso-form-modal">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo material
+                    </a>
+                </div>
+
+                <section class="adm-tarjeta">
+                    <!-- Listado de Recursos -->
+                    <section class="adm-tarjeta">
+                        <form class="adm-filtros" method="get" action="<%= esArticulos ? '/administrativo/articulos' : '/administrativo/recursos' %>">
+                            <input type="search" name="q" value="<%= filtros.q %>" placeholder="🔍 Buscar por título o autor..." style="flex: 1;">
+                            <select name="categoriaId" onchange="this.form.submit()">
+                                <option value="">Todas las categorías</option>
+                                <% categorias.forEach(c => { %>
+                                    <option value="<%= c.id %>" <%= Number(filtros.categoriaId) === c.id ? 'selected' : '' %>><%= c.nombre %></option>
+                                <% }) %>
+                            </select>
+                            <select name="estado" onchange="this.form.submit()">
+                                <option value="">Todos los estados</option>
+                                <option value="publicado" <%= filtros.estado === 'publicado' ? 'selected' : '' %>>Publicado</option>
+                                <option value="borrador" <%= filtros.estado === 'borrador' ? 'selected' : '' %>>Borrador</option>
+                                <option value="archivado" <%= filtros.estado === 'archivado' ? 'selected' : '' %>>Archivado</option>
+                            </select>
+                            <button type="submit" class="adm-btn">Filtrar</button>
+                        </form>
+
+                        <div class="adm-tabla-wrap">
+                            <table class="adm-tabla">
+                                <thead>
+                                    <tr>
+                                        <th>Título / Categoría</th>
+                                        <th>Tipo</th>
+                                        <th>Estado</th>
+                                        <th>Vistas</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% recursos.forEach(r => { %>
+                                        <tr>
+                                            <td>
+                                                <strong><a href="/recursos/<%= r.id %>" target="_blank"><%= r.titulo %></a></strong>
+                                                <% if (r.destacado) { %><span class="adm-destacado"><i class="fa-solid fa-star" aria-hidden="true"></i> Destacado</span><% } %><br>
+                                                <small style="color: var(--adm-gris);"><%= r.categoria %> · <%= r.autor %></small>
+                                            </td>
+                                            <td><span class="adm-badge adm-badge-borrador"><%= r.tipo %></span></td>
+                                            <td><span class="adm-badge adm-badge-<%= r.estado %>"><%= r.estado %></span></td>
+                                            <td><%= r.vistas %></td>
+                                            <td>
+                                                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                                    <a class="adm-btn" href="<%= esArticulos ? '/administrativo/articulos' : '/administrativo/recursos' %>?editar=<%= r.id %>#recurso-form-modal">
+                                                        <i class="fa-solid fa-pen" aria-hidden="true"></i> Editar
+                                                    </a>
+                                                    <form method="post" action="/administrativo/recursos/<%= r.id %>/estado" style="margin: 0;">
+                                                        <input type="hidden" name="estado" value="<%= r.estado === 'publicado' ? 'archivado' : 'publicado' %>">
+                                                        <button type="submit" class="adm-btn"><%= r.estado === 'publicado' ? 'Archivar' : 'Publicar' %></button>
+                                                    </form>
+                                                    <form method="post" action="/administrativo/recursos/<%= r.id %>/destacado" style="margin: 0;">
+                                                        <button type="submit" class="adm-btn" title="Destacar"><i class="fa-solid fa-star" aria-hidden="true"></i></button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                <div id="recurso-form-modal" class="adm-modal adm-modal-toggle" role="dialog" aria-modal="true" aria-labelledby="recurso-form-titulo">
+                    <a class="adm-modal-backdrop" href="<%= esArticulos ? '/administrativo/articulos' : '/administrativo/recursos' %>" aria-label="Cerrar formulario"></a>
+                    <section class="adm-modal-panel adm-modal-form-panel">
+                        <header class="adm-modal-cabecera">
+                            <div>
+                                <span class="adm-modal-kicker"><%= recursoEditar ? 'Edición' : 'Nuevo contenido' %></span>
+                                <h2 id="recurso-form-titulo"><%= recursoEditar ? 'Editar material' : 'Publicar material' %></h2>
+                            </div>
+                            <a class="adm-modal-cerrar" href="<%= esArticulos ? '/administrativo/articulos' : '/administrativo/recursos' %>" aria-label="Cerrar formulario">&times;</a>
+                        </header>
+                        <div class="adm-modal-form-body">
+                        <form class="adm-form" method="post" action="<%= recursoEditar ? '/administrativo/recursos/' + recursoEditar.id + '/editar' : (esArticulos ? '/administrativo/articulos' : '/administrativo/recursos') %>">
+                            <div>
+                                <label>Título del material *</label>
+                                <input type="text" name="titulo" value="<%= recursoEditar ? recursoEditar.titulo : '' %>" required placeholder="Ej. Guía práctica para entrevistas técnicas">
+                            </div>
+
+                            <div class="adm-grid-2">
+                                <div>
+                                    <label>Categoría *</label>
+                                    <select name="categoriaId" required>
+                                        <% categorias.forEach(c => { %>
+                                            <option value="<%= c.id %>" <%= recursoEditar && recursoEditar.categoriaId === c.id ? 'selected' : '' %>><%= c.nombre %></option>
+                                        <% }) %>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label>Tipo de contenido</label>
+                                    <select name="tipo">
+                                        <option value="articulo" <%= recursoEditar && recursoEditar.tipo === 'articulo' ? 'selected' : '' %>>Artículo</option>
+                                        <option value="tutorial" <%= recursoEditar && recursoEditar.tipo === 'tutorial' ? 'selected' : '' %>>Tutorial / Guía PDF</option>
+                                        <option value="video" <%= recursoEditar && recursoEditar.tipo === 'video' ? 'selected' : '' %>>Video formativo</option>
+                                        <option value="audio" <%= recursoEditar && recursoEditar.tipo === 'audio' ? 'selected' : '' %>>Audio / podcast</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label>Resumen breve *</label>
+                                <textarea name="resumen" rows="2" required placeholder="Síntesis para mostrar en las tarjetas de recursos..."><%= recursoEditar ? recursoEditar.resumen : '' %></textarea>
+                            </div>
+
+                            <div>
+                                <label>Contenido completo de la sección principal</label>
+                                <textarea name="contenido" rows="4" placeholder="Escribe el desarrollo del artículo o guía..."></textarea>
+                            </div>
+
+                            <div class="adm-grid-2">
+                                <div>
+                                    <label>URL del material (opcional)</label>
+                                    <input type="url" name="archivoUrl" value="<%= recursoEditar ? (recursoEditar.archivoUrl || '') : '' %>" placeholder="https://...">
+                                </div>
+                                <div>
+                                    <label>Estado de publicación</label>
+                                    <select name="estado">
+                                        <option value="publicado" <%= !recursoEditar || recursoEditar.estado === 'publicado' ? 'selected' : '' %>>Publicado</option>
+                                        <option value="borrador" <%= recursoEditar && recursoEditar.estado === 'borrador' ? 'selected' : '' %>>Borrador</option>
+                                        <option value="archivado" <%= recursoEditar && recursoEditar.estado === 'archivado' ? 'selected' : '' %>>Archivado</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" class="adm-btn adm-btn-primario">
+                                    <%= recursoEditar ? 'Guardar cambios' : 'Publicar en Biblioteca' %>
+                                </button>
+                                <% if (recursoEditar) { %>
+                                    <a href="/administrativo/recursos" class="adm-btn">Cancelar edición</a>
+                                <% } %>
+                            </div>
+                        </form>
+
+                        <hr style="border: none; border-top: 1px solid var(--adm-borde); margin: 22px 0;">
+
+                        <h4>+ Crear nueva categoría de biblioteca</h4>
+                        <form class="adm-filtros" method="post" action="/administrativo/recursos/categorias">
+                            <input type="text" name="nombre" placeholder="Nombre de la categoría" required style="flex: 1;">
+                            <input type="text" name="descripcion" placeholder="Descripción breve" style="flex: 1;">
+                            <button type="submit" class="adm-btn">Agregar categoría</button>
+                        </form>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

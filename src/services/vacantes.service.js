@@ -1,10 +1,10 @@
-
 const { pool } = require('../config/database');
 
 // Columnas que utilizaremos para mostrar las vacantes.
 const SELECT_VACANTES = `
     SELECT
         v.id_vacante AS id,
+        v.empresa_id AS "empresaId",
         v.titulo,
         e.nombre AS empresa,
         e.logo_url AS "logoEmpresa",
@@ -26,12 +26,16 @@ const SELECT_VACANTES = `
     INNER JOIN empresas e ON e.id_empresa = v.empresa_id
 `;
 
+const VACANTE_VISIBLE = `COALESCE(v.estado_moderacion, 'normal') = 'normal'`;
+
 // Construye los filtros de búsqueda.
 function construirFiltros(filtros = {}) {
     const condiciones = [
         "v.estado = 'publicada'",
         "(v.fecha_cierre IS NULL OR v.fecha_cierre >= CURRENT_DATE)",
-        "e.estado = 'activa'"
+        "e.estado = 'activa'",
+        "COALESCE(e.estado_aprobacion, 'aprobada') = 'aprobada'",
+        VACANTE_VISIBLE
     ];
 
     const valores = [];
@@ -47,7 +51,6 @@ function construirFiltros(filtros = {}) {
             `%${filtros.q.trim()}%`
         );
 
-        // La búsqueda utiliza cuatro parámetros.
         const ultimo = valores.pop();
         const posicion = valores.length + 1;
         valores.push(ultimo, ultimo, ultimo, ultimo);
@@ -149,19 +152,27 @@ async function buscarVacantes(filtros = {}, opciones = {}) {
     };
 }
 
-// Obtiene una vacante por su identificador.
+// Obtiene una vacante por su identificador e incrementa su contador de vistas.
 async function obtenerVacantePorId(id) {
     const consulta = `
         ${SELECT_VACANTES}
         WHERE v.id_vacante = $1
         AND v.estado = 'publicada'
+        AND e.estado = 'activa'
+        AND COALESCE(e.estado_aprobacion, 'aprobada') = 'aprobada'
+        AND ${VACANTE_VISIBLE}
         AND (v.fecha_cierre IS NULL OR v.fecha_cierre >= CURRENT_DATE)
         LIMIT 1
     `;
 
     const resultado = await pool.query(consulta, [id]);
+    const vacante = resultado.rows[0] || null;
 
-    return resultado.rows[0] || null;
+    if (vacante) {
+        await pool.query('UPDATE vacantes SET vistas = COALESCE(vistas, 0) + 1 WHERE id_vacante = $1', [id]).catch(() => {});
+    }
+
+    return vacante;
 }
 
 // Obtiene otras vacantes del mismo sector.
@@ -173,6 +184,9 @@ async function obtenerVacantesSimilares(vacanteActual) {
         WHERE v.sector = $1
         AND v.id_vacante <> $2
         AND v.estado = 'publicada'
+        AND e.estado = 'activa'
+        AND COALESCE(e.estado_aprobacion, 'aprobada') = 'aprobada'
+        AND ${VACANTE_VISIBLE}
         AND (v.fecha_cierre IS NULL OR v.fecha_cierre >= CURRENT_DATE)
         ORDER BY v.fecha_publicacion DESC
         LIMIT 3
@@ -186,8 +200,104 @@ async function obtenerVacantesSimilares(vacanteActual) {
     return resultado.rows;
 }
 
+async function obtenerPostulacionCandidato(vacanteId, candidatoId) {
+    if (!vacanteId || !candidatoId) return null;
+    const { rows } = await pool.query(
+        `SELECT id_postulacion AS id, estado, fecha_postulacion AS "fechaPostulacion"
+         FROM postulaciones
+         WHERE vacante_id = $1 AND candidato_id = $2
+         LIMIT 1`,
+        [Number(vacanteId), Number(candidatoId)]
+    );
+    return rows[0] || null;
+}
+
+async function postularCandidatoAVacante(vacanteId, candidatoId) {
+    const vacante = await obtenerVacantePorId(vacanteId);
+    if (!vacante) {
+        throw new Error('La vacante seleccionada ya no se encuentra disponible.');
+    }
+
+    const { rows: candRows } = await pool.query(
+        'SELECT id_candidato, nombre, COALESCE(estado, \'activo\') AS estado FROM candidatos WHERE id_candidato = $1 LIMIT 1',
+        [Number(candidatoId)]
+    );
+    const candidato = candRows[0];
+    if (!candidato) {
+        throw new Error('No se encontró tu perfil de candidato.');
+    }
+    if (candidato.estado === 'suspendido') {
+        throw new Error('Tu cuenta de candidato está suspendida y no puede enviar nuevas postulaciones.');
+    }
+
+    const previa = await obtenerPostulacionCandidato(vacanteId, candidatoId);
+    if (previa) {
+        throw new Error('Ya te has postulado anteriormente a esta vacante.');
+    }
+
+    const { rows } = await pool.query(
+        `INSERT INTO postulaciones (vacante_id, candidato_id, estado, fecha_postulacion)
+         VALUES ($1, $2, 'nuevo', CURRENT_TIMESTAMP)
+         RETURNING id_postulacion AS id, estado, fecha_postulacion AS "fechaPostulacion"`,
+        [Number(vacanteId), Number(candidatoId)]
+    );
+
+    await pool.query(
+        `INSERT INTO notificaciones (destinatario_tipo, destinatario_id, titulo, mensaje, tipo_evento, referencia_url)
+         VALUES ('empresas', $1, $2, $3, 'nueva_postulacion', $4)`,
+        [
+            vacante.empresaId,
+            `Nueva postulación en ${vacante.titulo}`,
+            `El candidato ${candidato.nombre} se ha postulado a la vacante "${vacante.titulo}".`,
+            `/empresarial/postulaciones?vacante=${vacante.id}`
+        ]
+    ).catch(() => {});
+
+    return rows[0];
+}
+
+async function reportarVacantePublica(vacanteId, usuario, datos = {}) {
+    const vacante = await obtenerVacantePorId(vacanteId);
+    if (!vacante) {
+        throw new Error('La vacante no existe.');
+    }
+    const motivo = String(datos.motivo || '').trim();
+    const descripcion = String(datos.descripcion || '').trim();
+    if (!motivo) {
+        throw new Error('Selecciona o indica el motivo del reporte.');
+    }
+
+    const denuncianteTipo = usuario && ['candidato', 'empresa', 'admin'].includes(usuario.rol)
+        ? usuario.rol
+        : 'visitante';
+    const denuncianteId = usuario ? (usuario.candidatoId || usuario.empresaId || usuario.id || 1) : 1;
+    const denuncianteNombre = usuario ? usuario.nombreMostrar : 'Visitante';
+
+    await pool.query(
+        `INSERT INTO reportes (
+            denunciante_tipo, denunciante_id, denunciante_nombre,
+            tipo_contenido, contenido_id, contenido_resumen,
+            usuario_reportado_nombre, motivo, descripcion, estado
+         )
+         VALUES ($1, $2, $3, 'vacante', $4, $5, $6, $7, $8, 'pendiente')`,
+        [
+            denuncianteTipo,
+            denuncianteId,
+            denuncianteNombre,
+            Number(vacanteId),
+            vacante.titulo,
+            vacante.empresa,
+            motivo,
+            descripcion || null
+        ]
+    );
+}
+
 module.exports = {
     buscarVacantes,
     obtenerVacantePorId,
-    obtenerVacantesSimilares
+    obtenerVacantesSimilares,
+    obtenerPostulacionCandidato,
+    postularCandidatoAVacante,
+    reportarVacantePublica
 };

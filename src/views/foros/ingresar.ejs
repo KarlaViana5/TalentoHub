@@ -1,0 +1,22 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+<body class="foros-body">
+    <%- include('partials/header-foros') %>
+    <main class="for-contenedor for-contenedor-lectura">
+        <section class="for-tarjeta">
+            <h1 class="for-form-title"><%= titulo %></h1>
+            <form method="post" action="/foros/ingresar" class="for-form">
+                <div>
+                    <label for="correo">Correo</label>
+                    <input id="correo" type="email" name="correo" required maxlength="254" autocomplete="username">
+                </div>
+                <div>
+                    <label for="clave">Contraseña</label>
+                    <input id="clave" type="password" name="clave" required maxlength="256" autocomplete="current-password">
+                </div>
+                <button class="for-btn for-btn-primario" type="submit">Ingresar</button>
+            </form>
+        </section>
+    </main>
+    <%- include('../partials/footer') %>
+</body>
+</html>

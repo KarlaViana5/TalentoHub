@@ -1,0 +1,219 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="foros-body">
+    <%- include('partials/header-foros') %>
+
+    <main class="for-contenedor for-contenedor-discusion">
+        <div class="for-migas">
+            <a href="/foros?<%= queryActor %>">Foros</a> /
+            <a href="/foros/<%= hilo.foroSlug %>?<%= queryActor %>"><%= hilo.foroIcono %> <%= hilo.foroNombre %></a> /
+            <strong><%= hilo.titulo %></strong>
+        </div>
+
+        <% if (mensaje) { %>
+            <div class="for-alerta exito"><span>✓ <%= mensaje %></span></div>
+        <% } %>
+
+        <% if (error) { %>
+            <div class="for-alerta error"><span>⚠ <%= error %></span></div>
+        <% } %>
+
+        <!-- Publicación Principal del Hilo -->
+        <article class="for-tarjeta">
+            <div class="for-discusion-cabecera">
+                <div class="for-hilo-estados">
+                    <% if (hilo.fijado) { %>
+                        <span class="for-badge for-badge-fijado"><i class="fa-solid fa-thumbtack" aria-hidden="true"></i> Hilo fijado</span>
+                    <% } %>
+                    <% if (hilo.bloqueado) { %>
+                        <span class="for-badge for-badge-bloqueado"><i class="fa-solid fa-lock" aria-hidden="true"></i> Comentarios bloqueados</span>
+                    <% } else { %>
+                        <span class="for-badge for-badge-abierto">Hilo abierto</span>
+                    <% } %>
+                    <span class="for-badge for-badge-oficial"><%= hilo.foroNombre %></span>
+                </div>
+
+                <span class="for-resultados">
+                    <i class="fa-regular fa-eye" aria-hidden="true"></i> <%= hilo.vistas %> vistas · <i class="fa-regular fa-comment" aria-hidden="true"></i> <%= hilo.comentarios.length %> respuestas
+                </span>
+            </div>
+
+            <h1 class="for-discusion-titulo"><%= hilo.titulo %></h1>
+
+            <div class="for-autor-barra">
+                <div class="for-autor-identidad">
+                    <span class="for-avatar"><%= hilo.autorNombre.charAt(0).toUpperCase() %></span>
+                    <div>
+                        <strong><%= hilo.autorNombre %></strong>
+                        <span class="for-badge <%= hilo.autorTipo === 'empresa' ? 'for-badge-comunitario' : 'for-badge-oficial' %>">
+                            <%= hilo.autorRolEtiqueta %>
+                        </span>
+                        <br>
+                        <small class="for-meta">Publicado <%= formatearFechaRelativa(hilo.fechaCreacion) %></small>
+                    </div>
+                </div>
+
+                <div class="for-form-actions">
+                    <% const esAutorHilo = (actorActual.tipo === hilo.autorTipo && actorActual.id === hilo.autorId) || actorActual.esAdmin; %>
+                    <% if (esAutorHilo && actorActual.puedeParticipar) { %>
+                        <a class="for-btn for-btn-pequeno" href="/foros/<%= hilo.foroSlug %>/hilos/<%= hilo.id %>?<%= queryActor %>&editar=1">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i> Editar
+                        </a>
+                        <form method="post" action="/foros/<%= hilo.foroSlug %>/hilos/<%= hilo.id %>/eliminar"
+                              onsubmit="return confirm('¿Deseas eliminar este hilo de discusión?');">
+                            <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+                            <button type="submit" class="for-btn for-btn-pequeno for-btn-peligro"><i class="fa-solid fa-trash" aria-hidden="true"></i> Eliminar</button>
+                        </form>
+                    <% } %>
+
+                    <button type="button" class="for-btn for-btn-pequeno"
+                            onclick="document.getElementById('box-reportar-hilo').hidden = !document.getElementById('box-reportar-hilo').hidden;">
+                        <i class="fa-solid fa-flag" aria-hidden="true"></i> Reportar hilo
+                    </button>
+                </div>
+            </div>
+
+            <% if (modoEdicion && esAutorHilo) { %>
+                <form class="for-form for-form-edicion" method="post" action="/foros/<%= hilo.foroSlug %>/hilos/<%= hilo.id %>/editar">
+                    <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+                    <div>
+                        <label>Editar título</label>
+                        <input type="text" name="titulo" value="<%= hilo.titulo %>" required minlength="5">
+                    </div>
+                    <div>
+                        <label>Editar contenido</label>
+                        <textarea name="contenido" rows="5" required minlength="10"><%= hilo.contenido %></textarea>
+                    </div>
+                    <div class="for-form-actions">
+                        <a class="for-btn for-btn-pequeno" href="/foros/<%= hilo.foroSlug %>/hilos/<%= hilo.id %>?<%= queryActor %>">Cancelar</a>
+                        <button type="submit" class="for-btn for-btn-pequeno for-btn-primario">Guardar cambios</button>
+                    </div>
+                </form>
+            <% } else { %>
+                <div class="for-contenido-texto"><%= hilo.contenido %></div>
+            <% } %>
+
+            <!-- Formulario desplegable para denunciar el hilo (RN-FOR-12) -->
+            <form id="box-reportar-hilo" hidden class="for-form for-form-reporte" method="post" action="/foros/reportes">
+                <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+                <input type="hidden" name="tipoContenido" value="hilo">
+                <input type="hidden" name="contenidoId" value="<%= hilo.id %>">
+                <input type="hidden" name="volver" value="/foros/<%= hilo.foroSlug %>/hilos/<%= hilo.id %>?<%= queryActor %>">
+                <strong><i class="fa-solid fa-flag" aria-hidden="true"></i> Reportar este hilo al equipo de moderación</strong>
+                <div class="for-form-actions">
+                    <select name="motivo" required>
+                        <option value="Contenido inapropiado o irrespetuoso">Contenido inapropiado o irrespetuoso</option>
+                        <option value="Spam o publicidad engañosa">Spam o publicidad engañosa</option>
+                        <option value="Información falsa o fraudulenta">Información falsa o fraudulenta</option>
+                        <option value="Tema fuera de lugar">Tema fuera de lugar</option>
+                    </select>
+                    <input type="text" name="descripcion" placeholder="Detalles adicionales (opcional)">
+                    <button type="submit" class="for-btn for-btn-pequeno for-btn-peligro">Enviar reporte</button>
+                </div>
+            </form>
+        </article>
+
+        <!-- Lista de Respuestas / Comentarios -->
+        <section id="comentarios">
+            <h2 class="for-seccion-titulo">
+                Respuestas de la comunidad (<%= hilo.comentarios.length %>)
+            </h2>
+
+            <% if (hilo.comentarios.length === 0) { %>
+                <div class="for-tarjeta for-empty">
+                    Todavía no hay respuestas en este hilo. ¡Sé el primero en aportar a la conversación!
+                </div>
+            <% } else { %>
+                <% hilo.comentarios.forEach(c => { %>
+                    <article class="for-comentario <%= c.padreId ? 'respuesta' : '' %>">
+                        <div class="for-comentario-cabecera">
+                            <div class="for-autor-identidad">
+                                <span class="for-avatar for-avatar-small">
+                                    <%= c.autorNombre.charAt(0).toUpperCase() %>
+                                </span>
+                                <div>
+                                    <strong><%= c.autorNombre %></strong>
+                                    <span class="for-badge <%= c.autorTipo === 'empresa' ? 'for-badge-comunitario' : 'for-badge-oficial' %>">
+                                        <%= c.autorRolEtiqueta %>
+                                    </span>
+                                    <small class="for-meta">
+                                        · <%= formatearFechaRelativa(c.fechaCreacion) %>
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="for-form-actions">
+                                <% const esAutorCom = (actorActual.tipo === c.autorTipo && actorActual.id === c.autorId) || actorActual.esAdmin; %>
+                                <% if (esAutorCom && actorActual.puedeParticipar) { %>
+                                    <form method="post" action="/foros/<%= hilo.foroSlug %>/hilos/<%= hilo.id %>/comentarios/<%= c.id %>/eliminar"
+                                          onsubmit="return confirm('¿Eliminar este comentario?');">
+                                        <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+                                        <button type="submit" class="for-btn for-btn-pequeno for-btn-peligro">Eliminar</button>
+                                    </form>
+                                <% } %>
+
+                                <form method="post" action="/foros/reportes">
+                                    <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+                                    <input type="hidden" name="tipoContenido" value="comentario">
+                                    <input type="hidden" name="contenidoId" value="<%= c.id %>">
+                                    <input type="hidden" name="motivo" value="Comentario reportado por usuario">
+                                    <input type="hidden" name="volver" value="/foros/<%= hilo.foroSlug %>/hilos/<%= hilo.id %>?<%= queryActor %>">
+                                    <button type="submit" class="for-btn for-btn-pequeno" title="Denunciar comentario"><i class="fa-solid fa-flag" aria-hidden="true"></i> Reportar</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="for-contenido-texto"><%= c.contenido %></div>
+                    </article>
+                <% }) %>
+            <% } %>
+        </section>
+
+        <!-- Formulario para responder al hilo (RN-FOR-11 y RN-FOR-14) -->
+        <section id="form-comentar" class="for-tarjeta for-form-respuesta">
+            <h3>Participar en la conversación</h3>
+
+            <% if (hilo.bloqueado) { %>
+                <div class="for-alerta error">
+                    <span><i class="fa-solid fa-lock" aria-hidden="true"></i> Este hilo fue bloqueado por moderación y ya no acepta nuevas respuestas (RN-FOR-14).</span>
+                </div>
+            <% } else if (!actorActual.puedeParticipar) { %>
+                <div class="for-alerta aviso">
+                    <span><%= actorActual.motivoBloqueo %></span>
+                </div>
+            <% } else { %>
+                <form class="for-form" method="post" action="/foros/<%= hilo.foroSlug %>/hilos/<%= hilo.id %>/comentarios">
+                    <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+
+                    <% if (hilo.comentarios.length > 0) { %>
+                        <div>
+                            <label for="padreId">Responder a (opcional):</label>
+                            <select id="padreId" name="padreId">
+                                <option value="">Respuesta general al hilo principal</option>
+                                <% hilo.comentarios.forEach(c => { %>
+                                    <option value="<%= c.id %>">↳ Responder a <%= c.autorNombre %>: "<%= c.contenido.slice(0, 50) %>..."</option>
+                                <% }) %>
+                            </select>
+                        </div>
+                    <% } %>
+
+                    <div>
+                        <label for="contenido-comentario">Tu comentario *</label>
+                        <textarea id="contenido-comentario" name="contenido" rows="4" required minlength="2"
+                                  placeholder="Comparte tu respuesta o consejo respetando las normas de la comunidad..."></textarea>
+                    </div>
+
+                    <div class="for-form-actions">
+                        <small class="for-form-note">
+                            Comentando como: <strong><%= actorActual.nombre %></strong> (<%= actorActual.etiquetaRol %>)
+                        </small>
+                        <button type="submit" class="for-btn for-btn-primario">Publicar respuesta</button>
+                    </div>
+                </form>
+            <% } %>
+        </section>
+    </main>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

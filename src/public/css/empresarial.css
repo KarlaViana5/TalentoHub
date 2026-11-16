@@ -26,7 +26,10 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 12px 32px;
+    width: 100%;
+    min-height: 76px;
+    padding: 0 max(24px, calc((100% - 1180px) / 2));
+    box-sizing: border-box;
     background: #fff;
     border-bottom: 1px solid var(--emp-borde);
 }

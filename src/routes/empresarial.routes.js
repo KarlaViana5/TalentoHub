@@ -3,11 +3,23 @@ const router = express.Router();
 
 const empresarialController = require('../controllers/empresarial.controller');
 const servicio = require('../services/empresarial.service');
+const { exigirRol } = require('../middleware/auth.middleware');
 
-// empresa del menu
+// Separación de módulos por Rol: solo Empresa
+router.use(exigirRol('empresa'));
+
+// Cargar contexto de la empresa autenticada en sesión
 router.use(async (req, res, next) => {
-    res.locals.empresaActual = await servicio.obtenerEmpresa(servicio.empleadorActual.empresaId);
-    next();
+    try {
+        if (req.usuario && req.usuario.rol === 'empresa' && req.usuario.empresaId) {
+            servicio.empleadorActual.empresaId = Number(req.usuario.empresaId);
+            servicio.empleadorActual.nombre = req.usuario.nombre || req.usuario.nombreMostrar;
+        }
+        res.locals.empresaActual = await servicio.obtenerEmpresa(servicio.empleadorActual.empresaId);
+        next();
+    } catch (error) {
+        next(error);
+    }
 });
 
 router.get('/', empresarialController.mostrarInicio);

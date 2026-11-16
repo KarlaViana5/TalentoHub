@@ -1,0 +1,82 @@
+<% if (nombre === 'foros') { %>
+    <section class="tarjeta">
+        <h2>Nueva categoría</h2>
+        <form class="formulario" method="post" action="/administrativo/foros">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <label>Nombre <input name="nombre" required minlength="3" maxlength="100"></label>
+            <label>Ruta <input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="por-ejemplo" maxlength="80"></label>
+            <label>Descripción <textarea name="descripcion" required maxlength="800" rows="2"></textarea></label>
+            <button type="submit">Crear categoría</button>
+        </form>
+    </section>
+<% } %>
+
+<form class="buscador" method="get" action="/administrativo/<%= nombre %>">
+    <label>Buscar registros <input name="q" type="search" value="<%= filtro %>" maxlength="150"></label>
+    <button type="submit">Buscar</button>
+</form>
+<% if (!registros.length) { %><p>No hay registros para mostrar.</p><% } %>
+<% for (const registro of registros) { %>
+    <article class="tarjeta registro">
+        <h2>#<%= registro.id %> <%= registro.titulo || registro.nombre || '' %></h2>
+        <dl class="detalle-lista">
+            <% for (const [clave, etiqueta] of Object.entries(seccion.columnas)) { %>
+                <dt><%= etiqueta %></dt>
+                <dd><%= registro[clave] instanceof Date
+                    ? registro[clave].toLocaleString('es-SV', { timeZone: 'America/El_Salvador' })
+                    : typeof registro[clave] === 'boolean' ? (registro[clave] ? 'Sí' : 'No') : (registro[clave] ?? '—') %></dd>
+            <% } %>
+        </dl>
+
+        <% if (Object.keys(seccion.acciones).length && !(nombre === 'usuarios' && registro.rol === 'admin')) { %>
+            <details>
+                <summary>Acciones</summary>
+                <form class="formulario" method="post" action="/administrativo/<%= nombre %>/<%= registro.id %>/moderar">
+                    <input type="hidden" name="_csrf" value="<%= csrf %>">
+                    <label>Acción
+                        <select name="accion" required>
+                            <option value="">Selecciona una opción</option>
+                            <% for (const [clave, etiqueta] of Object.entries(seccion.acciones)) { %>
+                                <option value="<%= clave %>"><%= etiqueta %></option>
+                            <% } %>
+                        </select>
+                    </label>
+                    <label><%= nombre === 'reportes' ? 'Motivo de resolución o desestimación' : 'Nota opcional' %>
+                        <textarea name="nota" maxlength="1000" rows="2"></textarea>
+                    </label>
+                    <button type="submit">Aplicar acción</button>
+                </form>
+            </details>
+        <% } %>
+        <% if (nombre === 'empresas' || (nombre === 'usuarios' && registro.rol !== 'admin')) { %>
+            <details>
+                <summary>Editar datos</summary>
+                <form class="formulario" method="post" action="/administrativo/<%= nombre %>/<%= registro.id %>/editar">
+                    <input type="hidden" name="_csrf" value="<%= csrf %>">
+                    <label>Nombre <input name="nombre" value="<%= registro.nombre %>" required maxlength="150"></label>
+                    <% if (nombre === 'usuarios') { %>
+                        <label>Correo de acceso <input type="email" name="correo" value="<%= registro.correo %>" required maxlength="254"></label>
+                    <% } else { %>
+                        <label>Ubicación <input name="ubicacion" value="<%= registro.ubicacion %>" required maxlength="150"></label>
+                        <label>Descripción <textarea name="descripcion" maxlength="3000" rows="3"><%= registro.descripcion %></textarea></label>
+                    <% } %>
+                    <button type="submit">Guardar cambios</button>
+                </form>
+            </details>
+        <% } %>
+        <% if (nombre === 'foros') { %>
+            <details>
+                <summary>Editar categoría</summary>
+                <form class="formulario" method="post" action="/administrativo/foros/<%= registro.id %>/editar">
+                    <input type="hidden" name="_csrf" value="<%= csrf %>">
+                    <label>Nombre <input name="nombre" value="<%= registro.nombre %>" required minlength="3" maxlength="100"></label>
+                    <label>Descripción <textarea name="descripcion" required maxlength="800" rows="2"><%= registro.descripcion %></textarea></label>
+                    <button type="submit">Guardar cambios</button>
+                </form>
+            </details>
+        <% } %>
+    </article>
+<% } %>
+<% if (siguiente) { %>
+    <a href="/administrativo/<%= nombre %>?antes=<%= siguiente %>&amp;q=<%= encodeURIComponent(filtro) %>">Página siguiente</a>
+<% } %>

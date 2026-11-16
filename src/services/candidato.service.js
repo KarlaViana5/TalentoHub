@@ -1,6 +1,5 @@
 const { pool } = require('../config/database');
 
-
 async function obtenerPerfilPorId(idCandidato) {
     const consulta = `
         SELECT
@@ -16,7 +15,9 @@ async function obtenerPerfilPorId(idCandidato) {
             experiencia,
             formacion,
             cv_url,
-            fecha_registro
+            fecha_registro,
+            COALESCE(estado, 'activo') AS estado,
+            motivo_suspension
         FROM candidatos
         WHERE id_candidato = $1
         LIMIT 1
@@ -25,7 +26,6 @@ async function obtenerPerfilPorId(idCandidato) {
     const resultado = await pool.query(consulta, [idCandidato]);
     return resultado.rows[0] || null;
 }
-
 
 async function obtenerCandidatoPorDefecto() {
     const consulta = `
@@ -78,8 +78,6 @@ async function actualizarPerfil(idCandidato, datos) {
     return resultado.rows[0] || null;
 }
 
-
-
 async function obtenerHistorialPostulaciones(idCandidato) {
     const consulta = `
         SELECT
@@ -102,7 +100,6 @@ async function obtenerHistorialPostulaciones(idCandidato) {
     const resultado = await pool.query(consulta, [idCandidato]);
     return resultado.rows;
 }
-
 
 async function cancelarPostulacion(idPostulacion, idCandidato) {
     const consulta = `
@@ -187,8 +184,6 @@ async function eliminarAlerta(idAlerta, idCandidato) {
     return resultado.rows[0] || null;
 }
 
-
-
 async function obtenerValoraciones(idCandidato) {
     const consulta = `
         SELECT
@@ -197,6 +192,7 @@ async function obtenerValoraciones(idCandidato) {
             val.titulo,
             val.comentario,
             val.fecha_valoracion,
+            (COALESCE(val.estado_moderacion, 'visible') <> 'visible') AS moderada,
             e.id_empresa,
             e.nombre AS empresa
         FROM valoraciones val
@@ -214,6 +210,7 @@ async function obtenerEmpresasActivas() {
         SELECT id_empresa, nombre
         FROM empresas
         WHERE estado = 'activa'
+          AND COALESCE(estado_aprobacion, 'aprobada') = 'aprobada'
         ORDER BY nombre ASC
     `;
 
@@ -270,6 +267,28 @@ async function actualizarValoracion(idValoracion, idCandidato, datos) {
     return resultado.rows[0] || null;
 }
 
+async function obtenerCursosParaCandidato(idCandidato) {
+    const { rows } = await pool.query(
+        `SELECT
+            c.id_curso::int AS id,
+            c.titulo,
+            c.descripcion,
+            c.nivel,
+            c.duracion_minutos AS "duracionMinutos",
+            c.autor,
+            i.id_inscripcion::int AS "inscripcionId",
+            COALESCE(i.porcentaje_avance, 0)::int AS "porcentajeAvance",
+            i.estado AS "estadoInscripcion",
+            (SELECT COUNT(*)::int FROM lecciones_curso l JOIN modulos_curso m ON m.id_modulo = l.modulo_id WHERE m.curso_id = c.id_curso AND l.estado = 'publicada') AS "totalLecciones"
+         FROM cursos c
+         LEFT JOIN inscripciones_curso i ON i.curso_id = c.id_curso AND i.candidato_id = $1
+         WHERE c.estado = 'publicado'
+         ORDER BY c.id_curso ASC`,
+        [Number(idCandidato)]
+    );
+    return rows;
+}
+
 module.exports = {
     obtenerPerfilPorId,
     obtenerCandidatoPorDefecto,
@@ -283,5 +302,6 @@ module.exports = {
     obtenerValoraciones,
     obtenerEmpresasActivas,
     crearValoracion,
-    actualizarValoracion
+    actualizarValoracion,
+    obtenerCursosParaCandidato
 };

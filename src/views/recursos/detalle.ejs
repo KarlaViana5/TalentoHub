@@ -9,12 +9,7 @@
 
 <body>
 
-    <%- include('../partials/header', {
-        titulo: 'Centro de recursos',
-        descripcion: 'Aprende y desarrolla nuevas habilidades profesionales.'
-    }) %>
-
-    <%- include('../partials/navigation') %>
+    <%- include('../partials/navigation', { activo: 'recursos' }) %>
 
 
     <main class="detalle-recursos-container">
@@ -52,6 +47,9 @@
                     <% } else if (recurso.tipo === 'tutorial') { %>
                         <i class="fa-solid fa-graduation-cap"></i>
                         Tutorial
+                    <% } else if (recurso.tipo === 'audio') { %>
+                        <i class="fa-solid fa-headphones"></i>
+                        Audio
                     <% } else { %>
                         <i class="fa-solid fa-book-open"></i>
                         Artículo
@@ -145,6 +143,18 @@
                     </button>
 
                 </div>
+
+                <% if (recurso.archivoUrl) { %>
+                    <aside class="detalle-material-destacado">
+                        <div>
+                            <strong><i class="fa-solid fa-paperclip" aria-hidden="true"></i> Material complementario</strong>
+                            <p>Abre el archivo o recurso multimedia asociado.</p>
+                        </div>
+                        <a href="<%= recurso.archivoUrl %>" target="_blank" rel="noopener" class="th-btn th-btn-secondary">
+                            Abrir material
+                        </a>
+                    </aside>
+                <% } %>
 
 
                 <% if (recurso.secciones && recurso.secciones.length > 0) { %>

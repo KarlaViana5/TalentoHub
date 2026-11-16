@@ -8,35 +8,13 @@
     <title><%= titulo %></title>
 
     <link rel="stylesheet" href="/css/busqueda.css">
+    <link rel="stylesheet" href="/css/navigation.css">
+    <link rel="stylesheet" href="/css/design-system.css">
 </head>
 
 <body>
 
-    <!-- =====================================
-         NAVEGACIÓN PRINCIPAL
-    ====================================== -->
-
-    <header class="main-header">
-        <div class="header-container">
-
-            <a href="/" class="brand">
-                <span class="brand-icon">T</span>
-                <span>Talento<span class="brand-highlight">Hub</span></span>
-            </a>
-
-            <nav class="main-nav">
-                <a href="/">Inicio</a>
-                <a href="/busqueda" class="active">Vacantes</a>
-                <a href="/recursos">Recursos</a>
-                <a href="/foros">Foros</a>
-            </nav>
-
-            <div class="header-actions">
-                <a href="/busqueda" class="header-link">Explorar empleos</a>
-            </div>
-
-        </div>
-    </header>
+    <%- include('../partials/navigation', { activo: 'busqueda' }) %>
 
 
     <!-- =====================================

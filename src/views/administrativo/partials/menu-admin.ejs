@@ -1,0 +1,60 @@
+<link rel="stylesheet" href="/css/administrativo.css">
+
+<aside class="adm-sidebar">
+    <a href="/administrativo" class="adm-marca">
+        <i class="fa-solid fa-shield-halved"></i>
+        Talento<span>Hub</span> <small class="adm-marca-rol">Admin</small>
+    </a>
+
+    <div class="adm-grupo-titulo">Panel Principal</div>
+    <a href="/administrativo" class="adm-nav-link <%= seccionActiva === 'dashboard' ? 'activo' : '' %>">
+        <span><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Dashboard y pendientes</span>
+        <% if (locals.alertasAdmin && alertasAdmin.totalPendientes > 0) { %>
+            <span class="adm-nav-contador"><%= alertasAdmin.totalPendientes %></span>
+        <% } %>
+    </a>
+
+    <div class="adm-grupo-titulo">Control de Plataforma</div>
+    <a href="/administrativo/usuarios" class="adm-nav-link <%= seccionActiva === 'usuarios' ? 'activo' : '' %>">
+        <span><i class="fa-solid fa-users" aria-hidden="true"></i> Usuarios y actividad</span>
+    </a>
+    <a href="/administrativo/empresas" class="adm-nav-link <%= seccionActiva === 'empresas' ? 'activo' : '' %>">
+        <span><i class="fa-solid fa-building" aria-hidden="true"></i> Empresas y aprobaciones</span>
+        <% if (locals.alertasAdmin && alertasAdmin.empresasPendientes > 0) { %>
+            <span class="adm-nav-contador"><%= alertasAdmin.empresasPendientes %></span>
+        <% } %>
+    </a>
+    <a href="/administrativo/moderacion" class="adm-nav-link <%= seccionActiva === 'moderacion' ? 'activo' : '' %>">
+        <span><i class="fa-solid fa-flag" aria-hidden="true"></i> Denuncias y moderación</span>
+        <% if (locals.alertasAdmin && alertasAdmin.denunciasPendientes > 0) { %>
+            <span class="adm-nav-contador"><%= alertasAdmin.denunciasPendientes %></span>
+        <% } %>
+    </a>
+
+    <div class="adm-grupo-titulo">Educación y Contenidos</div>
+    <a href="/administrativo/recursos" class="adm-nav-link <%= seccionActiva === 'recursos' ? 'activo' : '' %>">
+        <span><i class="fa-solid fa-book-open" aria-hidden="true"></i> Biblioteca digital</span>
+    </a>
+    <a href="/administrativo/articulos" class="adm-nav-link <%= seccionActiva === 'articulos' ? 'activo' : '' %>">
+        <span><i class="fa-solid fa-newspaper" aria-hidden="true"></i> Artículos y guías</span>
+    </a>
+    <a href="/administrativo/cursos" class="adm-nav-link <%= seccionActiva === 'cursos' ? 'activo' : '' %>">
+        <span><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> Cursos y capacitaciones</span>
+    </a>
+    <a href="/administrativo/examenes" class="adm-nav-link <%= seccionActiva === 'examenes' ? 'activo' : '' %>">
+        <span><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i> Exámenes y evaluaciones</span>
+    </a>
+
+    <div class="adm-grupo-titulo">Comunidad</div>
+    <a href="/administrativo/foros" class="adm-nav-link <%= seccionActiva === 'foros' ? 'activo' : '' %>">
+        <span><i class="fa-solid fa-comments" aria-hidden="true"></i> Foros, hilos y solicitudes</span>
+        <% if (locals.alertasAdmin && alertasAdmin.forosPendientes > 0) { %>
+            <span class="adm-nav-contador"><%= alertasAdmin.forosPendientes %></span>
+        <% } %>
+    </a>
+
+    <div class="adm-grupo-titulo">Operación General</div>
+    <a href="/administrativo/notificaciones" class="adm-nav-link <%= seccionActiva === 'notificaciones' ? 'activo' : '' %>">
+        <span><i class="fa-solid fa-bell" aria-hidden="true"></i> Notificaciones</span>
+    </a>
+</aside>

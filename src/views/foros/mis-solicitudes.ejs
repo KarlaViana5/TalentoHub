@@ -1,0 +1,77 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="foros-body">
+    <%- include('partials/header-foros') %>
+
+    <main class="for-contenedor">
+        <div class="for-migas">
+            <a href="/foros?<%= queryActor %>">← Volver a Comunidad</a> /
+            <strong>Mis propuestas de espacios</strong>
+        </div>
+
+        <section class="for-tarjeta">
+            <div class="for-page-heading">
+                <div>
+                    <h1 class="for-form-title">Mis propuestas de espacios</h1>
+                    <p class="for-form-intro">
+                        Historial de propuestas enviadas por <strong><%= actorActual.nombre %></strong>, estado de revisión y motivos de aprobación o rechazo.
+                    </p>
+                </div>
+
+                <% if (actorActual.puedeProponerForo && ['candidato', 'empresa'].includes(actorActual.tipo)) { %>
+                    <a class="for-btn for-btn-primario" href="/foros/solicitar?<%= queryActor %>">+ Nueva propuesta</a>
+                <% } %>
+            </div>
+
+            <% if (mensaje) { %>
+                <div class="for-alerta exito"><span>✓ <%= mensaje %></span></div>
+            <% } %>
+
+            <% if (solicitudes.length === 0) { %>
+                <div class="for-empty">
+                    Todavía no has propuesto ningún espacio.
+                </div>
+            <% } else { %>
+                <div class="for-lista-hilos">
+                    <% solicitudes.forEach(s => { %>
+                        <div class="for-hilo-fila for-propuesta-fila">
+                            <div class="for-propuesta-contenido">
+                                <div class="for-propuesta-meta">
+                                    <span class="for-icono" aria-hidden="true"><i class="fa-solid fa-folder-plus"></i></span>
+                                    <strong><%= s.nombre %></strong>
+                                    <span class="for-badge for-badge-<%= s.estado %>"><%= s.estado %></span>
+                                    <small class="for-meta">
+                                        Solicitado por <%= s.solicitanteNombre %> (<%= s.solicitanteTipo %>) · <%= formatearFechaRelativa(s.fechaCreacion) %>
+                                    </small>
+                                </div>
+
+                                <p class="for-propuesta-descripcion"><%= s.descripcion %></p>
+                                <p class="for-propuesta-motivo">
+                                    <strong>Motivo expuesto:</strong> <%= s.motivo %>
+                                </p>
+
+                                <% if (s.notasRevision) { %>
+                                    <div class="for-propuesta-nota <%= s.estado === 'rechazada' ? 'rechazada' : 'aprobada' %>">
+                                        <strong>Resolución de <%= s.revisadoPor || 'Administración' %>:</strong>
+                                        <%= s.notasRevision %>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <div>
+                                <% if (s.estado === 'aprobada' && s.foroSlug) { %>
+                                    <a class="for-btn for-btn-pequeno for-btn-verde" href="/foros/<%= s.foroSlug %>?<%= queryActor %>">
+                                        Ver espacio →
+                                    </a>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </section>
+    </main>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

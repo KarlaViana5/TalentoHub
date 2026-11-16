@@ -1,0 +1,84 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="adm-body">
+    <div class="adm-layout">
+        <%- include('partials/menu-admin') %>
+
+        <div class="adm-contenedor-principal">
+            <%- include('partials/topbar-admin') %>
+
+            <main class="adm-main">
+                <div class="adm-cabecera">
+                    <div>
+                        <h1>Configuración General de la Plataforma</h1>
+                        <p>Administra la identidad institucional, canales de contacto, normas de comunidad y políticas de privacidad de TalentoHub.</p>
+                    </div>
+                </div>
+
+                <% if (mensaje) { %>
+                    <div class="adm-flash exito">✓ <%= mensaje %></div>
+                <% } %>
+                <% if (error) { %>
+                    <div class="adm-flash error">⚠ <%= error %></div>
+                <% } %>
+
+                <section class="adm-tarjeta">
+                    <form class="adm-form" method="post" action="/administrativo/configuracion">
+                        <div class="adm-grid-2">
+                            <div>
+                                <label>Nombre oficial de la plataforma</label>
+                                <input type="text" name="nombre_plataforma" value="<%= configuracion.mapa.nombre_plataforma || 'TalentoHub' %>" required>
+                            </div>
+                            <div>
+                                <label>Lema institucional</label>
+                                <input type="text" name="lema_plataforma" value="<%= configuracion.mapa.lema_plataforma || '' %>">
+                            </div>
+                        </div>
+
+                        <div class="adm-grid-2">
+                            <div>
+                                <label>Correo de soporte y contacto</label>
+                                <input type="email" name="correo_contacto" value="<%= configuracion.mapa.correo_contacto || '' %>">
+                            </div>
+                            <div>
+                                <label>Teléfono institucional</label>
+                                <input type="text" name="telefono_contacto" value="<%= configuracion.mapa.telefono_contacto || '' %>">
+                            </div>
+                        </div>
+
+                        <div class="adm-grid-2">
+                            <div>
+                                <label>Dirección física</label>
+                                <input type="text" name="direccion_fisica" value="<%= configuracion.mapa.direccion_fisica || '' %>">
+                            </div>
+                            <div>
+                                <label>Redes sociales oficiales</label>
+                                <input type="text" name="redes_sociales" value="<%= configuracion.mapa.redes_sociales || '' %>">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label>Normas de la comunidad y foros</label>
+                            <textarea name="normas_comunidad" rows="4"><%= configuracion.mapa.normas_comunidad || '' %></textarea>
+                        </div>
+
+                        <div>
+                            <label>Términos y condiciones de uso</label>
+                            <textarea name="terminos_condiciones" rows="3"><%= configuracion.mapa.terminos_condiciones || '' %></textarea>
+                        </div>
+
+                        <div>
+                            <label>Política de privacidad</label>
+                            <textarea name="politica_privacidad" rows="3"><%= configuracion.mapa.politica_privacidad || '' %></textarea>
+                        </div>
+
+                        <div>
+                            <button type="submit" class="adm-btn adm-btn-primario">💾 Guardar configuración general</button>
+                        </div>
+                    </form>
+                </section>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

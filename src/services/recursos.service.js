@@ -25,6 +25,8 @@ const SELECT_RECURSOS = `
         ON c.id_categoria = r.categoria_id
 `;
 
+const RECURSO_VISIBLE = `COALESCE(r.visibilidad, 'publico') = 'publico'`;
+
 // ==========================================
 // OBTENER CATEGORÍAS DISPONIBLES
 // ==========================================
@@ -55,7 +57,8 @@ function construirFiltros(filtros = {}) {
 
     const condiciones = [
         "r.estado = 'publicado'",
-        "c.estado = TRUE"
+        "c.estado = TRUE",
+        RECURSO_VISIBLE
     ];
 
     const valores = [];
@@ -108,7 +111,8 @@ function construirFiltros(filtros = {}) {
     const tiposPermitidos = [
         'articulo',
         'tutorial',
-        'video'
+        'video',
+        'audio'
     ];
 
     if (tiposPermitidos.includes(filtros.tipo)) {
@@ -257,6 +261,8 @@ async function obtenerRecursoPorId(id) {
 
         AND r.estado = 'publicado'
 
+        AND ${RECURSO_VISIBLE}
+
         AND c.estado = TRUE
 
         LIMIT 1
@@ -320,6 +326,8 @@ async function obtenerRecursosRelacionados(recursoActual) {
         AND r.id_recurso <> $2
 
         AND r.estado = 'publicado'
+
+        AND ${RECURSO_VISIBLE}
 
         AND c.estado = TRUE
 

@@ -1,0 +1,98 @@
+.modulo4 {
+    margin: 0;
+    color: #17223c;
+    background: #f5f7fb;
+    font: 1rem/1.55 Inter, system-ui, sans-serif;
+}
+
+.modulo4 * { box-sizing: border-box; }
+.modulo4 a { color: #244bb2; }
+.modulo4 h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; overflow-wrap: anywhere; }
+.modulo4 h2 { font-size: 1.22rem; margin: 0 0 .65rem; }
+.modulo4 p { overflow-wrap: anywhere; }
+
+.barra-comunidad {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    padding: 1rem max(1rem, calc((100vw - 74rem) / 2));
+    background: #fff;
+    border-bottom: 1px solid #d9e0ec;
+}
+
+.barra-comunidad nav { display: flex; gap: .75rem 1.1rem; flex-wrap: wrap; flex: 1; }
+.barra-comunidad a { text-decoration: none; }
+.barra-comunidad a:hover { text-decoration: underline; }
+.barra-comunidad .marca { font-size: 1.3rem; font-weight: 800; color: #17223c; }
+
+.salto { position: absolute; top: -5rem; left: 1rem; background: white; padding: .5rem; }
+.salto:focus { top: .25rem; }
+
+.contenedor-comunidad { width: min(100% - 2rem, 74rem); margin: 2.5rem auto 5rem; }
+.rejilla { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+.tarjeta { padding: 1.25rem; margin-bottom: 1rem; border: 1px solid #d9e0ec; border-radius: .85rem; background: #fff; }
+.estrecha { max-width: 30rem; margin-inline: auto; }
+.dato { color: #4d5b74; font-size: .9rem; }
+.texto-publicado { white-space: pre-wrap; }
+.aviso { background: #e8efff; border-radius: .55rem; padding: .75rem 1rem; margin: 1rem 0; }
+
+.conversaciones { padding: 0; list-style: none; margin: 0; }
+.conversaciones li, .comentario { padding: .75rem 0; border-top: 1px solid #d9e0ec; }
+.conversaciones span { display: block; }
+.modulo4 details { margin-top: .75rem; }
+.modulo4 summary { cursor: pointer; color: #244bb2; font-weight: 600; }
+.modulo4 details form { margin-top: .6rem; }
+
+.formulario { display: grid; gap: .75rem; }
+.formulario label, .buscador label { display: block; font-weight: 600; }
+.formulario input:not([type=checkbox]), .formulario select, .formulario textarea, .buscador input {
+    width: 100%;
+    display: block;
+    padding: .58rem;
+    border: 1px solid #a4b0c6;
+    border-radius: .45rem;
+    color: inherit;
+    background: #fff;
+    margin-top: .2rem;
+    font: inherit;
+    font-weight: 400;
+}
+.formulario textarea { resize: vertical; }
+
+.modulo4 button, .modulo4 .enlace-boton {
+    display: inline-block;
+    justify-self: start;
+    border: 1px solid #244bb2;
+    border-radius: .5rem;
+    padding: .55rem .9rem;
+    color: #fff;
+    background: #244bb2;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+.modulo4 button.secundario { color: #244bb2; background: #fff; }
+.modulo4 :focus-visible { outline: 3px solid #193e9e; outline-offset: 3px; }
+
+.panel-administrativo { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: 1.5rem; }
+.menu-admin { display: flex; flex-wrap: wrap; align-content: start; gap: .35rem; }
+.menu-admin a { display: block; width: 100%; padding: .45rem .65rem; text-decoration: none; border-radius: .4rem; }
+.menu-admin a:hover, .menu-admin a[aria-current=page] { background: #e6edff; }
+.contenido-admin h1 { margin-top: 0; }
+.indicadores strong { font-size: 2rem; }
+.indicadores p { margin: 0; }
+.detalle-lista { display: grid; grid-template-columns: minmax(6rem, auto) minmax(0, 1fr); gap: .35rem .85rem; }
+.detalle-lista dt { font-weight: 600; }
+.detalle-lista dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.fila-grafico { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .7rem; }
+.fila-grafico meter { width: 100%; }
+.buscador { display: flex; align-items: end; flex-wrap: wrap; gap: .6rem; margin-bottom: 1rem; }
+.buscador label { flex: 1; min-width: 12rem; }
+
+@media (max-width: 46rem) {
+    .panel-administrativo { grid-template-columns: minmax(0, 1fr); }
+    .menu-admin a { width: auto; }
+    .contenedor-comunidad { margin-top: 1.2rem; }
+}

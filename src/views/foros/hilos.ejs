@@ -1,0 +1,144 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="foros-body">
+    <%- include('partials/header-foros') %>
+
+    <main class="for-contenedor">
+        <div class="for-migas">
+            <a href="/foros?<%= queryActor %>">← Volver a Comunidad</a> /
+            <strong><%= foro.nombre %></strong>
+        </div>
+
+        <!-- Cabecera del Foro -->
+        <section class="for-tarjeta for-espacio-encabezado">
+            <div class="for-espacio-identidad">
+                <div class="for-icono for-icono-grande" aria-hidden="true"><i class="fa-solid fa-comments"></i></div>
+                <div>
+                    <div class="for-espacio-meta">
+                        <span class="for-badge <%= foro.origen === 'comunitario' ? 'for-badge-comunitario' : 'for-badge-oficial' %>">
+                            <%= foro.origen === 'comunitario' ? 'Espacio comunitario' : 'Espacio oficial' %>
+                        </span>
+                        <small>Creado por <%= foro.creadoPor %></small>
+                    </div>
+                    <h1><%= foro.nombre %></h1>
+                    <p><%= foro.descripcion %></p>
+                </div>
+            </div>
+
+            <div class="for-espacio-accion">
+                <% if (actorActual.puedeParticipar) { %>
+                    <a class="for-btn for-btn-primario" href="/foros/<%= foro.slug %>/nuevo?<%= queryActor %>">
+                        + Nueva discusión
+                    </a>
+                <% } else { %>
+                    <span class="for-badge for-badge-pendiente">Inicia sesión para iniciar una discusión</span>
+                <% } %>
+            </div>
+        </section>
+
+        <% if (mensaje) { %>
+            <div class="for-alerta exito"><span>✓ <%= mensaje %></span></div>
+        <% } %>
+
+        <% if (error) { %>
+            <div class="for-alerta error"><span>⚠ <%= error %></span></div>
+        <% } %>
+
+        <!-- Buscador y ordenamiento de hilos -->
+        <div class="for-barra">
+            <form class="for-filtros" method="get" action="/foros/<%= foro.slug %>">
+                <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+                <input type="search" name="q" value="<%= filtros.q %>" placeholder="Buscar discusión por título, contenido o autor...">
+
+                <select name="estado" onchange="this.form.submit()">
+                    <option value="">Todos los estados</option>
+                    <option value="abierto" <%= filtros.estado === 'abierto' ? 'selected' : '' %>>Discusiones abiertas</option>
+                    <option value="bloqueado" <%= filtros.estado === 'bloqueado' ? 'selected' : '' %>>Discusiones cerradas</option>
+                </select>
+
+                <select name="orden" onchange="this.form.submit()">
+                    <option value="recientes" <%= filtros.orden === 'recientes' ? 'selected' : '' %>>Más recientes</option>
+                    <option value="participacion" <%= filtros.orden === 'participacion' ? 'selected' : '' %>>Mayor participación (respuestas)</option>
+                    <option value="actividad" <%= filtros.orden === 'actividad' ? 'selected' : '' %>>Última actividad</option>
+                </select>
+
+                <button type="submit" class="for-btn">Buscar</button>
+            </form>
+
+            <span class="for-resultados">
+                <strong><%= totalResultados %></strong> <%= totalResultados === 1 ? 'discusión' : 'discusiones' %>
+            </span>
+        </div>
+
+        <!-- Lista de Hilos -->
+        <% if (hilos.length === 0) { %>
+            <div class="for-tarjeta for-empty">
+                <h3>No hay hilos de discusión con esos filtros</h3>
+                <p class="for-empty-text">Sé la primera persona en iniciar una conversación en este espacio.</p>
+                <% if (actorActual.puedeParticipar) { %>
+                    <a class="for-btn for-btn-primario" href="/foros/<%= foro.slug %>/nuevo?<%= queryActor %>">+ Nueva discusión</a>
+                <% } %>
+            </div>
+        <% } else { %>
+            <div class="for-lista-hilos">
+                <% hilos.forEach(h => { %>
+                    <article class="for-hilo-fila <%= h.fijado ? 'fijado' : '' %>">
+                        <div class="for-hilo-info">
+                            <div class="for-hilo-estados">
+                                <% if (h.fijado) { %>
+                                    <span class="for-badge for-badge-fijado"><i class="fa-solid fa-thumbtack" aria-hidden="true"></i> Fijado</span>
+                                <% } %>
+                                <% if (h.bloqueado) { %>
+                                    <span class="for-badge for-badge-bloqueado"><i class="fa-solid fa-lock" aria-hidden="true"></i> Bloqueado</span>
+                                <% } else { %>
+                                    <span class="for-badge for-badge-abierto">Abierto</span>
+                                <% } %>
+                                <span class="for-badge <%= h.autorTipo === 'empresa' ? 'for-badge-comunitario' : h.autorTipo === 'admin' ? 'for-badge-fijado' : 'for-badge-oficial' %>">
+                                    <%= h.autorRolEtiqueta %>
+                                </span>
+                            </div>
+
+                            <h3>
+                                <a href="/foros/<%= foro.slug %>/hilos/<%= h.id %>?<%= queryActor %>"><%= h.titulo %></a>
+                            </h3>
+
+                            <div class="for-hilo-meta">
+                                <span>Por <strong><%= h.autorNombre %></strong></span>
+                                <span>· Publicado <%= formatearFechaRelativa(h.fechaCreacion) %></span>
+                                <span>· Última actividad <%= formatearFechaRelativa(h.ultimaActividad) %></span>
+                            </div>
+                        </div>
+
+                        <div class="for-hilo-stats">
+                            <div>
+                                <strong><%= h.totalRespuestas %></strong>
+                                <small><%= h.totalRespuestas === 1 ? 'Respuesta' : 'Respuestas' %></small>
+                            </div>
+                            <div>
+                                <strong><%= h.vistas %></strong>
+                                <small>Vistas</small>
+                            </div>
+                            <a class="for-btn for-btn-pequeno" href="/foros/<%= foro.slug %>/hilos/<%= h.id %>?<%= queryActor %>">
+                                Leer →
+                            </a>
+                        </div>
+                    </article>
+                <% }) %>
+            </div>
+
+            <% if (totalPaginas > 1) { %>
+                <nav class="for-paginacion" aria-label="Paginación de hilos">
+                    <% for (let p = 1; p <= totalPaginas; p++) { %>
+                        <a class="for-btn <%= p === paginaActual ? 'for-btn-primario' : '' %>"
+                           href="/foros/<%= foro.slug %>?<%= queryActor %>&q=<%= encodeURIComponent(filtros.q) %>&estado=<%= filtros.estado %>&orden=<%= filtros.orden %>&pagina=<%= p %>">
+                            <%= p %>
+                        </a>
+                    <% } %>
+                </nav>
+            <% } %>
+        <% } %>
+    </main>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

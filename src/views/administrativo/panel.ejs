@@ -1,0 +1,33 @@
+<% const etiquetas = {
+    usuarios: 'Cuentas de comunidad', candidatos: 'Candidatos', empresas: 'Empresas', vacantes: 'Vacantes',
+    postulaciones: 'Postulaciones', recursos: 'Recursos', foros_activos: 'Foros activos',
+    hilos_visibles: 'Hilos visibles', reportes_pendientes: 'Reportes abiertos'
+}; %>
+<div class="rejilla indicadores">
+    <% for (const [clave, cantidad] of Object.entries(indicadores)) { %>
+        <article class="tarjeta"><p><%= etiquetas[clave] %></p><strong><%= cantidad %></strong></article>
+    <% } %>
+</div>
+<div class="rejilla">
+    <section class="tarjeta">
+        <h2>Hilos publicados en los últimos 7 días</h2>
+        <% const maximo = Math.max(1, ...actividad.map(dia => dia.hilos)); %>
+        <% for (const dia of actividad) { %>
+            <div class="fila-grafico">
+                <span><%= dia.dia %></span>
+                <meter min="0" max="<%= maximo %>" value="<%= dia.hilos %>" aria-label="Hilos del <%= dia.dia %>"></meter>
+                <strong><%= dia.hilos %></strong>
+            </div>
+        <% } %>
+    </section>
+    <section class="tarjeta">
+        <h2>Vacantes por estado</h2>
+        <dl class="detalle-lista">
+            <% for (const fila of vacantesPorEstado) { %>
+                <dt><%= fila.estado %></dt><dd><%= fila.cantidad %></dd>
+            <% } %>
+        </dl>
+        <% if (!vacantesPorEstado.length) { %><p>Todavía no hay vacantes.</p><% } %>
+    </section>
+</div>
+<a class="enlace-boton" href="/administrativo/estadisticas/exportar.csv">Descargar estadísticas CSV</a>

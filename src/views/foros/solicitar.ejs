@@ -1,0 +1,80 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body class="foros-body">
+    <%- include('partials/header-foros') %>
+
+    <main class="for-contenedor for-contenedor-lectura">
+        <div class="for-migas">
+            <a href="/foros?<%= queryActor %>">← Volver a Comunidad</a> /
+            <strong>Proponer un espacio</strong>
+        </div>
+
+        <section class="for-tarjeta">
+            <span class="for-badge for-badge-comunitario">INICIATIVA DE LA COMUNIDAD</span>
+            <h1 class="for-form-title">Propón un nuevo espacio</h1>
+            <p class="for-form-intro">
+                Los candidatos activos y las empresas aprobadas pueden proponer nuevos espacios permanentes de discusión.
+                Toda propuesta inicia en estado <strong>Pendiente</strong> hasta que el administrador verifique que no esté duplicada y la apruebe (RN-FOR-02 a RN-FOR-08).
+            </p>
+
+            <% if (error) { %>
+                <div class="for-alerta error"><span>⚠ <%= error %></span></div>
+            <% } %>
+
+            <% if (!actorActual.puedeProponerForo || !['candidato', 'empresa'].includes(actorActual.tipo)) { %>
+                <div class="for-alerta aviso">
+                    <span>
+                        <%= actorActual.motivoBloqueo || 'Necesitas una cuenta activa o aprobada para proponer un espacio.' %>
+                    </span>
+                </div>
+            <% } else { %>
+                <form class="for-form" method="post" action="/foros/solicitudes">
+                    <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+
+                    <div class="for-form-grid">
+                        <div>
+                            <label for="nombre">Nombre del espacio propuesto *</label>
+                            <input id="nombre" name="nombre" type="text" required minlength="4" maxlength="150"
+                                   value="<%= valores.nombre %>"
+                                   placeholder="Ej. Oportunidades para personas sin experiencia">
+                        </div>
+
+                        <div>
+                            <label for="icono">Icono</label>
+                            <select id="icono" name="icono">
+                                <% ['🗣️', '🚀', '💻', '🌎', '🎓', '📊', '🤝', '💡'].forEach(ic => { %>
+                                    <option value="<%= ic %>" <%= valores.icono === ic ? 'selected' : '' %>><%= ic %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="descripcion">Descripción del espacio *</label>
+                        <textarea id="descripcion" name="descripcion" rows="3" required minlength="10"
+                                  placeholder="Describe de qué tratará este espacio y qué conversaciones reunirá..."><%= valores.descripcion %></textarea>
+                    </div>
+
+                    <div>
+                        <label for="motivo">Motivo / Justificación para la comunidad *</label>
+                        <textarea id="motivo" name="motivo" rows="3" required minlength="10"
+                                  placeholder="Explica por qué este espacio sería útil para la comunidad..."><%= valores.motivo %></textarea>
+                    </div>
+
+                    <div class="for-form-actions">
+                        <small class="for-form-note">
+                            Solicitante: <strong><%= actorActual.nombre %></strong> (<%= actorActual.etiquetaRol %>)
+                        </small>
+                        <div class="for-form-actions">
+                            <a class="for-btn" href="/foros?<%= queryActor %>">Cancelar</a>
+                            <button type="submit" class="for-btn for-btn-primario">Enviar propuesta</button>
+                        </div>
+                    </div>
+                </form>
+            <% } %>
+        </section>
+    </main>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

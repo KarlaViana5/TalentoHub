@@ -1,34 +1,38 @@
+<header class="th-header">
+    <div class="th-header-inner">
+        <a href="/" class="th-brand" aria-label="TalentoHub, inicio">
+            <span class="th-brand-icon"><i class="fa-solid fa-briefcase"></i></span>
+            <span>Talento<span class="th-brand-accent">Hub</span></span>
+        </a>
 
-<nav>
-    <h2>Navegación principal</h2>
+        <nav class="th-nav" aria-label="Navegación principal">
+            <a href="/" class="<%= activo === 'inicio' ? 'is-active' : '' %>">Inicio</a>
+            <a href="/busqueda" class="<%= activo === 'busqueda' ? 'is-active' : '' %>">Buscar empleos</a>
+            <a href="/recursos" class="<%= activo === 'recursos' ? 'is-active' : '' %>">Recursos</a>
+            <a href="/foros" class="<%= activo === 'foros' ? 'is-active' : '' %>">Comunidad</a>
 
-    <ul>
-        <li>
-            <a href="/">Inicio</a>
-        </li>
+            <% if (locals.usuarioActual) { %>
+                <% if (usuarioActual.rol === 'candidato') { %>
+                    <a href="/candidato" class="<%= activo === 'candidato' ? 'is-active' : '' %>">Mi panel</a>
+                <% } else if (usuarioActual.rol === 'empresa') { %>
+                    <a href="/empresarial" class="<%= activo === 'empresa' ? 'is-active' : '' %>">Panel empresa</a>
+                <% } else if (usuarioActual.rol === 'admin') { %>
+                    <a href="/administrativo" class="<%= activo === 'admin' ? 'is-active' : '' %>">Administración</a>
+                <% } %>
+            <% } %>
+        </nav>
 
-        <li>
-            <a href="/busqueda">Búsqueda de empleos</a>
-        </li>
-
-        <li>
-            <a href="/candidato">Candidato</a>
-        </li>
-
-        <li>
-            <a href="/empresarial">Empresarial</a>
-        </li>
-
-        <li>
-            <a href="/recursos">Recursos</a>
-        </li>
-
-        <li>
-            <a href="/foros">Foros</a>
-        </li>
-
-        <li>
-            <a href="/administrativo">Administrativo</a>
-        </li>
-    </ul>
-</nav>
+        <div class="th-actions">
+            <% if (locals.usuarioActual) { %>
+                <span class="th-user">
+                    <%= usuarioActual.nombreMostrar %>
+                    <span><%= usuarioActual.rolEtiqueta %></span>
+                </span>
+                <a href="/auth/logout" class="th-button th-button-danger">Salir</a>
+            <% } else { %>
+                <a href="/auth/login" class="th-button th-button-outline">Iniciar sesión</a>
+                <a href="/auth/registro" class="th-button th-button-primary">Registrarse</a>
+            <% } %>
+        </div>
+    </div>
+</header>
