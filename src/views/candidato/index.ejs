@@ -404,7 +404,7 @@
                                     <h3>Valoraciones de empresas</h3>
                                     <p>Califica tus procesos de selección o experiencia laboral en empresas.</p>
                                 </div>
-                                <span class="job-status"><%= valoraciones.length %> publicadas</span>
+                                <span class="job-status"><%= valoraciones.length %> registradas</span>
                             </div>
 
                             <% if (empresas.length === 0) { %>
@@ -464,7 +464,7 @@
                                             <% } %>
 
                                             <p style="margin: 0.25rem 0; color: #475569; font-size: 0.92rem;"><%= v.comentario %></p>
-                                            <small style="color: #94a3b8;">Publicado el <%= new Date(v.fecha_valoracion).toLocaleDateString() %></small>
+                                            <small style="color: #94a3b8;"><%= v.moderada ? 'Ocultada por moderación · Registrada el' : 'Publicada el' %> <%= new Date(v.fecha_valoracion).toLocaleDateString() %></small>
 
                                             <details class="edit-details">
                                                 <summary>Editar valoración</summary>

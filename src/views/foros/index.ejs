@@ -1,28 +1,101 @@
+<%- include('../modulo4/inicio', { titulo }) %>
+<% if (pagina !== 'lista') { %>
+    <p><a href="/foros">Foros</a>
+    <% if (pagina === 'hilo') { %> / <a href="/foros/<%= hilo.slug %>"><%= hilo.foro %></a><% } %>
+    </p>
+<% } %>
+<h1><%= titulo %></h1>
 
-<%- include('../partials/head', { titulo: titulo }) %>
+<% if (pagina === 'lista') { %>
+    <% if (configuracion.aviso_foros) { %><p class="aviso"><%= configuracion.aviso_foros %></p><% } %>
+    <% for (const aviso of avisos) { %>
+        <aside class="aviso"><strong><%= aviso.titulo %></strong> · <%= aviso.mensaje %></aside>
+    <% } %>
+    <div class="rejilla">
+        <% for (const foro of foros) { %>
+            <article class="tarjeta">
+                <h2><a href="/foros/<%= foro.slug %>"><%= foro.nombre %></a></h2>
+                <p><%= foro.descripcion %></p>
+                <p class="dato"><%= foro.cantidad %> <%= foro.cantidad === 1 ? 'hilo' : 'hilos' %></p>
+            </article>
+        <% } %>
+    </div>
+    <% if (!foros.length) { %><p>Todavía no hay foros activos.</p><% } %>
+<% } %>
 
-<body>
-
-    <%- include('../partials/header', {
-        titulo: titulo,
-        descripcion: descripcion
-    }) %>
-
-    <%- include('../partials/navigation') %>
-
-    <main>
-
-        <h2>Opciones de los foros</h2>
-
-        <ul>
-            <li>Foros de discusión</li>
-            <li>Hilos de discusión</li>
-            <li>Participar en conversaciones</li>
+<% if (pagina === 'foro') { %>
+    <p><%= foro.descripcion %></p>
+    <section class="tarjeta">
+        <h2>Hilos de discusión</h2>
+        <% if (!hilos.length) { %><p>Todavía no hay conversaciones.</p><% } %>
+        <ul class="conversaciones">
+            <% for (const hilo of hilos) { %>
+                <li>
+                    <a href="/foros/hilos/<%= hilo.id %>"><%= hilo.titulo %></a>
+                    <span class="dato"><%= hilo.autor || 'Cuenta eliminada' %><%= hilo.fijado ? ' · Fijado' : '' %><%= hilo.cerrado ? ' · Cerrado' : '' %></span>
+                </li>
+            <% } %>
         </ul>
+    </section>
+    <% if (!configuracion.publicaciones_abiertas) { %>
+        <p class="aviso">Las nuevas publicaciones están pausadas.</p>
+    <% } else if (usuario) { %>
+        <section class="tarjeta">
+            <h2>Nuevo hilo</h2>
+            <form class="formulario" method="post" action="/foros/<%= foro.slug %>/hilos">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <label>Título <input name="titulo" minlength="5" maxlength="150" required></label>
+                <label>Contenido <textarea name="contenido" rows="5" minlength="5" maxlength="10000" required></textarea></label>
+                <button type="submit">Publicar hilo</button>
+            </form>
+        </section>
+    <% } else { %>
+        <p><a href="/foros/ingresar">Ingresa para publicar un hilo</a>.</p>
+    <% } %>
+<% } %>
 
-    </main>
-
-    <%- include('../partials/footer') %>
-
-</body>
-</html>
+<% if (pagina === 'hilo') { %>
+    <% if (reportado) { %><p class="aviso" role="status">Se recibió tu reporte.</p><% } %>
+    <article class="tarjeta">
+        <p class="dato"><%= hilo.autor || 'Cuenta eliminada' %><%= hilo.fijado ? ' · Fijado' : '' %></p>
+        <p class="texto-publicado"><%= hilo.contenido %></p>
+        <% if (usuario) { %><%- include('reportar', { etiqueta: 'Reportar hilo', comentarioId: null }) %><% } %>
+    </article>
+    <section class="tarjeta" id="comentarios">
+        <h2>Comentarios</h2>
+        <% if (!comentarios.length) { %><p>Todavía no hay comentarios.</p><% } %>
+        <% for (const comentario of comentarios) { %>
+            <article class="comentario">
+                <strong><%= comentario.autor || 'Cuenta eliminada' %></strong>
+                <% if (comentario.padre_id) { %><span class="dato"> en respuesta a <%= comentario.autor_padre || 'una cuenta eliminada' %></span><% } %>
+                <p class="texto-publicado"><%= comentario.contenido %></p>
+                <% if (usuario) { %><%- include('reportar', { etiqueta: 'Reportar comentario', comentarioId: comentario.id }) %><% } %>
+            </article>
+        <% } %>
+    </section>
+    <% if (hilo.cerrado || !configuracion.publicaciones_abiertas) { %>
+        <p class="aviso"><%= hilo.cerrado ? 'El hilo está cerrado a nuevos comentarios.' : 'Los comentarios están pausados.' %></p>
+    <% } else if (usuario) { %>
+        <section class="tarjeta">
+            <h2>Escribir comentario</h2>
+            <form class="formulario" method="post" action="/foros/hilos/<%= hilo.id %>/comentarios">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <% if (comentarios.length) { %>
+                    <label>Responder a
+                        <select name="padre_id">
+                            <option value="">Hilo principal</option>
+                            <% for (const comentario of comentarios) { %>
+                                <option value="<%= comentario.id %>"><%= comentario.autor || 'Cuenta eliminada' %> · <%= comentario.contenido.slice(0, 50) %></option>
+                            <% } %>
+                        </select>
+                    </label>
+                <% } %>
+                <label>Comentario <textarea name="contenido" rows="4" maxlength="4000" required></textarea></label>
+                <button type="submit">Publicar comentario</button>
+            </form>
+        </section>
+    <% } else { %>
+        <p><a href="/foros/ingresar">Ingresa para comentar</a>.</p>
+    <% } %>
+<% } %>
+<%- include('../modulo4/fin') %>

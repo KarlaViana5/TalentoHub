@@ -1,0 +1,10 @@
+<%- include('../modulo4/inicio', { titulo }) %>
+<section class="tarjeta estrecha">
+    <h1><%= titulo %></h1>
+    <form method="post" action="/foros/ingresar" class="formulario">
+        <label>Correo <input type="email" name="correo" required maxlength="254" autocomplete="username"></label>
+        <label>Contraseña <input type="password" name="clave" required maxlength="256" autocomplete="current-password"></label>
+        <button type="submit">Ingresar</button>
+    </form>
+</section>
+<%- include('../modulo4/fin') %>

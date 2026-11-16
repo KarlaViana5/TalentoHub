@@ -1,0 +1,9 @@
+<details>
+    <summary><%= etiqueta %></summary>
+    <form class="formulario" action="/foros/hilos/<%= hilo.id %>/reportar" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <% if (comentarioId) { %><input type="hidden" name="comentario_id" value="<%= comentarioId %>"><% } %>
+        <label>Motivo <textarea name="motivo" rows="2" minlength="5" maxlength="1000" required></textarea></label>
+        <button class="secundario" type="submit">Enviar reporte</button>
+    </form>
+</details>

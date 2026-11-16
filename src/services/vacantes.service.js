@@ -26,12 +26,18 @@ const SELECT_VACANTES = `
     INNER JOIN empresas e ON e.id_empresa = v.empresa_id
 `;
 
+const VACANTE_VISIBLE = `NOT EXISTS (
+    SELECT 1 FROM modulo4.vacantes_moderacion m
+    WHERE m.id = v.id_vacante AND m.visibilidad <> 'visible'
+)`;
+
 // Construye los filtros de búsqueda.
 function construirFiltros(filtros = {}) {
     const condiciones = [
         "v.estado = 'publicada'",
         "(v.fecha_cierre IS NULL OR v.fecha_cierre >= CURRENT_DATE)",
-        "e.estado = 'activa'"
+        "e.estado = 'activa'",
+        VACANTE_VISIBLE
     ];
 
     const valores = [];
@@ -155,6 +161,8 @@ async function obtenerVacantePorId(id) {
         ${SELECT_VACANTES}
         WHERE v.id_vacante = $1
         AND v.estado = 'publicada'
+        AND e.estado = 'activa'
+        AND ${VACANTE_VISIBLE}
         AND (v.fecha_cierre IS NULL OR v.fecha_cierre >= CURRENT_DATE)
         LIMIT 1
     `;
@@ -173,6 +181,8 @@ async function obtenerVacantesSimilares(vacanteActual) {
         WHERE v.sector = $1
         AND v.id_vacante <> $2
         AND v.estado = 'publicada'
+        AND e.estado = 'activa'
+        AND ${VACANTE_VISIBLE}
         AND (v.fecha_cierre IS NULL OR v.fecha_cierre >= CURRENT_DATE)
         ORDER BY v.fecha_publicacion DESC
         LIMIT 3

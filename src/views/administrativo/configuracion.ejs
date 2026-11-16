@@ -1,0 +1,34 @@
+<section class="tarjeta">
+    <h2>Participación en foros</h2>
+    <form class="formulario" method="post" action="/administrativo/configuracion">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <label><input type="checkbox" name="abiertas" value="1" <%- configuracion.publicaciones_abiertas ? 'checked' : '' %>> Permitir hilos y comentarios nuevos</label>
+        <label>Aviso en la portada <textarea name="aviso" maxlength="600" rows="2"><%= configuracion.aviso_foros %></textarea></label>
+        <button type="submit">Guardar configuración</button>
+    </form>
+</section>
+<section class="tarjeta">
+    <h2>Publicar aviso</h2>
+    <form class="formulario" method="post" action="/administrativo/avisos">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <label>Título <input name="titulo" required maxlength="150"></label>
+        <label>Mensaje <textarea name="mensaje" required maxlength="1000" rows="3"></textarea></label>
+        <label>Audiencia
+            <select name="audiencia">
+                <option value="todos">Todos</option>
+                <option value="candidato">Candidatos</option>
+                <option value="empresa">Empresas</option>
+            </select>
+        </label>
+        <button type="submit">Publicar aviso</button>
+    </form>
+</section>
+<% if (avisos.length) { %>
+    <section class="tarjeta">
+        <h2>Avisos recientes</h2>
+        <% for (const aviso of avisos) { %>
+            <p><strong><%= aviso.titulo %></strong> · <%= aviso.audiencia %></p>
+            <p><%= aviso.mensaje %></p>
+        <% } %>
+    </section>
+<% } %>

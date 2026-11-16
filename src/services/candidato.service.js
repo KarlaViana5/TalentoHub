@@ -197,9 +197,11 @@ async function obtenerValoraciones(idCandidato) {
             val.titulo,
             val.comentario,
             val.fecha_valoracion,
+            COALESCE(m.oculto, false) AS moderada,
             e.id_empresa,
             e.nombre AS empresa
         FROM valoraciones val
+        LEFT JOIN modulo4.valoraciones_moderacion m ON m.id = val.id_valoracion
         INNER JOIN empresas e ON e.id_empresa = val.empresa_id
         WHERE val.candidato_id = $1
         ORDER BY val.fecha_valoracion DESC

@@ -25,6 +25,11 @@ const SELECT_RECURSOS = `
         ON c.id_categoria = r.categoria_id
 `;
 
+const RECURSO_VISIBLE = `NOT EXISTS (
+    SELECT 1 FROM modulo4.recursos_moderacion m
+    WHERE m.id = r.id_recurso AND m.oculto
+)`;
+
 // ==========================================
 // OBTENER CATEGORÍAS DISPONIBLES
 // ==========================================
@@ -55,7 +60,8 @@ function construirFiltros(filtros = {}) {
 
     const condiciones = [
         "r.estado = 'publicado'",
-        "c.estado = TRUE"
+        "c.estado = TRUE",
+        RECURSO_VISIBLE
     ];
 
     const valores = [];
@@ -257,6 +263,8 @@ async function obtenerRecursoPorId(id) {
 
         AND r.estado = 'publicado'
 
+        AND ${RECURSO_VISIBLE}
+
         AND c.estado = TRUE
 
         LIMIT 1
@@ -320,6 +328,8 @@ async function obtenerRecursosRelacionados(recursoActual) {
         AND r.id_recurso <> $2
 
         AND r.estado = 'publicado'
+
+        AND ${RECURSO_VISIBLE}
 
         AND c.estado = TRUE
 

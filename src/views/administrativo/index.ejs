@@ -1,32 +1,17 @@
-
-<%- include('../partials/head', { titulo: titulo }) %>
-
-<body>
-
-    <%- include('../partials/header', {
-        titulo: titulo,
-        descripcion: descripcion
-    }) %>
-
-    <%- include('../partials/navigation') %>
-
-    <main>
-
-        <h2>Opciones administrativas</h2>
-
-        <ul>
-            <li>Panel principal</li>
-            <li>Gestión de usuarios</li>
-            <li>Gestión de empresas</li>
-            <li>Gestión de vacantes</li>
-            <li>Moderación de contenido</li>
-            <li>Estadísticas del sistema</li>
-            <li>Configuración del sistema</li>
-        </ul>
-
-    </main>
-
-    <%- include('../partials/footer') %>
-
-</body>
-</html>
+<%- include('../modulo4/inicio', { titulo }) %>
+<div class="panel-administrativo">
+    <nav class="menu-admin" aria-label="Secciones administrativas">
+        <a href="/administrativo" <%- pagina === 'panel' ? 'aria-current="page"' : '' %>>Panel y estadísticas</a>
+        <% for (const [ruta, item] of Object.entries(menu)) { %>
+            <a href="/administrativo/<%= ruta %>" <%- pagina === 'lista' && ruta === nombre ? 'aria-current="page"' : '' %>><%= item.titulo %></a>
+        <% } %>
+        <a href="/administrativo/configuracion" <%- pagina === 'configuracion' ? 'aria-current="page"' : '' %>>Configuración y avisos</a>
+    </nav>
+    <section class="contenido-admin">
+        <h1><%= titulo %></h1>
+        <% if (pagina === 'panel') { %><%- include('panel') %><% } %>
+        <% if (pagina === 'lista') { %><%- include('lista') %><% } %>
+        <% if (pagina === 'configuracion') { %><%- include('configuracion') %><% } %>
+    </section>
+</div>
+<%- include('../modulo4/fin') %>
