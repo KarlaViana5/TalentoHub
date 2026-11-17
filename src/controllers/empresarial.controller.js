@@ -24,7 +24,7 @@ async function mostrarInicio(req, res) {
 
     res.render('empresarial/index', {
         titulo: 'Panel de empresa',
-        saludo: `${saludo()}, ${servicio.empleadorActual.nombre.split(' ')[0]}`,
+        saludo: `${saludo()}, ${servicio.obtenerContexto().nombre.split(' ')[0]}`,
         ...panel,
         haceCuanto,
         formatoFecha
@@ -164,7 +164,7 @@ function formularioVacante(body) {
 
 function vacanteVacia() {
     return {
-        empresaId: servicio.empleadorActual.empresaId,
+        empresaId: servicio.obtenerContexto().empresaId,
         titulo: '',
         ubicacion: '',
         modalidad: 'Presencial',
@@ -196,7 +196,7 @@ async function renderPublicar(res, vacante, errores = [], status = 200) {
         errores,
         empresas: await servicio.listarEmpresas({ estado: 'Activa' }),
         opciones: opcionesVacante,
-        reclutador: servicio.empleadorActual.nombre,
+        reclutador: servicio.obtenerContexto().nombre,
         puedeBorrador: modo === 'nueva' || vacante.estado === 'Borrador',
         pasoInicial: 1
     });
@@ -306,7 +306,8 @@ async function mostrarPostulaciones(req, res) {
     const lista = await vacantesConPostulaciones();
     const vacante = req.query.vacante ? await servicio.obtenerVacante(req.query.vacante) : lista[0];
 
-    if (!vacante || vacante.estado === 'Borrador') return noEncontrado(req, res);
+    // An empty company inbox is a valid page; an explicitly requested foreign/missing offer is not.
+    if (req.query.vacante && (!vacante || vacante.estado === 'Borrador')) return noEncontrado(req, res);
 
     const filtros = {
         estado: servicio.ESTADOS_POSTULACION.includes(req.query.estado) ? req.query.estado : '',
@@ -316,8 +317,9 @@ async function mostrarPostulaciones(req, res) {
         orden: req.query.orden === 'compatibilidad' ? 'compatibilidad' : 'fecha'
     };
 
-    const postulaciones = (await servicio.listarPostulaciones(vacante.id, filtros))
-        .map(p => ({ ...p, hace: haceCuanto(p.fecha) }));
+    const postulaciones = vacante
+        ? (await servicio.listarPostulaciones(vacante.id, filtros)).map(p => ({ ...p, hace: haceCuanto(p.fecha) }))
+        : [];
 
     res.render('empresarial/postulaciones', {
         titulo: 'Postulaciones',
@@ -325,7 +327,7 @@ async function mostrarPostulaciones(req, res) {
         vacantes: lista,
         filtros,
         postulaciones,
-        conteo: await servicio.contarPostulacionesPorEstado(vacante.id),
+        conteo: vacante ? await servicio.contarPostulacionesPorEstado(vacante.id) : { Todos: 0 },
         estados: servicio.ESTADOS_POSTULACION,
         volver: req.originalUrl,
         mensaje: mensajesPostulaciones[req.query.ok] || ''

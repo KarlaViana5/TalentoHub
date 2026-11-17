@@ -5,6 +5,7 @@
         <section class="for-tarjeta">
             <h1 class="for-form-title"><%= titulo %></h1>
             <form method="post" action="/foros/ingresar" class="for-form">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                 <div>
                     <label for="correo">Correo</label>
                     <input id="correo" type="email" name="correo" required maxlength="254" autocomplete="username">

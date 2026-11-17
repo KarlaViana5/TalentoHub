@@ -1,29 +1,21 @@
 require('dotenv').config();
-
 const app = require('./app');
-const { probarConexion } = require('./config/database');
-const { ejecutarMigracionModulo4 } = require('./config/migracion-modulo4');
+const { probarConexion, pool } = require('./config/database');
 const { asegurarEsquemaAuth } = require('./services/auth.service');
-
-const PORT = process.env.PORT || 3000;
+const { arrancar } = require('./services/arranque.service');
+const { registrarError } = require('./utils/logger');
 
 async function iniciarServidor() {
-    await probarConexion();
-    try {
-        await ejecutarMigracionModulo4();
-        await asegurarEsquemaAuth();
-    } catch (error) {
-        console.error('Aviso al verificar migración inicial:', error.message);
-    }
-
-    app.listen(PORT, () => {
-        console.log('================================');
-        console.log('       TALENTOHUB');
-        console.log('================================');
-        console.log(`Servidor ejecutándose en el puerto ${PORT}`);
-        console.log(`Dirección: http://localhost:${PORT}`);
-        console.log('================================');
-    });
+    const puerto = process.env.PORT || 3000;
+    const server = await arrancar({ app, pool, probarConexion, asegurarEsquemaAuth, puerto });
+    console.log('TalentoHub iniciado en el puerto ' + puerto);
+    return server;
 }
 
-iniciarServidor();
+if (require.main === module) {
+    iniciarServidor().catch(error => {
+        registrarError(error, { scope: 'startup', status: 503 });
+        process.exitCode = 1;
+    });
+}
+module.exports = { iniciarServidor };

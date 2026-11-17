@@ -1,6 +1,7 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 
 <body class="adm-body">
+    <%- include('../partials/navigation', { activo: 'admin' }) %>
     <div class="adm-layout">
         <%- include('partials/menu-admin') %>
 
@@ -124,6 +125,7 @@
                                             <section class="adm-modal-bloque">
                                                 <h3><i class="fa-solid fa-gavel" aria-hidden="true"></i> Decisión administrativa</h3>
                                                 <form class="adm-form" method="post" action="/administrativo/empresas/<%= emp.id %>/decision">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <label for="motivo-emp">Motivo u observaciones</label>
                                                     <textarea id="motivo-emp" name="motivo" rows="3" placeholder="Obligatorio para solicitar corrección, rechazar o suspender."></textarea>
                                                     <div class="adm-modal-acciones">

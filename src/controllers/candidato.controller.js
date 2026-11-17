@@ -1,3 +1,4 @@
+const { registrarError } = require('../utils/logger');
 const candidatoService = require('../services/candidato.service');
 const adminService = require('../services/administrativo.service');
 
@@ -56,8 +57,8 @@ const candidatoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al cargar módulo candidato:', error);
-            res.status(500).send('Error interno al consultar la información del candidato.');
+            registrarError(error, { scope: 'controller:candidato', req });
+            throw error;
         }
     },
 
@@ -68,7 +69,7 @@ const candidatoController = {
             await candidatoService.actualizarPerfil(idCandidato, req.body);
             res.redirect(`/candidato?mensaje=${encodeURIComponent('Perfil actualizado correctamente')}`);
         } catch (error) {
-            console.error('Error al actualizar perfil:', error);
+            registrarError(error, { scope: 'controller:candidato', req });
             res.redirect(`/candidato?error=${encodeURIComponent('No se pudo actualizar el perfil')}`);
         }
     },
@@ -81,7 +82,7 @@ const candidatoController = {
             await candidatoService.cancelarPostulacion(idPostulacion, idCandidato);
             res.redirect(`/candidato?mensaje=${encodeURIComponent('Postulación cancelada')}`);
         } catch (error) {
-            console.error('Error al cancelar postulación:', error);
+            registrarError(error, { scope: 'controller:candidato', req });
             res.redirect(`/candidato?error=${encodeURIComponent('No se pudo cancelar la postulación')}`);
         }
     },
@@ -93,7 +94,7 @@ const candidatoController = {
             await candidatoService.crearAlerta(idCandidato, req.body);
             res.redirect(`/candidato?mensaje=${encodeURIComponent('Alerta de empleo creada')}`);
         } catch (error) {
-            console.error('Error al crear alerta:', error);
+            registrarError(error, { scope: 'controller:candidato', req });
             res.redirect(`/candidato?error=${encodeURIComponent('No se pudo crear la alerta')}`);
         }
     },
@@ -106,7 +107,7 @@ const candidatoController = {
             await candidatoService.alternarEstadoAlerta(idAlerta, idCandidato);
             res.redirect(`/candidato?mensaje=${encodeURIComponent('Estado de alerta actualizado')}`);
         } catch (error) {
-            console.error('Error al actualizar alerta:', error);
+            registrarError(error, { scope: 'controller:candidato', req });
             res.redirect(`/candidato?error=${encodeURIComponent('No se pudo actualizar la alerta')}`);
         }
     },
@@ -119,7 +120,7 @@ const candidatoController = {
             await candidatoService.eliminarAlerta(idAlerta, idCandidato);
             res.redirect(`/candidato?mensaje=${encodeURIComponent('Alerta eliminada')}`);
         } catch (error) {
-            console.error('Error al eliminar alerta:', error);
+            registrarError(error, { scope: 'controller:candidato', req });
             res.redirect(`/candidato?error=${encodeURIComponent('No se pudo eliminar la alerta')}`);
         }
     },
@@ -131,7 +132,7 @@ const candidatoController = {
             await candidatoService.crearValoracion(idCandidato, req.body);
             res.redirect(`/candidato?mensaje=${encodeURIComponent('Valoración publicada')}`);
         } catch (error) {
-            console.error('Error al crear valoración:', error);
+            registrarError(error, { scope: 'controller:candidato', req });
             res.redirect(`/candidato?error=${encodeURIComponent('No se pudo publicar la valoración')}`);
         }
     },
@@ -144,7 +145,7 @@ const candidatoController = {
             await candidatoService.actualizarValoracion(idValoracion, idCandidato, req.body);
             res.redirect(`/candidato?mensaje=${encodeURIComponent('Valoración actualizada')}`);
         } catch (error) {
-            console.error('Error al actualizar valoración:', error);
+            registrarError(error, { scope: 'controller:candidato', req });
             res.redirect(`/candidato?error=${encodeURIComponent('No se pudo actualizar la valoración')}`);
         }
     },

@@ -1,6 +1,7 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 
 <body class="adm-body">
+    <%- include('../partials/navigation', { activo: 'admin' }) %>
     <div class="adm-layout">
         <%- include('partials/menu-admin') %>
 
@@ -53,6 +54,7 @@
                     <section class="adm-tarjeta">
                         <h3>+ Emitir Nueva Notificación</h3>
                         <form class="adm-form" method="post" action="/administrativo/notificaciones">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                             <div>
                                 <label>Audiencia / Rol destinatario *</label>
                                 <select name="destinatarioTipo" required>

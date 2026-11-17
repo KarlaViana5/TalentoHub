@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { registrarValidacionParametros } = require('../middleware/input.middleware');
+registrarValidacionParametros(router);
 
 const candidatoController = require('../controllers/candidato.controller');
 const { exigirRol } = require('../middleware/auth.middleware');

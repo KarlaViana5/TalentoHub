@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="/css/auth.css">
 
 <body class="auth-body">
+    <%- include('../partials/navigation', { activo: 'login' }) %>
     <main class="auth-contenedor auth-contenedor-login">
         <aside class="auth-panel-brand">
             <a href="/" class="auth-panel-logo">
@@ -36,6 +37,7 @@
             <% } %>
 
             <form class="auth-form" method="post" action="/auth/login">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                 <input type="hidden" name="volver" value="<%= volver %>">
 
                 <div class="auth-campo">

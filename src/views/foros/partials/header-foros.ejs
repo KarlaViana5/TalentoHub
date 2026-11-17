@@ -1,5 +1,7 @@
 <link rel="stylesheet" href="/css/foros.css">
 
+<%- include('../../partials/navigation', { activo: 'foros' }) %>
+
 <div class="for-topbar">
     <div>
         <span class="for-context-label">Comunidad</span>
@@ -14,17 +16,7 @@
         <% } %>
     </div>
 
-    <div class="for-session-actions">
-        <% if (locals.usuarioActual) { %>
-            <a href="/auth/logout" class="for-context-link">Cerrar sesión</a>
-        <% } else { %>
-            <a href="/auth/login?volver=/foros" class="for-context-link">Iniciar sesión para participar</a>
-            <a href="/auth/registro" class="for-context-link for-context-link-primary">Crear cuenta</a>
-        <% } %>
-    </div>
 </div>
-
-<%- include('../../partials/navigation', { activo: 'foros' }) %>
 
 <div class="for-actions">
         <% if (actorActual.tipo !== 'visitante') { %>

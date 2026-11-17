@@ -1,6 +1,7 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 
 <body>
+    <%- include('../partials/navigation', { activo: 'empresa' }) %>
 
     <%- include('partials/menu', { activo: 'vacantes' }) %>
 
@@ -64,6 +65,7 @@
 
                                             <% if (vacante.estado === 'Activa') { %>
                                                 <form method="post" action="/empresarial/vacantes/<%= vacante.id %>/estado">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <input type="hidden" name="estado" value="Inactiva">
                                                     <button class="emp-btn emp-icono" type="submit" title="Inactivar">⏸</button>
                                                 </form>
@@ -71,6 +73,7 @@
 
                                             <% if (vacante.estado === 'Inactiva') { %>
                                                 <form method="post" action="/empresarial/vacantes/<%= vacante.id %>/estado">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <input type="hidden" name="estado" value="Activa">
                                                     <button class="emp-btn emp-icono" type="submit" title="Reactivar">▶</button>
                                                 </form>
@@ -79,6 +82,7 @@
                                             <% if (vacante.estado === 'Activa' || vacante.estado === 'Inactiva') { %>
                                                 <form method="post" action="/empresarial/vacantes/<%= vacante.id %>/estado"
                                                       onsubmit="return confirm('¿Cancelar esta vacante? Ya no podrá reactivarse.');">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <input type="hidden" name="estado" value="Cancelada">
                                                     <button class="emp-btn emp-icono emp-btn-peligro" type="submit" title="Cancelar">⊘</button>
                                                 </form>
@@ -86,6 +90,7 @@
 
                                             <form method="post" action="/empresarial/vacantes/<%= vacante.id %>/eliminar"
                                                   onsubmit="return confirm('¿Eliminar esta vacante y sus postulaciones? Esta acción no se puede deshacer.');">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                 <button class="emp-btn emp-icono emp-btn-peligro" type="submit" title="Eliminar">🗑</button>
                                             </form>
                                         </div>

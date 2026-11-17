@@ -1,3 +1,4 @@
+const { registrarError } = require('../utils/logger');
 
 // src/controllers/recursos.controller.js
 
@@ -36,16 +37,18 @@ const recursosController = {
             const pagina = Math.max(paginaSolicitada, 1);
 
             // Consultar las categorías disponibles.
-            const categorias = await obtenerCategorias();
+            const categoriasPendientes = obtenerCategorias();
 
             // Buscar los recursos en PostgreSQL.
-            const resultado = await buscarRecursos(
+            const resultadoPendiente = buscarRecursos(
                 filtros,
                 {
                     pagina,
                     limite: 9
                 }
             );
+
+            const [categorias, resultado] = await Promise.all([categoriasPendientes, resultadoPendiente]);
 
             // Calcular las páginas disponibles.
             const totalPaginas = Math.ceil(
@@ -75,10 +78,7 @@ const recursosController = {
 
         } catch (error) {
 
-            console.error(
-                'Error al mostrar los recursos:',
-                error
-            );
+            registrarError(error, { scope: 'controller:recursos', req });
 
             next(error);
 
@@ -128,10 +128,7 @@ const recursosController = {
 
         } catch (error) {
 
-            console.error(
-                'Error al mostrar el detalle del recurso:',
-                error
-            );
+            registrarError(error, { scope: 'controller:recursos', req });
 
             next(error);
 

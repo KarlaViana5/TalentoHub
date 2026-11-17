@@ -1,3 +1,4 @@
+const { registrarError } = require('../utils/logger');
 const adminService = require('../services/administrativo.service');
 const forosService = require('../services/foros.service');
 
@@ -29,15 +30,6 @@ const administrativoController = {
     // Middleware RN-02, RN-ADM-01, RN-ADM-05: Solo el rol admin puede acceder al panel
     verificarAccesoAdmin: async (req, res, next) => {
         try {
-            if (req.query.rol && String(req.query.rol).toLowerCase() !== 'admin') {
-                return res.status(403).render('administrativo/acceso-denegado', {
-                    titulo: 'Acceso restringido | Panel Administrativo',
-                    rolIntentado: req.query.rol,
-                    rolesRequeridos: 'Administrador',
-                    ruta: req.originalUrl
-                });
-            }
-
             if (!req.usuario) {
                 return res.redirect(`/auth/login?volver=${encodeURIComponent(req.originalUrl)}&aviso=${encodeURIComponent('Inicia sesión como Administrador para acceder al Panel Administrativo.')}`);
             }
@@ -61,7 +53,7 @@ const administrativoController = {
             res.locals.formatearFechaHora = formatearFechaHora;
             next();
         } catch (error) {
-            console.error('Error en middleware administrativo:', error);
+            registrarError(error, { scope: 'controller:administrativo', req });
             next(error);
         }
     },
@@ -78,8 +70,8 @@ const administrativoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al cargar dashboard administrativo:', error);
-            res.status(500).send('Ocurrió un error al cargar el dashboard administrativo.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 
@@ -101,8 +93,8 @@ const administrativoController = {
             res.attachment(`estadisticas-administrativas-${datos.periodoDias}-dias.csv`);
             res.type('text/csv').send(contenido);
         } catch (error) {
-            console.error('Error al exportar estadísticas administrativas:', error);
-            res.status(500).send('Ocurrió un error al exportar las estadísticas administrativas.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 
@@ -126,8 +118,8 @@ const administrativoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al listar usuarios:', error);
-            res.status(500).send('Error al consultar listado de usuarios.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 
@@ -159,8 +151,8 @@ const administrativoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar detalle de usuario:', error);
-            res.status(500).send('Error al cargar el expediente del usuario.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 
@@ -188,8 +180,8 @@ const administrativoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar administración de empresas:', error);
-            res.status(500).send('Error al cargar el módulo de empresas.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 
@@ -231,8 +223,8 @@ const administrativoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar biblioteca digital y recursos:', error);
-            res.status(500).send('Error al cargar los recursos educativos.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 
@@ -302,8 +294,8 @@ const administrativoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar cursos:', error);
-            res.status(500).send('Error al cargar el módulo de cursos.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 
@@ -344,8 +336,8 @@ const administrativoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar detalle del curso:', error);
-            res.status(500).send('Error al consultar el curso.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 
@@ -418,8 +410,8 @@ const administrativoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar exámenes:', error);
-            res.status(500).send('Error al cargar el módulo de exámenes.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 
@@ -459,8 +451,8 @@ const administrativoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar detalle del examen:', error);
-            res.status(500).send('Error al consultar la evaluación.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 
@@ -513,8 +505,8 @@ const administrativoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al cargar administración de foros:', error);
-            res.status(500).send('Error al cargar la administración de foros.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 
@@ -594,8 +586,8 @@ const administrativoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al cargar moderación y reportes:', error);
-            res.status(500).send('Error al cargar el centro de denuncias.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 
@@ -629,8 +621,8 @@ const administrativoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar notificaciones:', error);
-            res.status(500).send('Error al cargar las notificaciones.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 
@@ -654,8 +646,8 @@ const administrativoController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar configuración:', error);
-            res.status(500).send('Error al cargar la configuración.');
+            registrarError(error, { scope: 'controller:administrativo', req });
+            throw error;
         }
     },
 

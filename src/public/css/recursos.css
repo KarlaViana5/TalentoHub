@@ -534,20 +534,20 @@ body {
    ENCABEZADO PRINCIPAL
 ========================================== */
 
-body > header {
+body > header:not(.th-site-nav) {
     padding: 28px 5%;
     background: #ffffff;
     border-bottom: 1px solid #e8edf2;
 }
 
-body > header h1 {
+body > header:not(.th-site-nav) h1 {
     margin: 0 0 8px;
     color: #153657;
     font-size: 25px;
     font-weight: 800;
 }
 
-body > header p {
+body > header:not(.th-site-nav) p {
     margin: 0;
     color: #78899a;
     font-size: 14px;
@@ -633,11 +633,11 @@ body > footer p {
 
 @media (max-width: 600px) {
 
-    body > header {
+    body > header:not(.th-site-nav) {
         padding: 23px 5%;
     }
 
-    body > header h1 {
+    body > header:not(.th-site-nav) h1 {
         font-size: 21px;
     }
 

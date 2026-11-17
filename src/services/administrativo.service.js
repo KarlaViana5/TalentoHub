@@ -1,3 +1,4 @@
+const { agruparPor } = require('../utils/colecciones');
 const { pool } = require('../config/database');
 const { generarSlug } = require('./foros.service');
 
@@ -632,7 +633,7 @@ async function decidirEstadoEmpresa(idEmpresa, accion, motivo = '') {
          VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
         [
             idNum,
-            `https://talentohub.edu.sv/docs/registro-mercantil-${idNum}.pdf`,
+            null,
             `Revisión administrativa de ${empresa.nombre}`,
             config.estadoAprobacion,
             motivoLimpio || 'Aprobación administrativa verificada.',
@@ -1069,9 +1070,10 @@ async function obtenerCursoCompleto(idCurso) {
         )
     ]);
 
+    const leccionesPorModulo = agruparPor(lecciones, 'moduloId');
     const modulosConLecciones = modulos.map(m => ({
         ...m,
-        lecciones: lecciones.filter(l => l.moduloId === m.id)
+        lecciones: leccionesPorModulo.get(m.id) || []
     }));
 
     return {
@@ -1404,11 +1406,12 @@ async function obtenerExamenCompleto(idExamen, incluirRespuestasCorrectas = true
         )
     ]);
 
+    const opcionesPorPregunta = agruparPor(opciones, 'preguntaId');
     return {
         ...examen,
         preguntas: preguntas.map(p => ({
             ...p,
-            opciones: opciones.filter(o => o.preguntaId === p.id)
+            opciones: opcionesPorPregunta.get(p.id) || []
         })),
         intentos
     };

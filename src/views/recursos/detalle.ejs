@@ -7,15 +7,16 @@
 <link rel="stylesheet" href="/css/recursos.css">
 <link rel="stylesheet" href="/css/detalle-recursos.css">
 
-<body>
+<body class="th-public th-public--articulo">
+    <a class="th-ui-skip" href="#contenido-principal">Saltar al contenido</a>
 
     <%- include('../partials/navigation', { activo: 'recursos' }) %>
 
 
-    <main class="detalle-recursos-container">
+    <main class="detalle-recursos-container" id="contenido-principal" tabindex="-1">
 
         <!-- RUTA DE NAVEGACIÓN -->
-        <div class="detalle-migas">
+        <div class="detalle-migas" role="navigation" aria-label="Ruta de navegación">
 
             <a href="/">Inicio</a>
 
@@ -172,11 +173,7 @@
                                     <%= seccion.titulo %>
                                 </h2>
 
-                                <div class="detalle-texto">
-
-                                    <%= seccion.contenido %>
-
-                                </div>
+                                <div class="detalle-texto"><%= seccion.contenido %></div>
 
                             </section>
 

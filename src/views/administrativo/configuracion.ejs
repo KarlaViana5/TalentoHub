@@ -1,6 +1,7 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 
 <body class="adm-body">
+    <%- include('../partials/navigation', { activo: 'admin' }) %>
     <div class="adm-layout">
         <%- include('partials/menu-admin') %>
 
@@ -24,6 +25,7 @@
 
                 <section class="adm-tarjeta">
                     <form class="adm-form" method="post" action="/administrativo/configuracion">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                         <div class="adm-grid-2">
                             <div>
                                 <label>Nombre oficial de la plataforma</label>

@@ -1,3 +1,4 @@
+const { paginacion } = require('../utils/paginacion');
 const { pool } = require('../config/database');
 
 let db = pool;
@@ -16,7 +17,7 @@ function texto(valor) {
 }
 
 function idValido(id) {
-    return /^\d+$/.test(String(id));
+    return /^[1-9]\d{0,14}$/.test(String(id)) && Number.isSafeInteger(Number(id));
 }
 
 function generarSlug(nombre) {
@@ -32,11 +33,21 @@ function generarSlug(nombre) {
 // GESTIÓN DE ACTOR Y PERMISOS DE PARTICIPACIÓN (Págs. 53-54)
 // ==========================================================
 
-async function resolverActor(query = {}, body = {}) {
-    const cadenaActor = texto(body.actor || query.actor || 'candidato:1');
+const actoresValidados = new WeakSet();
+function autenticarActor(actor) { Object.freeze(actor); actoresValidados.add(actor); return actor; }
+function exigirActor(actor) {
+    if (!actor || !actoresValidados.has(actor) || !actor.puedeParticipar) {
+        const error = new Error('Necesitas una sesion activa con permisos de participacion.');
+        error.status = 403; throw error;
+    }
+}
+async function resolverActor(usuario = null) {
+    const cadenaActor = !usuario ? 'visitante' : usuario.rol === 'admin' ? 'admin' :
+        usuario.rol === 'empresa' && idValido(usuario.empresaId) ? 'empresa:' + usuario.empresaId :
+        usuario.rol === 'candidato' && idValido(usuario.candidatoId) ? 'candidato:' + usuario.candidatoId : 'visitante';
 
     if (cadenaActor === 'visitante') {
-        return {
+        return autenticarActor({
             clave: 'visitante',
             tipo: 'visitante',
             id: 0,
@@ -47,22 +58,22 @@ async function resolverActor(query = {}, body = {}) {
             puedeProponerForo: false,
             esAdmin: false,
             motivoBloqueo: 'Inicia sesión como candidato activo o empresa aprobada para crear hilos, comentar o proponer foros.'
-        };
+        });
     }
 
-    if (cadenaActor === 'admin' || cadenaActor.startsWith('admin')) {
-        return {
+    if (cadenaActor === 'admin') {
+        return autenticarActor({
             clave: 'admin',
             tipo: 'admin',
-            id: 0,
-            nombre: 'Administrador Principal',
+            id: Number(usuario.id),
+            nombre: usuario.nombreMostrar || usuario.nombre,
             etiquetaRol: 'Administrador',
             estadoCuenta: 'activo',
             puedeParticipar: true,
             puedeProponerForo: true,
             esAdmin: true,
             motivoBloqueo: null
-        };
+        });
     }
 
     const [tipoRaw, idRaw] = cadenaActor.split(':');
@@ -77,10 +88,10 @@ async function resolverActor(query = {}, body = {}) {
         );
         const emp = filas[0];
         if (!emp) {
-            return resolverActor({ actor: 'visitante' });
+            return resolverActor(null);
         }
         const aprobada = emp.estado === 'activa' && emp.estadoAprobacion === 'aprobada';
-        return {
+        return autenticarActor({
             clave: `empresa:${emp.id}`,
             tipo: 'empresa',
             id: emp.id,
@@ -93,7 +104,7 @@ async function resolverActor(query = {}, body = {}) {
             motivoBloqueo: aprobada
                 ? null
                 : `Tu cuenta empresarial (${emp.nombre}) se encuentra en estado "${emp.estadoAprobacion || emp.estado}". Solo las empresas aprobadas pueden publicar o proponer foros (RN-FOR-03 / RN-FOR-15).`
-        };
+        });
     }
 
     const filas = await consulta(
@@ -103,10 +114,10 @@ async function resolverActor(query = {}, body = {}) {
     );
     const cand = filas[0];
     if (!cand) {
-        return resolverActor({ actor: 'visitante' });
+        return resolverActor(null);
     }
     const activo = cand.estado === 'activo';
-    return {
+    return autenticarActor({
         clave: `candidato:${cand.id}`,
         tipo: 'candidato',
         id: cand.id,
@@ -119,7 +130,7 @@ async function resolverActor(query = {}, body = {}) {
         motivoBloqueo: activo
             ? null
             : `Tu cuenta de candidato (${cand.nombre}) está suspendida y no puede publicar contenido (RN-FOR-06 / RN-05).`
-    };
+        });
 }
 
 async function listarActoresDisponibles() {
@@ -249,8 +260,7 @@ async function obtenerForoPorSlugOId(identificador, incluirInactivos = false) {
 async function listarHilosDeForo(foroId, filtros = {}, opciones = {}) {
     if (!idValido(foroId)) return { hilos: [], totalResultados: 0, pagina: 1, totalPaginas: 1 };
 
-    const limite = Math.min(Math.max(Number(opciones.limite) || 8, 1), 50);
-    const paginaSolicitada = Math.max(Number(opciones.pagina) || 1, 1);
+    const { limite, pagina: paginaSolicitada } = paginacion(opciones, 8, 50);
 
     const condiciones = [
         'h.foro_id = $1',
@@ -336,12 +346,8 @@ async function listarHilosDeForo(foroId, filtros = {}, opciones = {}) {
     };
 }
 
-async function obtenerHiloDetalle(idHilo, incrementarVista = true) {
+async function obtenerHiloDetalle(idHilo, incrementarVista = false) {
     if (!idValido(idHilo)) return null;
-
-    if (incrementarVista) {
-        await consulta('UPDATE hilos_foro SET vistas = COALESCE(vistas, 0) + 1 WHERE id_hilo = $1', [Number(idHilo)]);
-    }
 
     const filas = await consulta(
         `SELECT
@@ -415,13 +421,14 @@ function validarDatosHilo(datos = {}) {
     if (titulo.length > 200) {
         errores.push('El título del hilo no puede superar 200 caracteres.');
     }
-    if (!contenido || contenido.length < 10) {
+    if (!contenido || contenido.length < 10 || contenido.length > 20000) {
         errores.push('El contenido de la discusión debe tener al menos 10 caracteres.');
     }
     return errores;
 }
 
 async function crearHilo(foroId, actor, datos) {
+    exigirActor(actor);
     if (!actor || !actor.puedeParticipar) {
         throw new Error(actor?.motivoBloqueo || 'No tienes permisos para crear hilos de discusión (RN-FOR-04 / RN-FOR-09).');
     }
@@ -457,6 +464,7 @@ async function crearHilo(foroId, actor, datos) {
 }
 
 async function editarHiloPropio(idHilo, actor, datos) {
+    exigirActor(actor);
     if (!idValido(idHilo) || !actor || !actor.puedeParticipar) return null;
 
     const [actual] = await consulta(
@@ -478,14 +486,15 @@ async function editarHiloPropio(idHilo, actor, datos) {
     const filas = await consulta(
         `UPDATE hilos_foro
          SET titulo = $2, contenido = $3, fecha_actualizacion = CURRENT_TIMESTAMP
-         WHERE id_hilo = $1
+         WHERE id_hilo = $1 AND eliminado_en IS NULL AND ($4::boolean OR (autor_tipo = $5 AND autor_id = $6))
          RETURNING id_hilo::int AS id, titulo, contenido`,
-        [Number(idHilo), texto(datos.titulo), texto(datos.contenido)]
+        [Number(idHilo), texto(datos.titulo), texto(datos.contenido), actor.esAdmin, actor.tipo, actor.id]
     );
     return filas[0] || null;
 }
 
 async function eliminarHiloPropio(idHilo, actor) {
+    exigirActor(actor);
     if (!idValido(idHilo) || !actor) return false;
 
     const [actual] = await consulta(
@@ -502,9 +511,9 @@ async function eliminarHiloPropio(idHilo, actor) {
     const filas = await consulta(
         `UPDATE hilos_foro
          SET eliminado_en = CURRENT_TIMESTAMP, estado = 'oculto'
-         WHERE id_hilo = $1
+         WHERE id_hilo = $1 AND eliminado_en IS NULL AND ($2::boolean OR (autor_tipo = $3 AND autor_id = $4))
          RETURNING id_hilo`,
-        [Number(idHilo)]
+        [Number(idHilo), actor.esAdmin, actor.tipo, actor.id]
     );
     return filas.length > 0;
 }
@@ -514,6 +523,7 @@ async function eliminarHiloPropio(idHilo, actor) {
 // ==========================================================
 
 async function crearComentario(idHilo, actor, datos) {
+    exigirActor(actor);
     if (!actor || !actor.puedeParticipar) {
         throw new Error(actor?.motivoBloqueo || 'Debes contar con una cuenta activa/aprobada para comentar (RN-FOR-11 / RN-FOR-15).');
     }
@@ -540,7 +550,7 @@ async function crearComentario(idHilo, actor, datos) {
     }
 
     const contenido = texto(datos.contenido);
-    if (!contenido || contenido.length < 2) {
+    if (!contenido || contenido.length < 2 || contenido.length > 10000) {
         throw new Error('Escribe un comentario válido antes de publicar.');
     }
 
@@ -574,6 +584,7 @@ async function crearComentario(idHilo, actor, datos) {
 }
 
 async function eliminarComentarioPropio(idComentario, actor) {
+    exigirActor(actor);
     if (!idValido(idComentario) || !actor) return false;
 
     const [actual] = await consulta(
@@ -590,8 +601,8 @@ async function eliminarComentarioPropio(idComentario, actor) {
     await consulta(
         `UPDATE comentarios_foro
          SET eliminado_en = CURRENT_TIMESTAMP, estado = 'oculto'
-         WHERE id_comentario = $1`,
-        [Number(idComentario)]
+         WHERE id_comentario = $1 AND eliminado_en IS NULL AND ($2::boolean OR (autor_tipo = $3 AND autor_id = $4))`,
+        [Number(idComentario), actor.esAdmin, actor.tipo, actor.id]
     );
     return actual;
 }
@@ -601,6 +612,7 @@ async function eliminarComentarioPropio(idComentario, actor) {
 // ==========================================================
 
 async function crearSolicitudForo(actor, datos) {
+    exigirActor(actor);
     if (!actor || !actor.puedeProponerForo || !['candidato', 'empresa'].includes(actor.tipo)) {
         throw new Error(
             actor?.motivoBloqueo ||
@@ -656,6 +668,7 @@ async function crearSolicitudForo(actor, datos) {
 }
 
 async function listarSolicitudesForoUsuario(actor) {
+    exigirActor(actor);
     if (!actor || actor.tipo === 'visitante') return [];
 
     if (actor.esAdmin) {
@@ -712,6 +725,7 @@ async function listarSolicitudesForoUsuario(actor) {
 // ==========================================================
 
 async function denunciarContenidoForo(actor, datos) {
+    exigirActor(actor);
     const tipoContenido = ['hilo', 'comentario'].includes(datos.tipoContenido) ? datos.tipoContenido : null;
     const contenidoId = idValido(datos.contenidoId) ? Number(datos.contenidoId) : null;
     const motivo = texto(datos.motivo);
@@ -772,7 +786,13 @@ async function denunciarContenidoForo(actor, datos) {
     return filas[0];
 }
 
+async function registrarVista(idHilo) {
+    if (!idValido(idHilo)) return;
+    await consulta("UPDATE hilos_foro h SET vistas = COALESCE(h.vistas, 0) + 1 WHERE h.id_hilo = $1 AND h.estado = 'visible' AND h.eliminado_en IS NULL AND EXISTS (SELECT 1 FROM foros f WHERE f.id_foro = h.foro_id AND f.estado = 'activo')", [idHilo]);
+}
+
 module.exports = {
+    registrarVista,
     usarConexion,
     generarSlug,
     resolverActor,

@@ -1,12 +1,25 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 
 <body>
+    <%- include('../partials/navigation', { activo: 'empresa' }) %>
 
     <%- include('partials/menu', { activo: 'postulaciones' }) %>
 
     <main class="emp-main">
 
         <section class="emp-contenido">
+            <% if (!vacante) { %>
+                <p class="emp-etiqueta">Selección de talento</p>
+                <h1>Postulaciones</h1>
+                <div class="emp-tarjeta emp-bloque">
+                    <h2>Aún no tienes vacantes para consultar</h2>
+                    <p role="status">Cuando publiques una vacante, podrás consultar aquí sus postulaciones. Las ofertas que siguen en borrador aparecen en Mis vacantes.</p>
+                    <div class="emp-acciones">
+                        <a class="emp-btn emp-btn-primario" href="/empresarial/publicar">Publicar empleo</a>
+                        <a class="emp-btn" href="/empresarial/vacantes">Ver mis vacantes</a>
+                    </div>
+                </div>
+            <% } else { %>
             <p class="emp-etiqueta">Postulaciones de</p>
 
             <div class="emp-titulo-fila">
@@ -117,6 +130,7 @@
 
                                             <% if (p.estado !== 'Preseleccionado') { %>
                                                 <form method="post" action="/empresarial/postulaciones/<%= p.id %>/estado">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <input type="hidden" name="estado" value="Preseleccionado">
                                                     <input type="hidden" name="volver" value="<%= volver %>">
                                                     <button class="emp-btn emp-icono emp-btn-exito" type="submit" title="Preseleccionar">✓</button>
@@ -126,6 +140,7 @@
                                             <% if (p.estado !== 'Rechazado') { %>
                                                 <form method="post" action="/empresarial/postulaciones/<%= p.id %>/estado"
                                                       onsubmit="return confirm('¿Rechazar a <%= p.candidato.nombre %>?');">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <input type="hidden" name="estado" value="Rechazado">
                                                     <input type="hidden" name="volver" value="<%= volver %>">
                                                     <button class="emp-btn emp-icono emp-btn-peligro" type="submit" title="Rechazar">✕</button>
@@ -142,6 +157,7 @@
                 <% } %>
 
                 <form id="form-masivo" class="emp-pie-tabla" method="post" action="/empresarial/postulaciones/estado">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                     <input type="hidden" name="volver" value="<%= volver %>">
                     <span id="contador-seleccion">0 seleccionados · <%= postulaciones.length %> candidatos</span>
                     <span class="emp-acciones">
@@ -152,6 +168,7 @@
                     </span>
                 </form>
             </div>
+            <% } %>
         </section>
 
     </main>
@@ -160,6 +177,8 @@
         <div class="emp-toast"><%= mensaje %></div>
     <% } %>
 
-    <script src="/js/postulaciones.js"></script>
+    <% if (vacante) { %>
+        <script src="/js/postulaciones.js"></script>
+    <% } %>
 
     <%- include('../partials/footer') %>

@@ -1,3 +1,4 @@
+const { registrarError } = require('../utils/logger');
 
 require('dotenv').config();
 
@@ -40,27 +41,18 @@ const pool = new Pool({
     } : false
 });
 
-// Verificar conexion con Supabase
+// Read-only connection check. The bootstrap decides whether to start listening.
 async function probarConexion() {
     try {
-        const resultado = await pool.query('SELECT NOW()');
-
-        console.log('================================');
-        console.log('CONEXION A SUPABASE EXITOSA');
-        console.log('Fecha del servidor:', resultado.rows[0].now);
-        console.log('================================');
-
+        await pool.query('SELECT NOW()');
+        return true;
     } catch (error) {
-        console.error('ERROR AL CONECTAR CON SUPABASE:');
-        console.error(error.message);
+        registrarError(error, { scope: 'database:check', status: 503 });
+        return false;
     }
 }
 
-// Manejar errores inesperados del pool
-pool.on('error', (error) => {
-    console.error('ERROR INESPERADO EN LA CONEXION:');
-    console.error(error.message);
-});
+pool.on('error', error => registrarError(error, { scope: 'database:pool', status: 503 }));
 
 module.exports = {
     pool,

@@ -61,7 +61,7 @@
                         </a>
                         <form method="post" action="/foros/<%= hilo.foroSlug %>/hilos/<%= hilo.id %>/eliminar"
                               onsubmit="return confirm('¿Deseas eliminar este hilo de discusión?');">
-                            <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                             <button type="submit" class="for-btn for-btn-pequeno for-btn-peligro"><i class="fa-solid fa-trash" aria-hidden="true"></i> Eliminar</button>
                         </form>
                     <% } %>
@@ -75,7 +75,7 @@
 
             <% if (modoEdicion && esAutorHilo) { %>
                 <form class="for-form for-form-edicion" method="post" action="/foros/<%= hilo.foroSlug %>/hilos/<%= hilo.id %>/editar">
-                    <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                     <div>
                         <label>Editar título</label>
                         <input type="text" name="titulo" value="<%= hilo.titulo %>" required minlength="5">
@@ -95,7 +95,7 @@
 
             <!-- Formulario desplegable para denunciar el hilo (RN-FOR-12) -->
             <form id="box-reportar-hilo" hidden class="for-form for-form-reporte" method="post" action="/foros/reportes">
-                <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                 <input type="hidden" name="tipoContenido" value="hilo">
                 <input type="hidden" name="contenidoId" value="<%= hilo.id %>">
                 <input type="hidden" name="volver" value="/foros/<%= hilo.foroSlug %>/hilos/<%= hilo.id %>?<%= queryActor %>">
@@ -147,13 +147,13 @@
                                 <% if (esAutorCom && actorActual.puedeParticipar) { %>
                                     <form method="post" action="/foros/<%= hilo.foroSlug %>/hilos/<%= hilo.id %>/comentarios/<%= c.id %>/eliminar"
                                           onsubmit="return confirm('¿Eliminar este comentario?');">
-                                        <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                         <button type="submit" class="for-btn for-btn-pequeno for-btn-peligro">Eliminar</button>
                                     </form>
                                 <% } %>
 
                                 <form method="post" action="/foros/reportes">
-                                    <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                     <input type="hidden" name="tipoContenido" value="comentario">
                                     <input type="hidden" name="contenidoId" value="<%= c.id %>">
                                     <input type="hidden" name="motivo" value="Comentario reportado por usuario">
@@ -183,7 +183,7 @@
                 </div>
             <% } else { %>
                 <form class="for-form" method="post" action="/foros/<%= hilo.foroSlug %>/hilos/<%= hilo.id %>/comentarios">
-                    <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
 
                     <% if (hilo.comentarios.length > 0) { %>
                         <div>

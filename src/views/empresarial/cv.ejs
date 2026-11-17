@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CV · <%= candidato.nombre %></title>
     <style>
-        body { font-family: Arial, Helvetica, sans-serif; color: #212529; background: #f1f3f5; margin: 0; padding: 24px; }
-        .hoja { max-width: 720px; margin: auto; background: #fff; padding: 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); }
-        header { display: flex; gap: 16px; align-items: center; border-bottom: 2px solid #3b5bdb; padding-bottom: 16px; }
+        body { font-family: Arial, Helvetica, sans-serif; color: #212529; background: #f1f3f5; margin: 0; padding: 0; }
+        .hoja { margin-top: 24px; margin-bottom: 24px; max-width: 720px; margin-left: auto; margin-right: auto; background: #fff; padding: 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); }
+        .hoja > header { display: flex; gap: 16px; align-items: center; border-bottom: 2px solid #3b5bdb; padding-bottom: 16px; }
         .avatar { width: 56px; height: 56px; border-radius: 12px; background: #edf2ff; color: #3b5bdb; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; }
         h1 { margin: 0; font-size: 26px; }
         h2 { font-size: 13px; letter-spacing: 1px; color: #3b5bdb; text-transform: uppercase; margin: 24px 0 8px; }
@@ -17,8 +17,11 @@
         .chips span { display: inline-block; background: #f1f3f5; border-radius: 999px; padding: 3px 10px; margin: 2px; font-size: 13px; }
         @media print { body { background: #fff; padding: 0; } .hoja { box-shadow: none; } }
     </style>
+    <link rel="stylesheet" href="/css/navigation.css">
+    <%- include('../partials/csrf-head') %>
 </head>
 <body>
+    <%- include('../partials/navigation', { activo: 'empresa' }) %>
     <div class="hoja">
         <header>
             <div class="avatar"><%= iniciales %></div>

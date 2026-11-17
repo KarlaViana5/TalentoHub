@@ -4,11 +4,12 @@
 <link rel="stylesheet" href="/css/busqueda.css">
 <link rel="stylesheet" href="/css/recursos.css">
 
-<body>
+<body class="th-public th-public--recursos">
+    <a class="th-ui-skip" href="#contenido-principal">Saltar al contenido</a>
 
     <%- include('../partials/navigation', { activo: 'recursos' }) %>
 
-    <main class="recursos-container">
+    <main class="recursos-container" id="contenido-principal" tabindex="-1">
 
         <!-- ENCABEZADO -->
         <section class="recursos-intro">
@@ -44,7 +45,7 @@
 
                     <input
                         type="text"
-                        name="q"
+                        name="q" aria-label="Buscar recursos profesionales"
                         placeholder="Buscar artículos, tutoriales o autores..."
                         value="<%= filtros.q %>"
                     >

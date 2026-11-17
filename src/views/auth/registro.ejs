@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="/css/auth.css">
 
 <body class="auth-body">
-    <%- include('../partials/navigation', { activo: '' }) %>
+    <%- include('../partials/navigation', { activo: 'registro' }) %>
 
     <main class="auth-contenedor auth-contenedor-registro">
         <section class="auth-card">
@@ -27,6 +27,7 @@
             </div>
 
             <form class="auth-form" method="post" action="/auth/registro">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                 <input type="hidden" name="rol" value="<%= rolSeleccionado %>">
 
                 <% if (rolSeleccionado === 'empresa') { %>
@@ -54,7 +55,7 @@
 
                         <div class="auth-campo">
                             <label for="nit">NIT empresarial</label>
-                            <input type="text" id="nit" name="nit" value="<%= valores.nit || '' %>" placeholder="0614-000000-101-0">
+                            <input type="text" id="nit" name="nit" required maxlength="50" value="<%= valores.nit || '' %>" placeholder="0614-000000-101-0">
                         </div>
                     </div>
 
@@ -119,13 +120,13 @@
 
                 <div class="auth-form-fila">
                     <div class="auth-campo">
-                        <label for="clave">Contraseña (mínimo 6 caracteres) *</label>
-                        <input type="password" id="clave" name="clave" minlength="6" placeholder="••••••••" required>
+                        <label for="clave">Contraseña (mínimo 12 caracteres) *</label>
+                        <input type="password" id="clave" name="clave" minlength="12" maxlength="256" placeholder="••••••••" required>
                     </div>
 
                     <div class="auth-campo">
                         <label for="confirmarClave">Confirmar contraseña *</label>
-                        <input type="password" id="confirmarClave" name="confirmarClave" minlength="6" placeholder="••••••••" required>
+                        <input type="password" id="confirmarClave" name="confirmarClave" minlength="12" maxlength="256" placeholder="••••••••" required>
                     </div>
                 </div>
 

@@ -1,8 +1,9 @@
+const { registrarError } = require('../utils/logger');
 const authService = require('../services/auth.service');
 const empresarialService = require('../services/empresarial.service');
 
 function rutaVolverValida(volver, rol) {
-    if (!volver || typeof volver !== 'string' || !volver.startsWith('/') || volver.startsWith('//')) {
+    if (!volver || typeof volver !== 'string' || !volver.startsWith('/') || volver.startsWith('//') || /[\\\x00-\x20]/.test(volver) || /%5c|%0[ad]/i.test(volver)) {
         return null;
     }
     if (volver.startsWith('/administrativo') && rol !== 'admin') return null;
@@ -23,8 +24,8 @@ const authController = {
                 correoPrevio: req.query.correo || ''
             });
         } catch (error) {
-            console.error('Error al mostrar login:', error);
-            res.status(500).send('Error al cargar la página de inicio de sesión.');
+            console.error('Error al mostrar login:');
+            throw error;
         }
     },
 
@@ -46,7 +47,7 @@ const authController = {
                 volver,
                 aviso: null,
                 mensaje: null,
-                error: error.message,
+                error: error.code ? 'No se pudo completar la solicitud. Intenta nuevamente.' : error.message,
                 correoPrevio: req.body.correo || ''
             });
         }
@@ -80,7 +81,7 @@ const authController = {
                 titulo: 'Crear cuenta | TalentoHub',
                 rolSeleccionado,
                 sectores: empresarialService.SECTORES,
-                valores: req.body || {},
+                valores: Object.fromEntries(Object.entries(req.body || {}).filter(([key]) => !['clave', 'confirmarClave', '_csrf'].includes(key))),
                 error: error.message
             });
         }
@@ -95,7 +96,7 @@ const authController = {
             res.clearCookie(authService.COOKIE_SESION, authService.opcionesCookie());
             res.redirect('/auth/login?mensaje=' + encodeURIComponent('Has cerrado sesión correctamente.'));
         } catch (error) {
-            console.error('Error al cerrar sesión:', error);
+            console.error('Error al cerrar sesión:');
             res.clearCookie(authService.COOKIE_SESION, authService.opcionesCookie());
             res.redirect('/auth/login');
         }

@@ -1,7 +1,7 @@
 <link rel="stylesheet" href="/css/empresarial.css">
 
-<nav class="emp-menu">
-    <a class="emp-marca" href="/">Talento<span>Hub</span></a>
+<nav class="emp-menu" aria-label="Gestionar mi empresa">
+    <span class="emp-menu-label">Mi empresa</span>
 
     <a class="emp-link <%= activo === 'panel' ? 'activo' : '' %>" href="/empresarial">Panel</a>
     <a class="emp-link <%= activo === 'vacantes' ? 'activo' : '' %>" href="/empresarial/vacantes">Mis vacantes</a>
@@ -11,15 +11,4 @@
     <a class="emp-link" href="/foros">💬 Foros</a>
     <a class="emp-link" href="/busqueda">🔍 Vacantes públicas</a>
 
-    <div class="emp-usuario" style="gap: 10px;">
-        <% const nombreEmpresa = locals.empresaActual ? empresaActual.nombre : (locals.usuarioActual ? usuarioActual.nombreMostrar : 'Mi empresa'); %>
-        <span class="emp-avatar"><%= nombreEmpresa.charAt(0) %></span>
-        <div>
-            <strong><%= nombreEmpresa %></strong><br>
-            <small>Rol: <%= locals.usuarioActual ? usuarioActual.rolEtiqueta : 'Empresa' %></small>
-        </div>
-        <a href="/auth/logout" style="margin-left: 8px; padding: 5px 10px; border-radius: 6px; background: #fef2f2; color: #dc2626; font-size: 12px; font-weight: 700; text-decoration: none;">
-            Salir
-        </a>
-    </div>
 </nav>

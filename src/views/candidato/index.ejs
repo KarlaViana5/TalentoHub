@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/css/candidato.css">
     <link rel="stylesheet" href="/css/navigation.css">
     <link rel="stylesheet" href="/css/design-system.css">
+    <%- include('../partials/csrf-head') %>
 </head>
 
 <body>
@@ -171,6 +172,7 @@
                             </div>
 
                             <form action="/candidato/perfil/<%= perfil.id_candidato %>" method="POST" class="candidate-form">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
 
                                 <div class="form-grid-2">
                                     <div class="field-box">
@@ -269,6 +271,7 @@
 
                                                 <% if (p.estado === 'nuevo') { %>
                                                     <form action="/candidato/postulaciones/<%= p.id_postulacion %>/cancelar" method="POST">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                         <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
                                                         <button type="submit" class="btn-danger">Cancelar</button>
                                                     </form>
@@ -296,6 +299,7 @@
                             </div>
 
                             <form action="/candidato/alertas" method="POST" class="form-grid-4">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                 <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
 
                                 <div class="field-box">
@@ -352,6 +356,7 @@
                                                 </span>
 
                                                 <form action="/candidato/alertas/<%= a.id_alerta %>/estado" method="POST">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
                                                     <button type="submit" class="btn-secondary">
                                                         <%= a.activa ? 'Pausar' : 'Activar' %>
@@ -359,6 +364,7 @@
                                                 </form>
 
                                                 <form action="/candidato/alertas/<%= a.id_alerta %>/eliminar" method="POST">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
                                                     <button type="submit" class="btn-danger">Eliminar</button>
                                                 </form>
@@ -388,6 +394,7 @@
                                 <p style="color: #64748b;">No hay empresas activas registradas para valorar en este momento.</p>
                             <% } else { %>
                                 <form action="/candidato/valoraciones" method="POST" class="candidate-form">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                     <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
 
                                     <div class="form-grid-2">
@@ -446,6 +453,7 @@
                                             <details class="edit-details">
                                                 <summary>Editar valoración</summary>
                                                 <form action="/candidato/valoraciones/<%= v.id_valoracion %>/actualizar" method="POST" class="candidate-form" style="margin-top: 0.75rem;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
 
                                                     <div class="form-grid-2">
@@ -506,6 +514,7 @@
                                             <p style="margin: 0.3rem 0; color: #475569; font-size: 0.9rem;"><%= c.descripcion %></p>
                                             <% if (!c.inscripcionId) { %>
                                                 <form action="/candidato/cursos/<%= c.id %>/inscribir" method="POST" style="margin-top: 0.4rem;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <input type="hidden" name="candidato_id" value="<%= perfil.id_candidato %>">
                                                     <button type="submit" class="btn-primary" style="width: fit-content; padding: 0.45rem 0.9rem; font-size: 0.85rem;">
                                                         Inscribirme al curso
