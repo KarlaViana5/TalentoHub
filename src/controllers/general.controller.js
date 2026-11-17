@@ -1,3 +1,4 @@
+const { registrarError } = require('../utils/logger');
 
 const { buscarVacantes } = require('../services/vacantes.service');
 const { buscarRecursos } = require('../services/recursos.service');
@@ -32,11 +33,9 @@ const generalController = {
             });
 
         } catch (error) {
-            console.error('Error al cargar la página de inicio:', error);
+            registrarError(error, { scope: 'controller:general', req });
 
-            res.status(500).send(
-                'Ocurrió un error al cargar la página de inicio.'
-            );
+            throw error;
         }
     }
 

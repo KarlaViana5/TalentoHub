@@ -1,3 +1,4 @@
+const { paginacion } = require('../utils/paginacion');
 const { pool } = require('../config/database');
 
 // Columnas que utilizaremos para mostrar las vacantes.
@@ -111,9 +112,7 @@ function construirFiltros(filtros = {}) {
 
 // Busca vacantes en PostgreSQL con filtros y paginación.
 async function buscarVacantes(filtros = {}, opciones = {}) {
-    const limite = Number(opciones.limite) || 10;
-    const pagina = Number(opciones.pagina) || 1;
-    const offset = (pagina - 1) * limite;
+    const { limite, pagina, offset } = paginacion(opciones, 10);
 
     const { where, valores } = construirFiltros(filtros);
 
@@ -154,6 +153,7 @@ async function buscarVacantes(filtros = {}, opciones = {}) {
 
 // Obtiene una vacante por su identificador e incrementa su contador de vistas.
 async function obtenerVacantePorId(id) {
+    if (!/^[1-9]\d{0,14}$/.test(String(id))) return null;
     const consulta = `
         ${SELECT_VACANTES}
         WHERE v.id_vacante = $1
@@ -167,10 +167,6 @@ async function obtenerVacantePorId(id) {
 
     const resultado = await pool.query(consulta, [id]);
     const vacante = resultado.rows[0] || null;
-
-    if (vacante) {
-        await pool.query('UPDATE vacantes SET vistas = COALESCE(vistas, 0) + 1 WHERE id_vacante = $1', [id]).catch(() => {});
-    }
 
     return vacante;
 }
@@ -293,7 +289,12 @@ async function reportarVacantePublica(vacanteId, usuario, datos = {}) {
     );
 }
 
+async function registrarVista(id) {
+    if (!/^[1-9]\d{0,14}$/.test(String(id))) return;
+    await pool.query("UPDATE vacantes v SET vistas = COALESCE(v.vistas, 0) + 1 WHERE v.id_vacante = $1 AND v.estado = 'publicada' AND COALESCE(v.estado_moderacion,'normal') = 'normal' AND (v.fecha_cierre IS NULL OR v.fecha_cierre >= CURRENT_DATE) AND EXISTS (SELECT 1 FROM empresas e WHERE e.id_empresa = v.empresa_id AND e.estado = 'activa' AND e.estado_aprobacion = 'aprobada')", [id]);
+}
 module.exports = {
+    registrarVista,
     buscarVacantes,
     obtenerVacantePorId,
     obtenerVacantesSimilares,

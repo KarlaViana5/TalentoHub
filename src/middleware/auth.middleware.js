@@ -1,25 +1,19 @@
 const authService = require('../services/auth.service');
 
-let esquemaVerificado = false;
-
 async function cargarSesionGlobal(req, res, next) {
     try {
-        if (!esquemaVerificado) {
-            await authService.asegurarEsquemaAuth();
-            esquemaVerificado = true;
-        }
-
         const token = authService.leerCookieSesion(req);
         const usuario = token ? await authService.obtenerUsuarioPorToken(token) : null;
 
         req.usuario = usuario;
         res.locals.usuarioActual = usuario;
+        if (usuario) res.set('Cache-Control', 'no-store');
         next();
     } catch (error) {
-        console.error('Error al cargar sesión global:', error);
+        console.error('No se pudo validar la sesion.');
         req.usuario = null;
         res.locals.usuarioActual = null;
-        next();
+        res.status(503).send('No se pudo validar la sesion. Intenta nuevamente.');
     }
 }
 
@@ -32,16 +26,6 @@ function exigirAutenticacion(req, res, next) {
 
 function exigirRol(...rolesPermitidos) {
     return (req, res, next) => {
-        // Permite probar bloqueo explícito si se envía ?rol=otroRol en /administrativo
-        if (req.query.rol && !rolesPermitidos.includes(String(req.query.rol).toLowerCase())) {
-            return res.status(403).render('administrativo/acceso-denegado', {
-                titulo: 'Acceso restringido por Rol | TalentoHub',
-                rolIntentado: req.query.rol,
-                rolesRequeridos: rolesPermitidos.map(authService.etiquetaRol).join(' o '),
-                ruta: req.originalUrl
-            });
-        }
-
         if (!req.usuario) {
             const nombresRoles = rolesPermitidos.map(authService.etiquetaRol).join(' o ');
             const volver = encodeURIComponent(req.originalUrl || '/');

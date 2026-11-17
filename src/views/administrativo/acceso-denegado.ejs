@@ -1,7 +1,8 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 <link rel="stylesheet" href="/css/administrativo.css">
 
-<body class="adm-body" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px;">
+<body class="adm-body adm-access-page">
+    <%- include('../partials/navigation', { activo: '' }) %>
     <section class="adm-tarjeta" style="max-width: 540px; text-align: center; padding: 36px;">
         <div class="adm-acceso-icono"><i class="fa-solid fa-lock" aria-hidden="true"></i></div>
         <span class="adm-badge adm-badge-suspendida">ERROR 403 · SEPARACIÓN DE MÓDULOS POR ROL</span>
@@ -16,7 +17,8 @@
                 <a class="adm-btn adm-btn-primario" href="<%= usuarioActual.rutaPanel %>">
                     Ir a mi panel (<%= usuarioActual.rolEtiqueta %>)
                 </a>
-                <a class="adm-btn adm-btn-peligro" href="/auth/logout">Cambiar de cuenta</a>
+                <form method="post" action="/auth/logout" class="th-logout-form">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>"><button type="submit" class="adm-btn adm-btn-peligro" >Cambiar de cuenta</button></form>
             <% } else { %>
                 <a class="adm-btn adm-btn-primario" href="/auth/login?volver=<%= encodeURIComponent(ruta) %>">
                     Iniciar sesión con el rol requerido

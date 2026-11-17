@@ -4,9 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test pruebas/seguridad.prueba.js pruebas/arquitectura.prueba.js && node pruebas/navigation.prueba.js",
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "test:browser": "node pruebas/navigation.browser.prueba.js",
+    "db:plan": "node scripts/migraciones.js plan",
+    "db:apply:002": "node scripts/migraciones.js aplicar --id=002"
   },
   "keywords": [],
   "author": "",

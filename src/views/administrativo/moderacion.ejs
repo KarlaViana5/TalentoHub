@@ -1,6 +1,7 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 
 <body class="adm-body">
+    <%- include('../partials/navigation', { activo: 'admin' }) %>
     <div class="adm-layout">
         <%- include('partials/menu-admin') %>
 
@@ -76,10 +77,12 @@
                                         <td>
                                             <% if (r.estado === 'pendiente') { %>
                                                 <form method="post" action="/administrativo/moderacion/reportes/<%= r.id %>" class="adm-reporte-form">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <button type="submit" name="estado" value="en_revision" class="adm-btn">Tomar caso</button>
                                                 </form>
                                             <% } else if (r.estado === 'en_revision') { %>
                                                 <form method="post" action="/administrativo/moderacion/reportes/<%= r.id %>" class="adm-reporte-form">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <select name="medidaTomada" required>
                                                         <option value="">Selecciona una medida...</option>
                                                         <option>Sin medida</option>
@@ -132,6 +135,7 @@
                                         <td><span class="adm-badge adm-badge-<%= op.estadoModeracion %>"><%= op.estadoModeracion %></span></td>
                                         <td>
                                             <form method="post" action="/administrativo/moderacion/valoraciones/<%= op.id %>" style="display: flex; gap: 6px;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                 <input type="hidden" name="estado" value="<%= op.estadoModeracion === 'visible' ? 'oculta' : 'visible' %>">
                                                 <input type="hidden" name="motivo" value="Moderación administrativa de reseña empresarial">
                                                 <button type="submit" class="adm-btn <%= op.estadoModeracion === 'visible' ? 'adm-btn-peligro' : 'adm-btn-verde' %>">

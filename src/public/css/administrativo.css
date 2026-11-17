@@ -1401,3 +1401,8 @@ body.adm-body {
         grid-template-columns: 1fr;
     }
 }
+
+/* Main navigation sits above the existing administration workspace. */
+.adm-layout { min-height: calc(100vh - 80px); }
+.adm-access-page > .adm-tarjeta { width: min(540px, calc(100% - 32px)); margin: 48px auto; }
+@media (max-width: 1199px) { .adm-layout { min-height: calc(100vh - 72px); } }

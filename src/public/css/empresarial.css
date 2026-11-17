@@ -854,3 +854,9 @@ footer {
     .emp-kpis { grid-template-columns: repeat(2, 1fr); }
     .emp-panel-fila { grid-template-columns: 1fr; }
 }
+
+/* Secondary navigation below the shared main navbar. */
+.emp-menu { flex-wrap: wrap; gap: 6px; padding-top: 12px; padding-bottom: 12px; min-height: 60px; }
+.emp-menu .emp-menu-label { color: #475569; font-size: 12px; font-weight: 700; margin-right: 12px; }
+.emp-menu a.emp-link { min-height: 42px; display: inline-flex; align-items: center; }
+@media (max-width: 600px) { .emp-menu { padding-left: 16px; padding-right: 16px; } .emp-menu .emp-menu-label { flex-basis: 100%; } }

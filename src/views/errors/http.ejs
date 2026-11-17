@@ -1,0 +1,12 @@
+<%- include('../partials/head', { titulo }) %>
+<body>
+    <%- include('../partials/navigation', { activo: '' }) %>
+    <main class="th-container">
+        <h1>Error <%= status %></h1>
+        <p><%= mensaje %></p>
+        <% if (requestId) { %><p>Referencia: <%= requestId %></p><% } %>
+        <a href="/">Regresar al inicio</a>
+    </main>
+    <%- include('../partials/footer') %>
+</body>
+</html>

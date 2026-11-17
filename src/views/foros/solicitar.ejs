@@ -29,7 +29,7 @@
                 </div>
             <% } else { %>
                 <form class="for-form" method="post" action="/foros/solicitudes">
-                    <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
 
                     <div class="for-form-grid">
                         <div>

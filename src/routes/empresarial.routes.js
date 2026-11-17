@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { registrarValidacionParametros } = require('../middleware/input.middleware');
+registrarValidacionParametros(router);
 
 const empresarialController = require('../controllers/empresarial.controller');
 const servicio = require('../services/empresarial.service');
@@ -11,15 +13,12 @@ router.use(exigirRol('empresa'));
 // Cargar contexto de la empresa autenticada en sesión
 router.use(async (req, res, next) => {
     try {
-        if (req.usuario && req.usuario.rol === 'empresa' && req.usuario.empresaId) {
-            servicio.empleadorActual.empresaId = Number(req.usuario.empresaId);
-            servicio.empleadorActual.nombre = req.usuario.nombre || req.usuario.nombreMostrar;
-        }
-        res.locals.empresaActual = await servicio.obtenerEmpresa(servicio.empleadorActual.empresaId);
-        next();
-    } catch (error) {
-        next(error);
-    }
+        await servicio.conContextoEmpresa(req.usuario, async () => {
+            res.locals.empresaActual = await servicio.obtenerEmpresa(req.usuario.empresaId);
+            if (!res.locals.empresaActual) return res.status(403).send('No existe una empresa vinculada a tu cuenta.');
+            next();
+        });
+    } catch (error) { next(error); }
 });
 
 router.get('/', empresarialController.mostrarInicio);

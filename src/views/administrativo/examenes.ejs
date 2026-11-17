@@ -1,6 +1,7 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 
 <body class="adm-body">
+    <%- include('../partials/navigation', { activo: 'admin' }) %>
     <div class="adm-layout">
         <%- include('partials/menu-admin') %>
 
@@ -78,6 +79,7 @@
                             </header>
                             <div class="adm-modal-form-body">
                             <form class="adm-form" method="post" action="/administrativo/examenes">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                 <div>
                                     <label>Curso asociado *</label>
                                     <select name="cursoId" required>
@@ -132,6 +134,7 @@
 
                             <h4>+ Agregar pregunta</h4>
                             <form class="adm-form" method="post" action="/administrativo/examenes/<%= examenDetalle.id %>/preguntas">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                 <div>
                                     <label>Enunciado de la pregunta *</label>
                                     <input type="text" name="enunciado" required placeholder="Escribe la pregunta...">
@@ -165,6 +168,7 @@
 
                             <% if (examenDetalle.preguntas.length > 0) { %>
                                 <form class="adm-form" method="post" action="/administrativo/examenes/<%= examenDetalle.id %>/presentar" style="background: #f8fafc; padding: 14px; border-radius: 10px; margin-bottom: 18px;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                     <strong>Presentar y calificar intento en servidor:</strong>
                                     <div>
                                         <label>Aplicante evaluado</label>

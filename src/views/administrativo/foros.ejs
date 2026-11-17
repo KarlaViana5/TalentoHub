@@ -1,6 +1,7 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 
 <body class="adm-body">
+    <%- include('../partials/navigation', { activo: 'admin' }) %>
     <div class="adm-layout">
         <%- include('partials/menu-admin') %>
 
@@ -68,6 +69,7 @@
                                             <td>
                                                 <% if (s.estado === 'pendiente') { %>
                                                     <form method="post" action="/administrativo/foros/solicitudes/<%= s.id %>/revisar" style="display: flex; gap: 6px; flex-wrap: wrap;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                         <input type="text" name="notasRevision" placeholder="Nota o motivo (obligatorio al rechazar)" style="padding: 6px 8px; border: 1px solid var(--adm-borde); border-radius: 6px; font-size: 12px;">
                                                         <button type="submit" name="accion" value="aprobar" class="adm-btn adm-btn-verde">✓ Aprobar y crear foro</button>
                                                         <button type="submit" name="accion" value="rechazar" class="adm-btn adm-btn-peligro">✕ Rechazar</button>
@@ -109,6 +111,7 @@
                                                 <td><span class="adm-badge adm-badge-<%= f.estado %>"><%= f.estado %></span></td>
                                                 <td>
                                                     <form method="post" action="/administrativo/foros/<%= f.id %>/estado" style="display: inline;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                         <input type="hidden" name="estado" value="<%= f.estado === 'activo' ? 'archivado' : 'activo' %>">
                                                         <button type="submit" class="adm-btn"><%= f.estado === 'activo' ? 'Archivar' : 'Reactivar' %></button>
                                                     </form>
@@ -123,6 +126,7 @@
                         <section class="adm-tarjeta">
                             <h3>+ Crear Nuevo Foro Oficial</h3>
                             <form class="adm-form" method="post" action="/administrativo/foros">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                 <div>
                                     <label>Nombre del foro *</label>
                                     <input type="text" name="nombre" required placeholder="Ej. Habilidades Blandas y Liderazgo">
@@ -171,6 +175,7 @@
                                             <td><span class="adm-badge adm-badge-<%= h.estado %>"><%= h.estado %></span></td>
                                             <td>
                                                 <form method="post" action="/administrativo/foros/hilos/<%= h.id %>/moderacion" style="display: flex; gap: 6px; flex-wrap: wrap;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <button type="submit" name="accion" value="<%= h.fijado ? 'desfijar' : 'fijar' %>" class="adm-btn">
                                                         <%= h.fijado ? 'Desfijar' : '📌 Fijar' %>
                                                     </button>
@@ -211,6 +216,7 @@
                                             <td><span class="adm-badge adm-badge-<%= c.estado %>"><%= c.estado %></span></td>
                                             <td>
                                                 <form method="post" action="/administrativo/foros/comentarios/<%= c.id %>/moderacion" style="margin: 0;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <input type="hidden" name="accion" value="<%= c.estado === 'visible' ? 'ocultar' : 'restaurar' %>">
                                                     <button type="submit" class="adm-btn <%= c.estado === 'visible' ? 'adm-btn-peligro' : 'adm-btn-verde' %>">
                                                         <%= c.estado === 'visible' ? 'Ocultar' : 'Restaurar' %>

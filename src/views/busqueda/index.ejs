@@ -10,9 +10,11 @@
     <link rel="stylesheet" href="/css/busqueda.css">
     <link rel="stylesheet" href="/css/navigation.css">
     <link rel="stylesheet" href="/css/design-system.css">
+    <%- include('../partials/csrf-head') %>
 </head>
 
-<body>
+<body class="th-public th-public--busqueda">
+    <a class="th-ui-skip" href="#contenido-principal">Saltar al contenido</a>
 
     <%- include('../partials/navigation', { activo: 'busqueda' }) %>
 
@@ -21,7 +23,7 @@
          CONTENIDO PRINCIPAL
     ====================================== -->
 
-    <main>
+    <main id="contenido-principal" tabindex="-1">
 
         <!-- PRESENTACIÓN Y BUSCADOR -->
 
@@ -233,7 +235,7 @@
 
 
                         <div class="filter-group">
-                            <label>Rango salarial mensual</label>
+                            <span class="th-ui-field-label">Rango salarial mensual</span>
 
                             <div class="salary-inputs">
 
@@ -241,7 +243,7 @@
                                     <span>$</span>
                                     <input
                                         type="number"
-                                        name="salarioMinimo"
+                                        name="salarioMinimo" aria-label="Salario mínimo mensual"
                                         min="0"
                                         value="<%= filtros.salarioMinimo %>"
                                         placeholder="Mínimo"
@@ -252,7 +254,7 @@
                                     <span>$</span>
                                     <input
                                         type="number"
-                                        name="salarioMaximo"
+                                        name="salarioMaximo" aria-label="Salario máximo mensual"
                                         min="0"
                                         value="<%= filtros.salarioMaximo %>"
                                         placeholder="Máximo"

@@ -1,38 +1,49 @@
-<header class="th-header">
-    <div class="th-header-inner">
-        <a href="/" class="th-brand" aria-label="TalentoHub, inicio">
-            <span class="th-brand-icon"><i class="fa-solid fa-briefcase"></i></span>
-            <span>Talento<span class="th-brand-accent">Hub</span></span>
+<%
+    const navUsuario = locals.usuarioActual || null;
+    const navActivo = locals.activo || '';
+    const navPanel = navUsuario ? ({ candidato: '/candidato', empresa: '/empresarial', admin: '/administrativo' }[navUsuario.rol] || '/') : '/auth/login';
+    const navEnlaces = [
+        { ruta: '/', texto: 'Inicio', clave: 'inicio' },
+        { ruta: '/busqueda', texto: 'Buscar empleos', clave: 'busqueda' },
+        { ruta: '/recursos', texto: 'Recursos', clave: 'recursos' },
+        { ruta: '/foros', texto: 'Foros', clave: 'foros' }
+    ];
+    if (!navUsuario || navUsuario.rol === 'candidato') navEnlaces.push({ ruta: '/candidato', texto: 'Candidato', clave: 'candidato' });
+    if (!navUsuario || navUsuario.rol === 'empresa') navEnlaces.push({ ruta: '/empresarial', texto: 'Empresarial', clave: 'empresa' });
+    if (navUsuario?.rol === 'admin') navEnlaces.push({ ruta: '/administrativo', texto: 'Administración', clave: 'admin' });
+%>
+<header class="th-site-nav" data-site-navigation>
+    <div class="th-site-nav__inner">
+        <a class="th-site-nav__brand" href="/" aria-label="TalentoHub, inicio">
+            <span class="th-site-nav__logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="14" rx="3"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12a21 21 0 0 0 18 0M12 11v4"/></svg>
+            </span>
+            <span>Talento<span class="th-site-nav__accent">Hub</span></span>
         </a>
-
-        <nav class="th-nav" aria-label="Navegación principal">
-            <a href="/" class="<%= activo === 'inicio' ? 'is-active' : '' %>">Inicio</a>
-            <a href="/busqueda" class="<%= activo === 'busqueda' ? 'is-active' : '' %>">Buscar empleos</a>
-            <a href="/recursos" class="<%= activo === 'recursos' ? 'is-active' : '' %>">Recursos</a>
-            <a href="/foros" class="<%= activo === 'foros' ? 'is-active' : '' %>">Comunidad</a>
-
-            <% if (locals.usuarioActual) { %>
-                <% if (usuarioActual.rol === 'candidato') { %>
-                    <a href="/candidato" class="<%= activo === 'candidato' ? 'is-active' : '' %>">Mi panel</a>
-                <% } else if (usuarioActual.rol === 'empresa') { %>
-                    <a href="/empresarial" class="<%= activo === 'empresa' ? 'is-active' : '' %>">Panel empresa</a>
-                <% } else if (usuarioActual.rol === 'admin') { %>
-                    <a href="/administrativo" class="<%= activo === 'admin' ? 'is-active' : '' %>">Administración</a>
+        <button class="th-site-nav__toggle" type="button" aria-controls="th-navigation-panel" aria-expanded="false" aria-label="Abrir men? principal" hidden>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            <span>Men?</span>
+        </button>
+        <div class="th-site-nav__panel" id="th-navigation-panel">
+            <nav class="th-site-nav__links" aria-label="Navegación principal">
+                <% navEnlaces.forEach(enlace => { %>
+                    <a class="th-site-nav__link" href="<%= enlace.ruta %>" <% if (navActivo === enlace.clave) { %>aria-current="page"<% } %>><%= enlace.texto %></a>
+                <% }); %>
+            </nav>
+            <div class="th-site-nav__actions">
+                <% if (navUsuario) { %>
+                    <a class="th-site-nav__profile" href="<%= navPanel %>" <%= navActivo === 'perfil' ? 'aria-current=page' : '' %>>
+                        <span class="th-site-nav__avatar" aria-hidden="true"><%= String(navUsuario.nombreMostrar || navUsuario.nombre || 'U').trim().charAt(0).toUpperCase() %></span>
+                        <span class="th-site-nav__identity"><strong>Perfil</strong><span><%= navUsuario.nombreMostrar || navUsuario.nombre || navUsuario.rolEtiqueta %></span></span>
+                    </a>
+                    <form method="post" action="/auth/logout" class="th-logout-form">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>"><button type="submit" class="th-site-nav__button th-site-nav__button--quiet" >Cerrar sesión</button></form>
+                <% } else { %>
+                    <a class="th-site-nav__button th-site-nav__button--quiet" href="/auth/login" <% if (navActivo === 'login') { %>aria-current="page"<% } %>>Iniciar sesión</a>
+                    <a class="th-site-nav__button th-site-nav__button--primary" href="/auth/registro" <% if (navActivo === 'registro') { %>aria-current="page"<% } %>>Registrarse</a>
                 <% } %>
-            <% } %>
-        </nav>
-
-        <div class="th-actions">
-            <% if (locals.usuarioActual) { %>
-                <span class="th-user">
-                    <%= usuarioActual.nombreMostrar %>
-                    <span><%= usuarioActual.rolEtiqueta %></span>
-                </span>
-                <a href="/auth/logout" class="th-button th-button-danger">Salir</a>
-            <% } else { %>
-                <a href="/auth/login" class="th-button th-button-outline">Iniciar sesión</a>
-                <a href="/auth/registro" class="th-button th-button-primary">Registrarse</a>
-            <% } %>
+            </div>
         </div>
     </div>
 </header>
+<script src="/js/navigation.js" defer></script>

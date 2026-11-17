@@ -27,7 +27,7 @@
                 <a class="for-btn" href="/foros/<%= foro.slug %>?<%= queryActor %>">← Volver al foro</a>
             <% } else { %>
                 <form class="for-form" method="post" action="/foros/<%= foro.slug %>/hilos">
-                    <input type="hidden" name="actor" value="<%= actorActual.clave %>">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
 
                     <div>
                         <label for="foroSlug">Espacio de destino *</label>

@@ -1,6 +1,7 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 
 <body>
+    <%- include('../partials/navigation', { activo: 'empresa' }) %>
 
     <%- include('partials/menu', { activo: modo === 'nueva' ? 'publicar' : 'vacantes' }) %>
 
@@ -24,6 +25,7 @@
 
             <div class="emp-publicar">
                 <form id="form-vacante" class="emp-form emp-tarjeta emp-form-pasos" method="post" action="<%= accion %>" novalidate>
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
 
                     <% if (errores.length > 0) { %>
                         <div class="emp-errores">

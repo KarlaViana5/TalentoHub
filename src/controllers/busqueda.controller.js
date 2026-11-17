@@ -1,4 +1,6 @@
+const { registrarError } = require('../utils/logger');
 const {
+    registrarVista,
     buscarVacantes,
     obtenerVacantePorId,
     obtenerVacantesSimilares,
@@ -58,8 +60,8 @@ async function mostrarResultados(req, res) {
             totalPaginas
         });
     } catch (error) {
-        console.error('Error al mostrar resultados de búsqueda:', error);
-        res.status(500).send('Ocurrió un error al consultar las vacantes. Inténtalo nuevamente.');
+        registrarError(error, { scope: 'controller:busqueda', req });
+        throw error;
     }
 }
 
@@ -88,6 +90,7 @@ async function mostrarDetalle(req, res) {
                 : Promise.resolve(null)
         ]);
 
+        res.locals.registroVistaUrl = `/busqueda/empleo/${vacante.id}/vista`;
         res.render('busqueda/detalle', {
             titulo: `${vacante.titulo} | TalentoHub`,
             vacante,
@@ -97,8 +100,8 @@ async function mostrarDetalle(req, res) {
             error: req.query.error || null
         });
     } catch (error) {
-        console.error('Error al mostrar el detalle de la vacante:', error);
-        res.status(500).send('Ocurrió un error al consultar el detalle del empleo.');
+        registrarError(error, { scope: 'controller:busqueda', req });
+        throw error;
     }
 }
 
@@ -129,7 +132,10 @@ async function reportarVacante(req, res) {
     }
 }
 
+async function registrarVistaVacante(req, res) { await registrarVista(req.params.id); res.sendStatus(204); }
+
 module.exports = {
+    registrarVistaVacante,
     mostrarResultados,
     mostrarDetalle,
     postularVacante,

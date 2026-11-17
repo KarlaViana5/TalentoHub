@@ -1,0 +1,9 @@
+<%- include('../partials/head', { titulo }) %>
+<body class="auth-body">
+<%- include('../partials/navigation', { activo: '' }) %>
+<main class="auth-contenedor"><section class="auth-card">
+<h1>Cerrar sesión</h1><p>Confirma que deseas cerrar tu sesión.</p>
+<form method="post" action="/auth/logout">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>"><button type="submit" class="auth-btn auth-btn-primario">Cerrar sesión</button></form>
+<a href="<%= locals.usuarioActual ? usuarioActual.rutaPanel : '/' %>">Volver</a>
+</section></main></body></html>

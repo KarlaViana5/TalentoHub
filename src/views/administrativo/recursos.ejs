@@ -1,6 +1,7 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 
 <body class="adm-body">
+    <%- include('../partials/navigation', { activo: 'admin' }) %>
     <div class="adm-layout">
         <%- include('partials/menu-admin') %>
 
@@ -76,10 +77,12 @@
                                                         <i class="fa-solid fa-pen" aria-hidden="true"></i> Editar
                                                     </a>
                                                     <form method="post" action="/administrativo/recursos/<%= r.id %>/estado" style="margin: 0;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                         <input type="hidden" name="estado" value="<%= r.estado === 'publicado' ? 'archivado' : 'publicado' %>">
                                                         <button type="submit" class="adm-btn"><%= r.estado === 'publicado' ? 'Archivar' : 'Publicar' %></button>
                                                     </form>
                                                     <form method="post" action="/administrativo/recursos/<%= r.id %>/destacado" style="margin: 0;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                         <button type="submit" class="adm-btn" title="Destacar"><i class="fa-solid fa-star" aria-hidden="true"></i></button>
                                                     </form>
                                                 </div>
@@ -103,6 +106,7 @@
                         </header>
                         <div class="adm-modal-form-body">
                         <form class="adm-form" method="post" action="<%= recursoEditar ? '/administrativo/recursos/' + recursoEditar.id + '/editar' : (esArticulos ? '/administrativo/articulos' : '/administrativo/recursos') %>">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                             <div>
                                 <label>Título del material *</label>
                                 <input type="text" name="titulo" value="<%= recursoEditar ? recursoEditar.titulo : '' %>" required placeholder="Ej. Guía práctica para entrevistas técnicas">
@@ -168,6 +172,7 @@
 
                         <h4>+ Crear nueva categoría de biblioteca</h4>
                         <form class="adm-filtros" method="post" action="/administrativo/recursos/categorias">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                             <input type="text" name="nombre" placeholder="Nombre de la categoría" required style="flex: 1;">
                             <input type="text" name="descripcion" placeholder="Descripción breve" style="flex: 1;">
                             <button type="submit" class="adm-btn">Agregar categoría</button>

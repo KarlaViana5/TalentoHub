@@ -1,6 +1,7 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 
 <body>
+    <%- include('../partials/navigation', { activo: 'empresa' }) %>
 
     <%- include('partials/menu', { activo: 'postulaciones' }) %>
 
@@ -34,6 +35,7 @@
 
                 <div class="emp-perfil-acciones">
                     <form method="post" action="/empresarial/candidatos/<%= postulacion.id %>/estado">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                         <select name="estado" class="emp-select-estado emp-estado-<%= postulacion.estado.toLowerCase() %>" onchange="this.form.submit()" title="Cambiar estado">
                             <% estados.forEach(estado => { %>
                                 <option <%= postulacion.estado === estado ? 'selected' : '' %>><%= estado %></option>
@@ -45,6 +47,7 @@
                         <% if (postulacion.estado !== 'Rechazado') { %>
                             <form method="post" action="/empresarial/candidatos/<%= postulacion.id %>/estado"
                                   onsubmit="return confirm('¿Rechazar a <%= candidato.nombre %>?');">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                 <input type="hidden" name="estado" value="Rechazado">
                                 <button class="emp-btn emp-btn-peligro" type="submit">Rechazar</button>
                             </form>
@@ -128,6 +131,7 @@
                         <% }) %>
 
                         <form class="emp-form emp-nota-form" method="post" action="/empresarial/candidatos/<%= postulacion.id %>/notas">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                             <textarea name="texto" placeholder="Escribe una nota..." required maxlength="1000"></textarea>
                             <button class="emp-btn emp-btn-primario" type="submit">Agregar nota</button>
                         </form>

@@ -1,0 +1,1792 @@
+[
+  {
+    "width": 320,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 6,
+    "page": "inicio",
+    "contrast": [
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 6,
+    "page": "inicio",
+    "contrast": [
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      }
+    ]
+  },
+  {
+    "width": 768,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 6,
+    "page": "inicio",
+    "contrast": [
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      }
+    ]
+  },
+  {
+    "width": 1024,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 6,
+    "page": "inicio",
+    "contrast": [
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 6,
+    "page": "inicio",
+    "contrast": [
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "vacante-modalidad",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 4.758842787868666
+      }
+    ]
+  },
+  {
+    "width": 320,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion",
+          "orden",
+          "experiencia",
+          "sector",
+          "modalidad",
+          "tipoContrato",
+          "salarioMinimo",
+          "salarioMaximo",
+          "fechaPublicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 3,
+    "page": "busqueda",
+    "contrast": [
+      {
+        "element": "search-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion",
+          "orden",
+          "experiencia",
+          "sector",
+          "modalidad",
+          "tipoContrato",
+          "salarioMinimo",
+          "salarioMaximo",
+          "fechaPublicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 3,
+    "page": "busqueda",
+    "contrast": [
+      {
+        "element": "search-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 768,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion",
+          "orden",
+          "experiencia",
+          "sector",
+          "modalidad",
+          "tipoContrato",
+          "salarioMinimo",
+          "salarioMaximo",
+          "fechaPublicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 3,
+    "page": "busqueda",
+    "contrast": [
+      {
+        "element": "search-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 1024,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion",
+          "orden",
+          "experiencia",
+          "sector",
+          "modalidad",
+          "tipoContrato",
+          "salarioMinimo",
+          "salarioMaximo",
+          "fechaPublicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 3,
+    "page": "busqueda",
+    "contrast": [
+      {
+        "element": "search-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion",
+          "orden",
+          "experiencia",
+          "sector",
+          "modalidad",
+          "tipoContrato",
+          "salarioMinimo",
+          "salarioMaximo",
+          "fechaPublicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 3,
+    "page": "busqueda",
+    "contrast": [
+      {
+        "element": "search-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "job-sector",
+        "ratio": 7.790760804749185
+      },
+      {
+        "element": "job-description",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "details-button",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 320,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "post",
+        "action": "/auth/logout",
+        "csrf": true,
+        "names": [
+          "_csrf"
+        ]
+      },
+      {
+        "method": "post",
+        "action": "/busqueda/empleo/101/postular",
+        "csrf": true,
+        "names": [
+          "_csrf"
+        ]
+      },
+      {
+        "method": "post",
+        "action": "/busqueda/empleo/101/reportar",
+        "csrf": true,
+        "names": [
+          "_csrf",
+          "motivo",
+          "descripcion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "empleo",
+    "contrast": [
+      {
+        "element": "detail-publication",
+        "ratio": 6.148951925931916
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "post",
+        "action": "/auth/logout",
+        "csrf": true,
+        "names": [
+          "_csrf"
+        ]
+      },
+      {
+        "method": "post",
+        "action": "/busqueda/empleo/101/postular",
+        "csrf": true,
+        "names": [
+          "_csrf"
+        ]
+      },
+      {
+        "method": "post",
+        "action": "/busqueda/empleo/101/reportar",
+        "csrf": true,
+        "names": [
+          "_csrf",
+          "motivo",
+          "descripcion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "empleo",
+    "contrast": [
+      {
+        "element": "detail-publication",
+        "ratio": 6.148951925931916
+      }
+    ]
+  },
+  {
+    "width": 768,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "post",
+        "action": "/auth/logout",
+        "csrf": true,
+        "names": [
+          "_csrf"
+        ]
+      },
+      {
+        "method": "post",
+        "action": "/busqueda/empleo/101/postular",
+        "csrf": true,
+        "names": [
+          "_csrf"
+        ]
+      },
+      {
+        "method": "post",
+        "action": "/busqueda/empleo/101/reportar",
+        "csrf": true,
+        "names": [
+          "_csrf",
+          "motivo",
+          "descripcion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "empleo",
+    "contrast": [
+      {
+        "element": "detail-publication",
+        "ratio": 6.148951925931916
+      }
+    ]
+  },
+  {
+    "width": 1024,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "post",
+        "action": "/auth/logout",
+        "csrf": true,
+        "names": [
+          "_csrf"
+        ]
+      },
+      {
+        "method": "post",
+        "action": "/busqueda/empleo/101/postular",
+        "csrf": true,
+        "names": [
+          "_csrf"
+        ]
+      },
+      {
+        "method": "post",
+        "action": "/busqueda/empleo/101/reportar",
+        "csrf": true,
+        "names": [
+          "_csrf",
+          "motivo",
+          "descripcion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "empleo",
+    "contrast": [
+      {
+        "element": "detail-publication",
+        "ratio": 6.148951925931916
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "post",
+        "action": "/auth/logout",
+        "csrf": true,
+        "names": [
+          "_csrf"
+        ]
+      },
+      {
+        "method": "post",
+        "action": "/busqueda/empleo/101/postular",
+        "csrf": true,
+        "names": [
+          "_csrf"
+        ]
+      },
+      {
+        "method": "post",
+        "action": "/busqueda/empleo/101/reportar",
+        "csrf": true,
+        "names": [
+          "_csrf",
+          "motivo",
+          "descripcion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "empleo",
+    "contrast": [
+      {
+        "element": "detail-publication",
+        "ratio": 6.148951925931916
+      }
+    ]
+  },
+  {
+    "width": 320,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/recursos",
+        "csrf": false,
+        "names": [
+          "q",
+          "categoria",
+          "tipo",
+          "fecha",
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 3,
+    "page": "recursos",
+    "contrast": [
+      {
+        "element": "btn-aplicar",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/recursos",
+        "csrf": false,
+        "names": [
+          "q",
+          "categoria",
+          "tipo",
+          "fecha",
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 3,
+    "page": "recursos",
+    "contrast": [
+      {
+        "element": "btn-aplicar",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      }
+    ]
+  },
+  {
+    "width": 768,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/recursos",
+        "csrf": false,
+        "names": [
+          "q",
+          "categoria",
+          "tipo",
+          "fecha",
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 3,
+    "page": "recursos",
+    "contrast": [
+      {
+        "element": "btn-aplicar",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      }
+    ]
+  },
+  {
+    "width": 1024,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/recursos",
+        "csrf": false,
+        "names": [
+          "q",
+          "categoria",
+          "tipo",
+          "fecha",
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 3,
+    "page": "recursos",
+    "contrast": [
+      {
+        "element": "btn-aplicar",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/recursos",
+        "csrf": false,
+        "names": [
+          "q",
+          "categoria",
+          "tipo",
+          "fecha",
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 3,
+    "page": "recursos",
+    "contrast": [
+      {
+        "element": "btn-aplicar",
+        "ratio": 6.261205964435832
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      }
+    ]
+  },
+  {
+    "width": 320,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 2,
+    "page": "articulo",
+    "contrast": [
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 2,
+    "page": "articulo",
+    "contrast": [
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      }
+    ]
+  },
+  {
+    "width": 768,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 2,
+    "page": "articulo",
+    "contrast": [
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      }
+    ]
+  },
+  {
+    "width": 1024,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 2,
+    "page": "articulo",
+    "contrast": [
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 2,
+    "page": "articulo",
+    "contrast": [
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      },
+      {
+        "element": "recurso-resumen",
+        "ratio": 6.270732921033949
+      }
+    ]
+  },
+  {
+    "width": 320,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "inicio-vacio",
+    "contrast": []
+  },
+  {
+    "width": 390,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "inicio-vacio",
+    "contrast": []
+  },
+  {
+    "width": 768,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "inicio-vacio",
+    "contrast": []
+  },
+  {
+    "width": 1024,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "inicio-vacio",
+    "contrast": []
+  },
+  {
+    "width": 1440,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "inicio-vacio",
+    "contrast": []
+  },
+  {
+    "width": 320,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion",
+          "orden",
+          "experiencia",
+          "sector",
+          "modalidad",
+          "tipoContrato",
+          "salarioMinimo",
+          "salarioMaximo",
+          "fechaPublicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "busqueda-vacio",
+    "contrast": [
+      {
+        "element": "search-button",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion",
+          "orden",
+          "experiencia",
+          "sector",
+          "modalidad",
+          "tipoContrato",
+          "salarioMinimo",
+          "salarioMaximo",
+          "fechaPublicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "busqueda-vacio",
+    "contrast": [
+      {
+        "element": "search-button",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 768,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion",
+          "orden",
+          "experiencia",
+          "sector",
+          "modalidad",
+          "tipoContrato",
+          "salarioMinimo",
+          "salarioMaximo",
+          "fechaPublicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "busqueda-vacio",
+    "contrast": [
+      {
+        "element": "search-button",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 1024,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion",
+          "orden",
+          "experiencia",
+          "sector",
+          "modalidad",
+          "tipoContrato",
+          "salarioMinimo",
+          "salarioMaximo",
+          "fechaPublicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "busqueda-vacio",
+    "contrast": [
+      {
+        "element": "search-button",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "q",
+          "ubicacion",
+          "orden",
+          "experiencia",
+          "sector",
+          "modalidad",
+          "tipoContrato",
+          "salarioMinimo",
+          "salarioMaximo",
+          "fechaPublicacion"
+        ]
+      },
+      {
+        "method": "get",
+        "action": "/busqueda",
+        "csrf": false,
+        "names": [
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "busqueda-vacio",
+    "contrast": [
+      {
+        "element": "search-button",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 320,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/recursos",
+        "csrf": false,
+        "names": [
+          "q",
+          "categoria",
+          "tipo",
+          "fecha",
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "recursos-vacio",
+    "contrast": [
+      {
+        "element": "btn-aplicar",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/recursos",
+        "csrf": false,
+        "names": [
+          "q",
+          "categoria",
+          "tipo",
+          "fecha",
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "recursos-vacio",
+    "contrast": [
+      {
+        "element": "btn-aplicar",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 768,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/recursos",
+        "csrf": false,
+        "names": [
+          "q",
+          "categoria",
+          "tipo",
+          "fecha",
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "recursos-vacio",
+    "contrast": [
+      {
+        "element": "btn-aplicar",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 1024,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/recursos",
+        "csrf": false,
+        "names": [
+          "q",
+          "categoria",
+          "tipo",
+          "fecha",
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "recursos-vacio",
+    "contrast": [
+      {
+        "element": "btn-aplicar",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [
+      {
+        "method": "get",
+        "action": "/recursos",
+        "csrf": false,
+        "names": [
+          "q",
+          "categoria",
+          "tipo",
+          "fecha",
+          "orden"
+        ]
+      }
+    ],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "recursos-vacio",
+    "contrast": [
+      {
+        "element": "btn-aplicar",
+        "ratio": 6.261205964435832
+      }
+    ]
+  },
+  {
+    "width": 320,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "articulo-vacio",
+    "contrast": []
+  },
+  {
+    "width": 390,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "articulo-vacio",
+    "contrast": []
+  },
+  {
+    "width": 768,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "articulo-vacio",
+    "contrast": []
+  },
+  {
+    "width": 1024,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "articulo-vacio",
+    "contrast": []
+  },
+  {
+    "width": 1440,
+    "overflow": false,
+    "navbar": 1,
+    "h1": 1,
+    "forms": [],
+    "unlabelled": [],
+    "outside": [],
+    "cards": 0,
+    "page": "articulo-vacio",
+    "contrast": []
+  }
+]

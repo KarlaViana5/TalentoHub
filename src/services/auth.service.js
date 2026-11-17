@@ -21,7 +21,7 @@ async function hashearClave(clave) {
 }
 
 async function verificarClave(clave, guardada) {
-    if (!clave || !guardada || !guardada.includes(':')) return false;
+    if (typeof clave !== 'string' || typeof guardada !== 'string' || !clave || !guardada.includes(':')) return false;
     const [sal, hashHex] = guardada.split(':');
     if (!sal || !/^[a-f0-9]{128}$/.test(hashHex)) return false;
     const calculada = await derivar(String(clave), sal, 64);
@@ -30,6 +30,7 @@ async function verificarClave(clave, guardada) {
 
 function leerCookieSesion(req) {
     const cookies = req.get('cookie') || '';
+    if (cookies.split(';').filter(s => s.trim().startsWith(COOKIE_SESION + '=')).length !== 1) return null;
     const match = cookies.match(new RegExp(`(?:^|;\\s*)${COOKIE_SESION}=([a-f0-9]{64})(?:;|$)`));
     return match ? match[1] : null;
 }
@@ -58,70 +59,11 @@ function etiquetaRol(rol) {
 }
 
 async function asegurarEsquemaAuth(cliente = pool) {
-    await cliente.query(`
-        CREATE TABLE IF NOT EXISTS usuarios_cuenta (
-            id_usuario BIGSERIAL PRIMARY KEY,
-            nombre VARCHAR(150) NOT NULL,
-            correo VARCHAR(180) UNIQUE NOT NULL,
-            clave_hash TEXT NOT NULL,
-            rol VARCHAR(20) NOT NULL CHECK (rol IN ('admin', 'candidato', 'empresa')),
-            candidato_id BIGINT UNIQUE REFERENCES candidatos(id_candidato) ON DELETE CASCADE,
-            empresa_id BIGINT REFERENCES empresas(id_empresa) ON DELETE CASCADE,
-            activo BOOLEAN NOT NULL DEFAULT TRUE,
-            fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        );
-
-        CREATE TABLE IF NOT EXISTS sesiones_auth (
-            token_hash VARCHAR(128) PRIMARY KEY,
-            usuario_id BIGINT NOT NULL REFERENCES usuarios_cuenta(id_usuario) ON DELETE CASCADE,
-            vence_en TIMESTAMP NOT NULL,
-            fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        );
-    `);
-
-    const { rows: conteo } = await cliente.query('SELECT COUNT(*)::int AS total FROM usuarios_cuenta');
-    if (conteo[0].total === 0) {
-        const [hashAdmin, hashCandidato, hashEmpresa] = await Promise.all([
-            hashearClave('Admin123!'),
-            hashearClave('Candidato123!'),
-            hashearClave('Empresa123!')
-        ]);
-
-        // 1. Cuenta Administrador Principal
-        await cliente.query(
-            `INSERT INTO usuarios_cuenta (nombre, correo, clave_hash, rol, activo)
-             VALUES ($1, $2, $3, 'admin', TRUE)
-             ON CONFLICT (correo) DO NOTHING`,
-            ['Administrador Principal', 'admin@talentohub.edu.sv', hashAdmin]
-        );
-
-        // 2. Cuentas para candidatos existentes
-        const { rows: candidatos } = await cliente.query(
-            'SELECT id_candidato, nombre, correo FROM candidatos ORDER BY id_candidato ASC'
-        );
-        for (const cand of candidatos) {
-            const correoLimpio = (cand.correo || `candidato${cand.id_candidato}@talentohub.edu.sv`).trim().toLowerCase();
-            await cliente.query(
-                `INSERT INTO usuarios_cuenta (nombre, correo, clave_hash, rol, candidato_id, activo)
-                 VALUES ($1, $2, $3, 'candidato', $4, TRUE)
-                 ON CONFLICT (correo) DO NOTHING`,
-                [cand.nombre, correoLimpio, hashCandidato, cand.id_candidato]
-            );
-        }
-
-        // 3. Cuentas para empresas existentes
-        const { rows: empresas } = await cliente.query(
-            'SELECT id_empresa, nombre, representante, correo FROM empresas ORDER BY id_empresa ASC'
-        );
-        for (const emp of empresas) {
-            const correoLimpio = (emp.correo || `contacto@empresa${emp.id_empresa}.com.sv`).trim().toLowerCase();
-            await cliente.query(
-                `INSERT INTO usuarios_cuenta (nombre, correo, clave_hash, rol, empresa_id, activo)
-                 VALUES ($1, $2, $3, 'empresa', $4, TRUE)
-                 ON CONFLICT (correo) DO NOTHING`,
-                [emp.representante || emp.nombre, correoLimpio, hashEmpresa, emp.id_empresa]
-            );
-        }
+    // Read-only prerequisite check. Never create accounts or run DDL on normal startup.
+    const { rows } = await cliente.query("SELECT to_regclass('public.usuarios_cuenta') AS cuentas, to_regclass('public.sesiones_auth') AS sesiones");
+    if (!rows[0]?.cuentas || !rows[0]?.sesiones) {
+        const error = new Error('El esquema de autenticacion debe estar preparado por el administrador.');
+        error.status = 503; throw error;
     }
 }
 
@@ -159,7 +101,9 @@ async function obtenerUsuarioPorToken(token) {
     );
 
     const usuario = rows[0];
-    if (!usuario) return null;
+    if (!usuario || usuario.candidatoEstado === 'suspendido' || usuario.empresaAprobacion === 'suspendida') return null;
+    if (usuario.rol === 'candidato' && !usuario.candidatoId) return null;
+    if (usuario.rol === 'empresa' && !usuario.empresaId) return null;
 
     return {
         ...usuario,
@@ -171,12 +115,12 @@ async function obtenerUsuarioPorToken(token) {
     };
 }
 
-async function crearSesionParaUsuario(usuarioId) {
+async function crearSesionParaUsuario(usuarioId, cliente = pool) {
     const token = randomBytes(32).toString('hex');
     const tokenHash = hashToken(token);
 
-    await pool.query('DELETE FROM sesiones_auth WHERE vence_en <= CURRENT_TIMESTAMP');
-    await pool.query(
+    await cliente.query('DELETE FROM sesiones_auth WHERE vence_en <= CURRENT_TIMESTAMP');
+    await cliente.query(
         `INSERT INTO sesiones_auth (token_hash, usuario_id, vence_en)
          VALUES ($1, $2, CURRENT_TIMESTAMP + INTERVAL '24 hours')`,
         [tokenHash, Number(usuarioId)]
@@ -189,7 +133,7 @@ async function autenticarCredenciales(correoRaw, claveRaw) {
     const correo = texto(correoRaw).toLowerCase();
     const clave = String(claveRaw ?? '');
 
-    if (!correo || !clave) {
+    if (typeof correoRaw !== 'string' || typeof claveRaw !== 'string' || !correo || correo.length > 254 || !clave || clave.length > 256) {
         throw new Error('Ingresa tu correo electrónico y contraseña.');
     }
 
@@ -203,6 +147,7 @@ async function autenticarCredenciales(correoRaw, claveRaw) {
             u.activo,
             u.candidato_id::int AS "candidatoId",
             u.empresa_id::int AS "empresaId",
+            e.estado AS "empresaEstado",
             COALESCE(c.estado, 'activo') AS "candidatoEstado",
             COALESCE(e.estado_aprobacion, 'aprobada') AS "empresaAprobacion"
          FROM usuarios_cuenta u
@@ -214,7 +159,9 @@ async function autenticarCredenciales(correoRaw, claveRaw) {
     );
 
     const usuario = rows[0];
-    if (!usuario || !await verificarClave(clave, usuario.claveHash)) {
+    const claveComparacion = usuario?.claveHash || ('0'.repeat(32) + ':' + '0'.repeat(128));
+    const claveCorrecta = await verificarClave(clave, claveComparacion);
+    if (!usuario || !claveCorrecta) {
         throw new Error('Correo electrónico o contraseña incorrectos.');
     }
 
@@ -230,24 +177,10 @@ async function autenticarCredenciales(correoRaw, claveRaw) {
     };
 }
 
-async function autenticarDemoPorUsuarioId(usuarioId) {
-    const { rows } = await pool.query(
-        `SELECT id_usuario::int AS id, nombre, correo, rol, activo
-         FROM usuarios_cuenta
-         WHERE id_usuario = $1 AND activo = TRUE
-         LIMIT 1`,
-        [Number(usuarioId)]
-    );
-    const usuario = rows[0];
-    if (!usuario) {
-        throw new Error('La cuenta de demostración seleccionada no está disponible.');
-    }
-    const token = await crearSesionParaUsuario(usuario.id);
-    return {
-        token,
-        usuario,
-        redireccion: rutaInicioPorRol(usuario.rol)
-    };
+async function autenticarDemoPorUsuarioId() {
+    // Kept as a fail-closed compatibility export; a user ID is not authentication.
+    const error = new Error('El acceso de demostracion sin credenciales esta deshabilitado.');
+    error.status = 403; throw error;
 }
 
 async function registrarNuevoUsuario(datos = {}) {
@@ -259,10 +192,12 @@ async function registrarNuevoUsuario(datos = {}) {
     const telefono = texto(datos.telefono);
     const ubicacion = texto(datos.ubicacion) || 'San Salvador, El Salvador';
 
-    if (!nombre) throw new Error('El nombre completo o de contacto es obligatorio.');
-    if (!correo || !/^\S+@\S+\.\S+$/.test(correo)) throw new Error('Ingresa un correo electrónico válido.');
-    if (clave.length < 6) throw new Error('La contraseña debe tener al menos 6 caracteres.');
-    if (confirmarClave && clave !== confirmarClave) throw new Error('Las contraseñas no coinciden.');
+    if (!['candidato', 'empresa'].includes(datos.rol)) throw new Error('Selecciona un tipo de cuenta valido.');
+    if (typeof datos.nombre !== 'string' || typeof datos.correo !== 'string') throw new Error('Datos de registro invalidos.');
+    if (!nombre || nombre.length > 150) throw new Error('El nombre completo o de contacto es obligatorio.');
+    if (correo.length > 180 || !correo || !/^\S+@\S+\.\S+$/.test(correo)) throw new Error('Ingresa un correo electrónico válido.');
+    if (typeof datos.clave !== 'string' || clave.length < 12 || clave.length > 256) throw new Error('La contraseña debe tener entre 12 y 256 caracteres.');
+    if (clave !== confirmarClave) throw new Error('Las contraseñas no coinciden.');
 
     const { rows: existente } = await pool.query(
         'SELECT id_usuario FROM usuarios_cuenta WHERE LOWER(correo) = $1 LIMIT 1',
@@ -284,7 +219,8 @@ async function registrarNuevoUsuario(datos = {}) {
         if (rol === 'candidato') {
             const cargo = texto(datos.cargo) || 'Profesional en búsqueda activa';
             const empresaActual = texto(datos.empresaActual) || null;
-            const aniosExperiencia = Math.max(0, Number(datos.aniosExperiencia) || 0);
+            const aniosExperiencia = Number(datos.aniosExperiencia || 0);
+            if (!Number.isInteger(aniosExperiencia) || aniosExperiencia < 0 || aniosExperiencia > 80) throw new Error('Experiencia invalida.');
             const habilidades = texto(datos.habilidades)
                 ? texto(datos.habilidades).split(',').map(h => h.trim()).filter(Boolean)
                 : ['Comunicación', 'Trabajo en equipo'];
@@ -302,26 +238,26 @@ async function registrarNuevoUsuario(datos = {}) {
         } else {
             const nombreEmpresa = texto(datos.nombreEmpresa) || nombre;
             const sector = texto(datos.sector) || 'Tecnología';
-            const nit = texto(datos.nit) || '0614-100226-101-1';
-            const razonSocial = texto(datos.razonSocial) || `${nombreEmpresa}, S.A. de C.V.`;
+            const nit = texto(datos.nit);
+            if (!nit || nit.length > 50) throw new Error('Ingresa el NIT real de la empresa.');
+            const razonSocial = texto(datos.razonSocial) || nombreEmpresa;
             const descripcion = texto(datos.descripcion) || 'Empresa registrada en TalentoHub para publicación de oportunidades laborales.';
 
             const { rows: empRows } = await cliente.query(
                 `INSERT INTO empresas (
                     nombre, razon_social, nit, representante, correo, telefono,
-                    sector, ubicacion, descripcion, estado, estado_aprobacion, estado_verificacion,
-                    aprobada_en, aprobada_por
+                    sector, ubicacion, descripcion, estado, estado_aprobacion, estado_verificacion
                  )
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'activa', 'aprobada', 'verificada', CURRENT_TIMESTAMP, 'Registro Verificado')
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'pendiente', 'pendiente', 'no_verificada')
                  RETURNING id_empresa::int AS id`,
                 [nombreEmpresa, razonSocial, nit, nombre, correo, telefono || null, sector, ubicacion, descripcion]
             );
             empresaId = empRows[0].id;
 
             await cliente.query(
-                `INSERT INTO solicitudes_empresas (empresa_id, documento_url, notas_solicitante, estado, motivo_decision, revisado_por, fecha_revision)
-                 VALUES ($1, $2, $3, 'aprobada', 'Registro empresarial verificado inicialmente.', 'Sistema TalentoHub', CURRENT_TIMESTAMP)`,
-                [empresaId, `https://talentohub.edu.sv/docs/registro-mercantil-${empresaId}.pdf`, `Registro de empresa ${nombreEmpresa}`]
+                `INSERT INTO solicitudes_empresas (empresa_id, documento_url, notas_solicitante, estado)
+                 VALUES ($1, NULL, $2, 'pendiente')`,
+                [empresaId, `Registro empresarial pendiente de revision: ${nombreEmpresa}`]
             );
         }
 
@@ -332,10 +268,9 @@ async function registrarNuevoUsuario(datos = {}) {
             [nombre, correo, claveHash, rol, candidatoId, empresaId]
         );
 
-        await cliente.query('COMMIT');
-
         const nuevoUsuario = usrRows[0];
-        const token = await crearSesionParaUsuario(nuevoUsuario.id);
+        const token = await crearSesionParaUsuario(nuevoUsuario.id, cliente);
+        await cliente.query('COMMIT');
 
         return {
             token,

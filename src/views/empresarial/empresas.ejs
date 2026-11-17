@@ -1,6 +1,7 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 
 <body>
+    <%- include('../partials/navigation', { activo: 'empresa' }) %>
 
     <%- include('partials/menu', { activo: 'empresas' }) %>
 
@@ -69,12 +70,14 @@
 
                                             <% if (empresa.estado === 'Inactiva') { %>
                                                 <form method="post" action="/empresarial/empresas/<%= empresa.id %>/estado">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <input type="hidden" name="estado" value="Activa">
                                                     <button class="emp-btn emp-icono" type="submit" title="Activar">↻</button>
                                                 </form>
                                             <% } else { %>
                                                 <form method="post" action="/empresarial/empresas/<%= empresa.id %>/estado"
                                                       onsubmit="return confirm('¿Seguro que deseas desactivar esta empresa?');">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                     <input type="hidden" name="estado" value="Inactiva">
                                                     <button class="emp-btn emp-icono emp-btn-peligro" type="submit" title="Desactivar">⊘</button>
                                                 </form>
@@ -126,6 +129,7 @@
                 <% } else { %>
                     <form class="emp-form" method="post"
                           action="/empresarial/empresas<%= panel.modo === 'editar' ? '/' + panel.empresa.id : '' %>">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
 
                         <% if (panel.errores.length > 0) { %>
                             <div class="emp-errores">

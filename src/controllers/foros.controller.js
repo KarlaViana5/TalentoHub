@@ -1,3 +1,4 @@
+const { registrarError } = require('../utils/logger');
 const forosService = require('../services/foros.service');
 
 function formatearFechaRelativa(fecha) {
@@ -18,41 +19,21 @@ function formatearFechaRelativa(fecha) {
     });
 }
 
-function queryActor(actor) {
-    return actor && actor.clave ? `actor=${encodeURIComponent(actor.clave)}` : '';
-}
+function queryActor() { return ''; }
 
 const forosController = {
     cargarContextoActor: async (req, res, next) => {
         try {
-            let clavePorSesion = 'visitante';
-            if (req.usuario) {
-                if (req.usuario.rol === 'admin') {
-                    clavePorSesion = 'admin';
-                } else if (req.usuario.rol === 'empresa' && req.usuario.empresaId) {
-                    clavePorSesion = `empresa:${req.usuario.empresaId}`;
-                } else if (req.usuario.rol === 'candidato' && req.usuario.candidatoId) {
-                    clavePorSesion = `candidato:${req.usuario.candidatoId}`;
-                }
-            }
-
-            const queryEfectivo = {
-                ...req.query,
-                actor: req.query.actor || req.body?.actor || clavePorSesion
-            };
-
-            const [actor, actoresDisponibles] = await Promise.all([
-                forosService.resolverActor(queryEfectivo, req.body),
-                forosService.listarActoresDisponibles()
-            ]);
+            const actor = await forosService.resolverActor(req.usuario || null);
+            const actoresDisponibles = { candidatos: [], empresas: [] };
             req.actorForo = actor;
             res.locals.actorActual = actor;
             res.locals.actoresDisponibles = actoresDisponibles;
             res.locals.formatearFechaRelativa = formatearFechaRelativa;
-            res.locals.queryActor = req.query.actor ? queryActor(actor) : '';
+            res.locals.queryActor = '';
             next();
         } catch (error) {
-            console.error('Error al cargar contexto de actor en foros:', error);
+            registrarError(error, { scope: 'controller:foros', req });
             next(error);
         }
     },
@@ -81,8 +62,8 @@ const forosController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar listado de foros:', error);
-            res.status(500).send('Ocurrió un error al cargar el listado de foros.');
+            registrarError(error, { scope: 'controller:foros', req });
+            throw error;
         }
     },
 
@@ -121,8 +102,8 @@ const forosController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar hilos del foro:', error);
-            res.status(500).send('Ocurrió un error al cargar los hilos del foro.');
+            registrarError(error, { scope: 'controller:foros', req });
+            throw error;
         }
     },
 
@@ -149,8 +130,8 @@ const forosController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar formulario de nuevo hilo:', error);
-            res.status(500).send('Ocurrió un error al preparar el formulario.');
+            registrarError(error, { scope: 'controller:foros', req });
+            throw error;
         }
     },
 
@@ -201,6 +182,7 @@ const forosController = {
                 });
             }
 
+            res.locals.registroVistaUrl = `/foros/${hilo.foroSlug}/hilos/${hilo.id}/vista`;
             res.render('foros/detalle-hilo', {
                 titulo: `${hilo.titulo} | ${hilo.foroNombre}`,
                 descripcion: hilo.contenido.slice(0, 140),
@@ -210,8 +192,8 @@ const forosController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar detalle del hilo:', error);
-            res.status(500).send('Ocurrió un error al cargar la discusión.');
+            registrarError(error, { scope: 'controller:foros', req });
+            throw error;
         }
     },
 
@@ -270,8 +252,8 @@ const forosController = {
                 mensaje: req.query.mensaje || null
             });
         } catch (error) {
-            console.error('Error al mostrar solicitud de foro:', error);
-            res.status(500).send('Ocurrió un error al mostrar el formulario.');
+            registrarError(error, { scope: 'controller:foros', req });
+            throw error;
         }
     },
 
@@ -308,8 +290,8 @@ const forosController = {
                 error: req.query.error || null
             });
         } catch (error) {
-            console.error('Error al mostrar solicitudes de foro:', error);
-            res.status(500).send('Ocurrió un error al consultar tus solicitudes.');
+            registrarError(error, { scope: 'controller:foros', req });
+            throw error;
         }
     },
 
@@ -329,4 +311,8 @@ const forosController = {
     }
 };
 
+forosController.registrarVista = async (req, res) => {
+    await forosService.registrarVista(req.params.hilo);
+    res.sendStatus(204);
+};
 module.exports = forosController;

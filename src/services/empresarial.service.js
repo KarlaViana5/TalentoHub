@@ -1,10 +1,32 @@
 const { pool } = require('../config/database');
 
-// usuario simulado
-const empleadorActual = {
-    nombre: 'María Rodríguez',
-    empresaId: 1
-};
+const { AsyncLocalStorage } = require('node:async_hooks');
+const contexto = new AsyncLocalStorage();
+function errorAcceso(message = 'Operacion no autorizada.', status = 403) {
+    const error = new Error(message); error.status = status; error.publicMessage = message; return error;
+}
+function obtenerContexto() {
+    const actual = contexto.getStore();
+    if (!actual) throw errorAcceso();
+    return actual;
+}
+async function conContextoEmpresa(usuario, tarea, conexion = pool) {
+    if (usuario?.rol !== 'empresa' || !/^[1-9]\d{0,14}$/.test(String(usuario.empresaId)) || !/^[1-9]\d{0,14}$/.test(String(usuario.id))) throw errorAcceso();
+    const { rows: tablas } = await conexion.query("SELECT to_regclass('public.empresas_propietarios') AS propiedad");
+    const extendida = Boolean(tablas[0]?.propiedad);
+    const ids = [Number(usuario.empresaId)];
+    if (extendida) {
+        const { rows } = await conexion.query('SELECT empresa_id AS id FROM public.empresas_propietarios WHERE usuario_id = $1', [usuario.id]);
+        for (const row of rows) if (!ids.includes(Number(row.id))) ids.push(Number(row.id));
+    }
+    const actual = Object.freeze({ usuarioId: Number(usuario.id), empresaId: Number(usuario.empresaId), nombre: usuario.nombre || usuario.nombreMostrar || 'Empresa', ids: Object.freeze(ids), extendida, conexion });
+    return contexto.run(actual, tarea);
+}
+function propias() { return obtenerContexto().ids; }
+async function exigirEmpresaAprobada(id) {
+    const rows = await consulta("SELECT id_empresa FROM empresas WHERE id_empresa = $1 AND id_empresa = ANY($2::bigint[]) AND estado = 'activa' AND estado_aprobacion = 'aprobada'", [id, propias()]);
+    if (!rows.length) throw errorAcceso('La empresa debe estar activa y aprobada para esta accion.');
+}
 
 const ESTADOS_EMPRESA = ['Activa', 'Pendiente', 'Inactiva'];
 const ESTADOS_VACANTE = ['Activa', 'Borrador', 'Inactiva', 'Cancelada'];
@@ -15,15 +37,14 @@ const SECTORES = ['Tecnología', 'Logística', 'Diseño y Marketing', 'Finanzas'
 const ESTADO_VACANTE_BD = { Activa: 'publicada', Inactiva: 'pausada', Cancelada: 'cerrada', Borrador: 'borrador' };
 const ESTADO_VACANTE_APP = { publicada: 'Activa', pausada: 'Inactiva', cerrada: 'Cancelada', borrador: 'Borrador' };
 
-// pa las pruebas
-let db = pool;
-
-function usarConexion(conexion) {
-    db = conexion || pool;
+// Database and identity are request-scoped; no mutable shared employer.
+function usarConexion(conexion, tarea) {
+    if (typeof tarea !== 'function') throw errorAcceso('Usa conContextoEmpresa(usuario, tarea, conexion) para pruebas aisladas.', 422);
+    const actual = obtenerContexto();
+    return conContextoEmpresa({ id: actual.usuarioId, rol: 'empresa', empresaId: actual.empresaId, nombre: actual.nombre }, tarea, conexion);
 }
-
 async function consulta(sql, valores = []) {
-    const resultado = await db.query(sql, valores);
+    const resultado = await obtenerContexto().conexion.query(sql, valores);
     return resultado.rows;
 }
 
@@ -43,7 +64,7 @@ function capitalizar(valor) {
 }
 
 function idValido(id) {
-    return /^\d+$/.test(String(id));
+    return /^[1-9]\d{0,14}$/.test(String(id)) && Number.isSafeInteger(Number(id));
 }
 
 // empresas
@@ -58,8 +79,8 @@ function mapearEmpresa(fila) {
 }
 
 async function listarEmpresas(filtros = {}) {
-    const condiciones = [];
-    const valores = [];
+    const condiciones = ['id_empresa = ANY($1::bigint[])'];
+    const valores = [propias()];
 
     if (texto(filtros.q)) {
         valores.push(`%${texto(filtros.q)}%`);
@@ -81,35 +102,44 @@ async function listarEmpresas(filtros = {}) {
 
 async function obtenerEmpresa(id) {
     if (!idValido(id)) return null;
-    const filas = await consulta(`${SELECT_EMPRESAS} WHERE id_empresa = $1`, [id]);
+    const filas = await consulta(`${SELECT_EMPRESAS} WHERE id_empresa = $1 AND id_empresa = ANY($2::bigint[])`, [id, propias()]);
     return mapearEmpresa(filas[0]);
 }
 
 function validarEmpresa(datos) {
     const errores = [];
-    if (!texto(datos.nombre)) errores.push('El nombre de la empresa es obligatorio.');
+    if (!texto(datos.nombre) || texto(datos.nombre).length > 150) errores.push('El nombre de la empresa es obligatorio.');
     if (!SECTORES.includes(datos.sector)) errores.push('Selecciona un sector válido.');
-    if (!texto(datos.ubicacion)) errores.push('La ubicación es obligatoria.');
+    if (!texto(datos.ubicacion) || texto(datos.ubicacion).length > 180) errores.push('La ubicación es obligatoria.');
     return errores;
 }
 
 async function crearEmpresa(datos) {
-    const filas = await consulta(
-        `INSERT INTO empresas (nombre, sector, ubicacion, descripcion, estado)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id_empresa::int AS id, nombre, sector, ubicacion, descripcion, estado`,
-        [texto(datos.nombre), datos.sector, texto(datos.ubicacion), texto(datos.descripcion), datos.activa ? 'activa' : 'inactiva']
-    );
-    return mapearEmpresa(filas[0]);
+    const actual = obtenerContexto();
+    if (!actual.extendida) throw errorAcceso('La creacion de empresas adicionales requiere aplicar la migracion 002 de propiedad.', 503);
+    const errors = validarEmpresa(datos);
+    if (errors.length) throw errorAcceso(errors.join(' '), 422);
+    const client = await actual.conexion.connect();
+    try {
+        await client.query('BEGIN');
+        const { rows } = await client.query(
+            "INSERT INTO empresas (nombre, sector, ubicacion, descripcion, estado, estado_aprobacion, estado_verificacion) VALUES ($1,$2,$3,$4,'pendiente','pendiente','no_verificada') RETURNING id_empresa::int AS id, nombre, sector, ubicacion, descripcion, estado",
+            [texto(datos.nombre), datos.sector, texto(datos.ubicacion), texto(datos.descripcion)]);
+        await client.query('INSERT INTO public.empresas_propietarios (usuario_id, empresa_id) VALUES ($1,$2)', [actual.usuarioId, rows[0].id]);
+        await client.query("INSERT INTO solicitudes_empresas (empresa_id, estado, notas_solicitante) VALUES ($1,'pendiente',$2)", [rows[0].id, 'Solicitud empresarial pendiente de revision.']);
+        await client.query('COMMIT');
+        return mapearEmpresa(rows[0]);
+    } catch (error) { await client.query('ROLLBACK'); throw error; }
+    finally { client.release(); }
 }
 
 async function actualizarEmpresa(id, datos) {
     if (!idValido(id)) return null;
     const filas = await consulta(
-        `UPDATE empresas SET nombre = $2, sector = $3, ubicacion = $4, descripcion = $5, estado = $6
-         WHERE id_empresa = $1
+        `UPDATE empresas SET nombre = $2, sector = $3, ubicacion = $4, descripcion = $5, estado = CASE WHEN estado_aprobacion = 'aprobada' THEN $6 ELSE estado END
+         WHERE id_empresa = $1 AND id_empresa = ANY($7::bigint[])
          RETURNING id_empresa::int AS id, nombre, sector, ubicacion, descripcion, estado`,
-        [id, texto(datos.nombre), datos.sector, texto(datos.ubicacion), texto(datos.descripcion), datos.activa ? 'activa' : 'inactiva']
+        [id, texto(datos.nombre), datos.sector, texto(datos.ubicacion), texto(datos.descripcion), datos.activa ? 'activa' : 'inactiva', propias()]
     );
     return mapearEmpresa(filas[0]);
 }
@@ -117,9 +147,9 @@ async function actualizarEmpresa(id, datos) {
 async function cambiarEstadoEmpresa(id, estado) {
     if (!idValido(id) || !ESTADOS_EMPRESA.includes(estado)) return null;
     const filas = await consulta(
-        `UPDATE empresas SET estado = $2 WHERE id_empresa = $1
+        `UPDATE empresas SET estado = $2 WHERE id_empresa = $1 AND id_empresa = ANY($3::bigint[]) AND estado_aprobacion = 'aprobada'
          RETURNING id_empresa::int AS id, nombre, sector, ubicacion, descripcion, estado`,
-        [id, estado.toLowerCase()]
+        [id, estado.toLowerCase(), propias()]
     );
     return mapearEmpresa(filas[0]);
 }
@@ -163,8 +193,8 @@ function mapearVacante(fila) {
 }
 
 async function listarVacantes(filtros = {}) {
-    const condiciones = [];
-    const valores = [];
+    const condiciones = ['v.empresa_id = ANY($1::bigint[])'];
+    const valores = [propias()];
 
     if (filtros.empresaId) {
         valores.push(filtros.empresaId);
@@ -182,12 +212,12 @@ async function listarVacantes(filtros = {}) {
 
 async function obtenerVacante(id) {
     if (!idValido(id)) return null;
-    const filas = await consulta(`${SELECT_VACANTES} WHERE v.id_vacante = $1`, [id]);
+    const filas = await consulta(`${SELECT_VACANTES} WHERE v.id_vacante = $1 AND v.empresa_id = ANY($2::bigint[])`, [id, propias()]);
     return mapearVacante(filas[0]);
 }
 
 async function contarVacantesPorEstado() {
-    const filas = await consulta('SELECT estado, COUNT(*)::int AS total FROM vacantes GROUP BY estado');
+    const filas = await consulta('SELECT estado, COUNT(*)::int AS total FROM vacantes WHERE empresa_id = ANY($1::bigint[]) GROUP BY estado', [propias()]);
     const conteo = { Todas: 0 };
     ESTADOS_VACANTE.forEach(estado => { conteo[estado] = 0; });
     filas.forEach(f => {
@@ -207,7 +237,7 @@ async function validarBorrador(datos) {
 async function validarVacante(datos) {
     const errores = [];
     const empresa = await obtenerEmpresa(datos.empresaId);
-    if (!texto(datos.titulo)) errores.push('El título del puesto es obligatorio.');
+    if (!texto(datos.titulo) || texto(datos.titulo).length > 200) errores.push('El titulo del puesto debe tener entre 1 y 200 caracteres.');
     if (!empresa) errores.push('Selecciona una empresa.');
     if (empresa && empresa.estado !== 'Activa') errores.push('La empresa seleccionada no está activa.');
     if (!texto(datos.ubicacion)) errores.push('La ubicación es obligatoria.');
@@ -219,6 +249,7 @@ async function validarVacante(datos) {
 
     const minimo = Number(datos.salarioMinimo);
     const maximo = Number(datos.salarioMaximo);
+    if (![minimo, maximo].every(n => Number.isFinite(n) && n >= 0)) errores.push('El salario debe ser un numero positivo.');
     if (datos.salarioMinimo && datos.salarioMaximo && minimo > maximo) {
         errores.push('El salario mínimo no puede ser mayor que el máximo.');
     }
@@ -247,16 +278,22 @@ function valoresVacante(datos) {
 }
 
 async function crearVacante(datos, estado = 'Activa') {
+    if (!propias().includes(Number(datos.empresaId))) throw errorAcceso();
+    if (!ESTADOS_VACANTE.includes(estado)) throw errorAcceso('Estado invalido.', 422);
+    if (estado === 'Activa') await exigirEmpresaAprobada(datos.empresaId);
     // sector = el d la empresa
     const filas = await consulta(
         `INSERT INTO vacantes (empresa_id, titulo, ubicacion, modalidad, tipo_contrato, experiencia, formacion,
             salario_minimo, salario_maximo, descripcion, responsabilidades, requisitos, beneficios,
             correo_contacto, fecha_cierre, nombre_reclutador, estado, sector)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
-            (SELECT sector FROM empresas WHERE id_empresa = $1))
+         SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
+            (SELECT sector FROM empresas WHERE id_empresa = $1)
+         WHERE $1::bigint = ANY($18::bigint[])
+           AND EXISTS (SELECT 1 FROM empresas e WHERE e.id_empresa = $1 AND ($17 <> 'publicada' OR (e.estado = 'activa' AND e.estado_aprobacion = 'aprobada')))
          RETURNING id_vacante::int AS id`,
-        [...valoresVacante(datos), empleadorActual.nombre, ESTADO_VACANTE_BD[estado]]
+        [...valoresVacante(datos), obtenerContexto().nombre, ESTADO_VACANTE_BD[estado], propias()]
     );
+    if (!filas[0]) throw errorAcceso();
     return obtenerVacante(filas[0].id);
 }
 
@@ -264,7 +301,10 @@ async function actualizarVacante(id, datos, estado) {
     const vacante = await obtenerVacante(id);
     if (!vacante) return null;
 
+    if (!propias().includes(Number(datos.empresaId))) throw errorAcceso();
     const nuevoEstado = estado || vacante.estado;
+    if (!ESTADOS_VACANTE.includes(nuevoEstado)) throw errorAcceso('Estado invalido.', 422);
+    if (nuevoEstado === 'Activa') await exigirEmpresaAprobada(datos.empresaId);
     // al publicar un borrador cambia la fecha
     const publicaBorrador = vacante.estado === 'Borrador' && nuevoEstado === 'Activa';
 
@@ -275,22 +315,26 @@ async function actualizarVacante(id, datos, estado) {
             estado = $17,
             sector = (SELECT sector FROM empresas WHERE id_empresa = $2),
             fecha_publicacion = CASE WHEN $18 THEN CURRENT_TIMESTAMP ELSE fecha_publicacion END
-         WHERE id_vacante = $1`,
-        [id, ...valoresVacante(datos), ESTADO_VACANTE_BD[nuevoEstado], publicaBorrador]
+         WHERE id_vacante = $1 AND empresa_id = ANY($19::bigint[]) AND $2::bigint = ANY($19::bigint[])
+           AND EXISTS (SELECT 1 FROM empresas e WHERE e.id_empresa = $2 AND ($17 <> 'publicada' OR (e.estado = 'activa' AND e.estado_aprobacion = 'aprobada')))`,
+        [id, ...valoresVacante(datos), ESTADO_VACANTE_BD[nuevoEstado], publicaBorrador, propias()]
     );
     return obtenerVacante(id);
 }
 
 async function cambiarEstadoVacante(id, estado) {
     if (!idValido(id) || !ESTADOS_VACANTE.includes(estado)) return null;
-    await consulta('UPDATE vacantes SET estado = $2 WHERE id_vacante = $1', [id, ESTADO_VACANTE_BD[estado]]);
+    const vacante = await obtenerVacante(id);
+    if (!vacante) return null;
+    if (estado === 'Activa') await exigirEmpresaAprobada(vacante.empresaId);
+    await consulta('UPDATE vacantes SET estado = $2 WHERE id_vacante = $1 AND empresa_id = ANY($3::bigint[])', [id, ESTADO_VACANTE_BD[estado], propias()]);
     return obtenerVacante(id);
 }
 
 async function eliminarVacante(id) {
     if (!idValido(id)) return false;
     // cascada borra postulasiones
-    const filas = await consulta('DELETE FROM vacantes WHERE id_vacante = $1 RETURNING id_vacante', [id]);
+    const filas = await consulta('DELETE FROM vacantes WHERE id_vacante = $1 AND empresa_id = ANY($2::bigint[]) RETURNING id_vacante', [id, propias()]);
     return filas.length > 0;
 }
 
@@ -304,7 +348,7 @@ const SELECT_CANDIDATO = `
 
 async function obtenerCandidato(id) {
     if (!idValido(id)) return null;
-    const filas = await consulta(`SELECT ${SELECT_CANDIDATO} FROM candidatos c WHERE c.id_candidato = $1`, [id]);
+    const filas = await consulta(`SELECT ${SELECT_CANDIDATO} FROM candidatos c WHERE c.id_candidato = $1 AND EXISTS (SELECT 1 FROM postulaciones p JOIN vacantes v ON v.id_vacante = p.vacante_id WHERE p.candidato_id = c.id_candidato AND v.empresa_id = ANY($2::bigint[]))`, [id, propias()]);
     return filas[0] || null;
 }
 
@@ -337,8 +381,8 @@ async function listarPostulaciones(vacanteId, filtros = {}) {
             (p.fecha_postulacion AT TIME ZONE 'UTC') AS fecha, p.estado, ${SELECT_CANDIDATO}
          FROM postulaciones p
          JOIN candidatos c ON c.id_candidato = p.candidato_id
-         WHERE p.vacante_id = $1`,
-        [vacanteId]
+         WHERE p.vacante_id = $1 AND EXISTS (SELECT 1 FROM vacantes v WHERE v.id_vacante = p.vacante_id AND v.empresa_id = ANY($2::bigint[]))`,
+        [vacanteId, propias()]
     );
 
     const busqueda = texto(filtros.q).toLowerCase();
@@ -381,8 +425,8 @@ async function contarPostulacionesPorEstado(vacanteId) {
     if (!idValido(vacanteId)) return conteo;
 
     const filas = await consulta(
-        'SELECT estado, COUNT(*)::int AS total FROM postulaciones WHERE vacante_id = $1 GROUP BY estado',
-        [vacanteId]
+        'SELECT estado, COUNT(*)::int AS total FROM postulaciones WHERE vacante_id = $1 AND EXISTS (SELECT 1 FROM vacantes v WHERE v.id_vacante = postulaciones.vacante_id AND v.empresa_id = ANY($2::bigint[])) GROUP BY estado',
+        [vacanteId, propias()]
     );
     filas.forEach(f => {
         conteo[capitalizar(f.estado)] = f.total;
@@ -396,18 +440,20 @@ async function obtenerPostulacion(id) {
     const filas = await consulta(
         `SELECT id_postulacion::int AS id, vacante_id::int AS "vacanteId", candidato_id::int AS "candidatoId",
             (fecha_postulacion AT TIME ZONE 'UTC') AS fecha, estado
-         FROM postulaciones WHERE id_postulacion = $1`,
-        [id]
+         FROM postulaciones WHERE id_postulacion = $1 AND EXISTS (SELECT 1 FROM vacantes v WHERE v.id_vacante = postulaciones.vacante_id AND v.empresa_id = ANY($2::bigint[]))`,
+        [id, propias()]
     );
     if (!filas[0]) return null;
 
     const postulacion = { ...filas[0], estado: capitalizar(filas[0].estado) };
-    const candidato = await obtenerCandidato(postulacion.candidatoId);
-    const vacante = await obtenerVacante(postulacion.vacanteId);
-    const notas = await consulta(
-        `SELECT autor, texto, (fecha AT TIME ZONE 'UTC') AS fecha FROM notas_postulacion WHERE postulacion_id = $1 ORDER BY fecha`,
-        [id]
-    );
+    const [candidato, vacante, notas] = await Promise.all([
+        obtenerCandidato(postulacion.candidatoId),
+        obtenerVacante(postulacion.vacanteId),
+        consulta(
+        `SELECT autor, texto, (fecha AT TIME ZONE 'UTC') AS fecha FROM notas_postulacion n WHERE postulacion_id = $1 AND EXISTS (SELECT 1 FROM postulaciones p JOIN vacantes v ON v.id_vacante = p.vacante_id WHERE p.id_postulacion = n.postulacion_id AND v.empresa_id = ANY($2::bigint[])) ORDER BY fecha`,
+        [id, propias()]
+        )
+    ]);
 
     return { ...postulacion, candidato, vacante, notas, compatibilidad: calcularCompatibilidad(candidato, vacante) };
 }
@@ -415,19 +461,22 @@ async function obtenerPostulacion(id) {
 async function cambiarEstadoPostulacion(id, estado) {
     if (!idValido(id) || !ESTADOS_POSTULACION.includes(estado)) return null;
     const filas = await consulta(
-        'UPDATE postulaciones SET estado = $2 WHERE id_postulacion = $1 RETURNING id_postulacion::int AS id',
-        [id, estado.toLowerCase()]
+        'UPDATE postulaciones SET estado = $2 WHERE id_postulacion = $1 AND EXISTS (SELECT 1 FROM vacantes v WHERE v.id_vacante = postulaciones.vacante_id AND v.empresa_id = ANY($3::bigint[])) RETURNING id_postulacion::int AS id',
+        [id, estado.toLowerCase(), propias()]
     );
     return filas[0] || null;
 }
 
 async function cambiarEstadoVariasPostulaciones(ids, estado) {
-    const lista = [].concat(ids).filter(idValido);
+    const raw = [].concat(ids);
+    if (raw.length > 200 || raw.some(id => !idValido(id))) throw errorAcceso('Seleccion invalida.', 422);
+    const lista = [...new Set(raw.map(String))];
     if (!ESTADOS_POSTULACION.includes(estado) || lista.length === 0) return 0;
     const filas = await consulta(
-        'UPDATE postulaciones SET estado = $2 WHERE id_postulacion = ANY($1::bigint[]) RETURNING id_postulacion',
-        [lista, estado.toLowerCase()]
+        'UPDATE postulaciones SET estado = $2 WHERE id_postulacion = ANY($1::bigint[]) AND EXISTS (SELECT 1 FROM vacantes v WHERE v.id_vacante = postulaciones.vacante_id AND v.empresa_id = ANY($3::bigint[])) AND NOT EXISTS (SELECT 1 FROM unnest($1::bigint[]) AS seleccion(id) LEFT JOIN postulaciones p ON p.id_postulacion = seleccion.id LEFT JOIN vacantes v ON v.id_vacante = p.vacante_id WHERE p.id_postulacion IS NULL OR NOT (v.empresa_id = ANY($3::bigint[]))) RETURNING id_postulacion',
+        [lista, estado.toLowerCase(), propias()]
     );
+    if (filas.length !== lista.length) throw errorAcceso();
     return filas.length;
 }
 
@@ -435,9 +484,9 @@ async function agregarNota(postulacionId, textoNota) {
     if (!idValido(postulacionId) || !texto(textoNota)) return null;
     const filas = await consulta(
         `INSERT INTO notas_postulacion (postulacion_id, autor, texto)
-         SELECT id_postulacion, $2, $3 FROM postulaciones WHERE id_postulacion = $1
+         SELECT id_postulacion, $2, $3 FROM postulaciones p WHERE id_postulacion = $1 AND EXISTS (SELECT 1 FROM vacantes v WHERE v.id_vacante = p.vacante_id AND v.empresa_id = ANY($4::bigint[]))
          RETURNING autor, texto, (fecha AT TIME ZONE 'UTC') AS fecha`,
-        [postulacionId, empleadorActual.nombre, texto(textoNota)]
+        [postulacionId, obtenerContexto().nombre, texto(textoNota), propias()]
     );
     return filas[0] || null;
 }
@@ -452,14 +501,14 @@ async function obtenerIndicadores() {
             COUNT(*) FILTER (WHERE estado = 'publicada')::int AS activas,
             COUNT(*) FILTER (WHERE estado = 'publicada' AND fecha_publicacion >= CURRENT_DATE - 30)::int AS "activasMes",
             COALESCE(SUM(vistas), 0)::int AS vistas
-         FROM vacantes`
+         FROM vacantes WHERE empresa_id = ANY($1::bigint[])`, [propias()]
     );
     const [postulaciones] = await consulta(
         `SELECT
             COUNT(*)::int AS total,
             COUNT(*) FILTER (WHERE fecha_postulacion >= CURRENT_DATE - 30)::int AS "totalMes",
             COUNT(*) FILTER (WHERE estado <> 'nuevo')::int AS respondidas
-         FROM postulaciones`
+         FROM postulaciones WHERE EXISTS (SELECT 1 FROM vacantes v WHERE v.id_vacante = postulaciones.vacante_id AND v.empresa_id = ANY($1::bigint[]))`, [propias()]
     );
 
     return {
@@ -502,8 +551,8 @@ function armarGrafica(fechas, rango, hoy = new Date()) {
 async function obtenerGrafica(rango) {
     const filas = await consulta(
         `SELECT (fecha_postulacion AT TIME ZONE 'UTC') AS fecha FROM postulaciones
-         WHERE fecha_postulacion >= CURRENT_DATE - $1::int - 1`,
-        [rango]
+         WHERE fecha_postulacion >= CURRENT_DATE - $1::int - 1 AND EXISTS (SELECT 1 FROM vacantes v WHERE v.id_vacante = postulaciones.vacante_id AND v.empresa_id = ANY($2::bigint[]))`,
+        [rango, propias()]
     );
     return armarGrafica(filas.map(f => f.fecha), rango);
 }
@@ -515,8 +564,9 @@ async function obtenerActividad(limite = 6) {
          FROM postulaciones p
          JOIN candidatos c ON c.id_candidato = p.candidato_id
          JOIN vacantes v ON v.id_vacante = p.vacante_id
+         WHERE v.empresa_id = ANY($2::bigint[])
          ORDER BY p.fecha_postulacion DESC LIMIT $1`,
-        [limite]
+        [limite, propias()]
     );
     const notas = await consulta(
         `SELECT 'nota' AS tipo, n.autor AS nombre, c.nombre AS candidato, n.texto,
@@ -524,15 +574,17 @@ async function obtenerActividad(limite = 6) {
          FROM notas_postulacion n
          JOIN postulaciones p ON p.id_postulacion = n.postulacion_id
          JOIN candidatos c ON c.id_candidato = p.candidato_id
+         JOIN vacantes v ON v.id_vacante = p.vacante_id
+         WHERE v.empresa_id = ANY($2::bigint[])
          ORDER BY n.fecha DESC LIMIT $1`,
-        [limite]
+        [limite, propias()]
     );
     const porCerrar = await consulta(
         `SELECT 'cierre' AS tipo, titulo AS vacante, id_vacante::int AS "vacanteId",
             (fecha_cierre - CURRENT_DATE)::int AS dias
          FROM vacantes
-         WHERE estado = 'publicada' AND fecha_cierre BETWEEN CURRENT_DATE AND CURRENT_DATE + 7
-         ORDER BY fecha_cierre`
+         WHERE empresa_id = ANY($1::bigint[]) AND estado = 'publicada' AND fecha_cierre BETWEEN CURRENT_DATE AND CURRENT_DATE + 7
+         ORDER BY fecha_cierre`, [propias()]
     );
 
     const actividad = [...postulaciones, ...notas]
@@ -546,14 +598,16 @@ async function obtenerActividad(limite = 6) {
 
 async function obtenerPanel(rango = 30) {
     const rangoValido = [7, 30, 90].includes(Number(rango)) ? Number(rango) : 30;
-    const vacantesActivas = await listarVacantes({ estado: 'Activa' });
+    const [vacantesActivas, indicadores, grafica, actividad] = await Promise.all([
+        listarVacantes({ estado: 'Activa' }), obtenerIndicadores(), obtenerGrafica(rangoValido), obtenerActividad()
+    ]);
     const hoy = new Date();
 
     return {
         rango: rangoValido,
-        indicadores: await obtenerIndicadores(),
-        grafica: await obtenerGrafica(rangoValido),
-        actividad: await obtenerActividad(),
+        indicadores,
+        grafica,
+        actividad,
         vacantes: vacantesActivas.slice(0, 5).map(v => {
             const dias = v.fechaCierre ? Math.ceil((new Date(v.fechaCierre + 'T23:59:59') - hoy) / DIA) : null;
             return { ...v, porCerrar: dias !== null && dias >= 0 && dias <= 7 };
@@ -563,7 +617,8 @@ async function obtenerPanel(rango = 30) {
 }
 
 module.exports = {
-    empleadorActual,
+    conContextoEmpresa,
+    obtenerContexto,
     obtenerPanel,
     armarGrafica,
     ESTADOS_EMPRESA,

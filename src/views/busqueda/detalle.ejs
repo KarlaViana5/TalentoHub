@@ -39,9 +39,11 @@
     <link rel="stylesheet" href="/css/detalle.css">
     <link rel="stylesheet" href="/css/navigation.css">
     <link rel="stylesheet" href="/css/design-system.css">
+    <%- include('../partials/csrf-head') %>
 </head>
 
-<body>
+<body class="th-public th-public--empleo">
+    <a class="th-ui-skip" href="#contenido-principal">Saltar al contenido</a>
 
     <%- include('../partials/navigation', { activo: 'busqueda' }) %>
 
@@ -50,10 +52,10 @@
          CONTENIDO PRINCIPAL
     ====================================== -->
 
-    <main class="detail-page">
+    <main class="detail-page" id="contenido-principal" tabindex="-1">
 
         <% if (typeof mensaje !== 'undefined' && mensaje) { %>
-            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 14px 18px; border-radius: 12px; margin-bottom: 18px; font-weight: 600;">
+            <div role="status" style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 14px 18px; border-radius: 12px; margin-bottom: 18px; font-weight: 600;">
                 ✓ <%= mensaje %>
                 <% if (locals.usuarioActual && usuarioActual.rol === 'candidato') { %>
                     — <a href="/candidato" style="color: #047857; text-decoration: underline;">Ver mis postulaciones →</a>
@@ -62,14 +64,14 @@
         <% } %>
 
         <% if (typeof error !== 'undefined' && error) { %>
-            <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 14px 18px; border-radius: 12px; margin-bottom: 18px; font-weight: 600;">
+            <div role="alert" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 14px 18px; border-radius: 12px; margin-bottom: 18px; font-weight: 600;">
                 ⚠ <%= error %>
             </div>
         <% } %>
 
         <!-- RUTA DE NAVEGACIÓN -->
 
-        <div class="breadcrumb">
+        <div class="breadcrumb" role="navigation" aria-label="Ruta de navegación">
             <a href="/">Inicio</a>
             <span>/</span>
             <a href="/busqueda">Vacantes</a>
@@ -394,6 +396,7 @@
                             </a>
                         <% } else { %>
                             <form method="post" action="/busqueda/empleo/<%= vacante.id %>/postular" style="margin: 0;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                 <button type="submit" class="apply-button">
                                     Postularme ahora como <%= usuarioActual.nombreMostrar %>
                                     <span>→</span>
@@ -425,14 +428,15 @@
                             🚩 Reportar irregularidad en esta vacante
                         </summary>
                         <form method="post" action="/busqueda/empleo/<%= vacante.id %>/reportar" style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
-                            <select name="motivo" required style="padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
+                            <select name="motivo" aria-label="Motivo del reporte" required style="padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px;">
                                 <option value="">Selecciona motivo...</option>
                                 <option value="Información salarial o requisitos engañosos">Información salarial o requisitos engañosos</option>
                                 <option value="Oferta fraudulenta o cobro indebido">Oferta fraudulenta o cobro indebido</option>
                                 <option value="Contenido discriminatorio o inapropiado">Contenido discriminatorio o inapropiado</option>
                                 <option value="Vacante duplicada o spam">Vacante duplicada o spam</option>
                             </select>
-                            <textarea name="descripcion" rows="2" placeholder="Describe el motivo (opcional)..." style="padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px;"></textarea>
+                            <textarea name="descripcion" aria-label="Descripción del reporte" rows="2" placeholder="Describe el motivo (opcional)..." style="padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px;"></textarea>
                             <button type="submit" style="padding: 8px 12px; border-radius: 6px; background: #dc2626; color: #fff; border: none; font-weight: 700; cursor: pointer; font-size: 12.5px;">
                                 Enviar reporte a Moderación
                             </button>

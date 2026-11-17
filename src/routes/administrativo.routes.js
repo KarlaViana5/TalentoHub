@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { registrarValidacionParametros } = require('../middleware/input.middleware');
+registrarValidacionParametros(router);
 
 const adminController = require('../controllers/administrativo.controller');
 

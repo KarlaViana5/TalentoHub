@@ -1,3 +1,4 @@
+const { paginacion } = require('../utils/paginacion');
 
 // src/services/recursos.service.js
 
@@ -151,18 +152,7 @@ function construirFiltros(filtros = {}) {
 
 async function buscarRecursos(filtros = {}, opciones = {}) {
 
-    const limiteSolicitado = Number(opciones.limite) || 9;
-
-    const limite = Math.min(
-        Math.max(limiteSolicitado, 1),
-        50
-    );
-
-    const paginaSolicitada = Number(opciones.pagina) || 1;
-
-    const pagina = Math.max(paginaSolicitada, 1);
-
-    const offset = (pagina - 1) * limite;
+    const { limite, pagina, offset } = paginacion(opciones, 9, 50);
 
     const { where, valores } = construirFiltros(filtros);
 

@@ -1,6 +1,7 @@
 <%- include('../partials/head', { titulo: titulo }) %>
 
 <body class="adm-body">
+    <%- include('../partials/navigation', { activo: 'admin' }) %>
     <div class="adm-layout">
         <%- include('partials/menu-admin') %>
 
@@ -79,6 +80,7 @@
                             </header>
                             <div class="adm-modal-form-body">
                             <form class="adm-form" method="post" action="/administrativo/cursos">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                 <div>
                                     <label>Título del curso *</label>
                                     <input type="text" name="titulo" required placeholder="Ej. Dominio de Entrevistas por Competencias">
@@ -135,10 +137,12 @@
 
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                             <form method="post" action="/administrativo/cursos/<%= cursoDetalle.id %>/estado" style="margin: 0;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                 <input type="hidden" name="estado" value="publicado">
                                 <button type="submit" class="adm-btn adm-btn-verde">✓ Publicar curso</button>
                             </form>
                             <form method="post" action="/administrativo/cursos/<%= cursoDetalle.id %>/estado" style="margin: 0;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                 <input type="hidden" name="estado" value="archivado">
                                 <button type="submit" class="adm-btn adm-btn-amarillo">Archivar</button>
                             </form>
@@ -173,6 +177,7 @@
                                     <details>
                                         <summary style="cursor: pointer; font-size: 12.5px; font-weight: 700; color: var(--adm-primario);">+ Agregar lección a este módulo</summary>
                                         <form class="adm-form" method="post" action="/administrativo/cursos/<%= cursoDetalle.id %>/modulos/<%= m.id %>/lecciones" style="margin-top: 10px;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                             <input type="text" name="titulo" placeholder="Título de la lección *" required>
                                             <input type="text" name="descripcion" placeholder="Descripción breve de la lección">
                                             <textarea name="contenido" rows="2" placeholder="Contenido formativo de la lección *" required></textarea>
@@ -198,6 +203,7 @@
 
                             <h4>+ Agregar nuevo módulo</h4>
                             <form class="adm-form" method="post" action="/administrativo/cursos/<%= cursoDetalle.id %>/modulos">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                 <input type="text" name="titulo" placeholder="Ej. Módulo 3: Negociación salarial" required>
                                 <input type="text" name="descripcion" placeholder="Descripción del módulo">
                                 <button type="submit" class="adm-btn">Agregar módulo</button>
@@ -209,6 +215,7 @@
                             <h3>Aplicantes inscritos (<%= cursoDetalle.inscritos.length %>)</h3>
 
                             <form class="adm-filtros" method="post" action="/administrativo/cursos/<%= cursoDetalle.id %>/inscribir">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                 <select name="candidatoId" required style="flex: 1;">
                                     <option value="">Inscribir aplicante al curso...</option>
                                     <% candidatosDisponibles.forEach(cand => { %>
@@ -240,6 +247,7 @@
                                                 <td>
                                                     <% if (cursoDetalle.lecciones.length > 0 && ins.porcentajeAvance < 100) { %>
                                                         <form method="post" action="/administrativo/cursos/<%= cursoDetalle.id %>/inscripciones/<%= ins.id %>/lecciones/<%= cursoDetalle.lecciones[cursoDetalle.lecciones.length - 1].id %>" style="margin: 0;">
+    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
                                                             <button type="submit" class="adm-btn">Marcar lección completada</button>
                                                         </form>
                                                     <% } else { %>
