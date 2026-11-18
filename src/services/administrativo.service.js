@@ -609,10 +609,10 @@ async function decidirEstadoEmpresa(idEmpresa, accion, motivo = '') {
     const [actualizada] = await consulta(
         `UPDATE empresas
          SET estado = $2,
-             estado_aprobacion = $3,
+             estado_aprobacion = $3::varchar,
              estado_verificacion = $4,
              motivo_rechazo = $5,
-             aprobada_en = CASE WHEN $3 = 'aprobada' THEN CURRENT_TIMESTAMP ELSE aprobada_en END,
+             aprobada_en = CASE WHEN $3::varchar = 'aprobada' THEN CURRENT_TIMESTAMP ELSE aprobada_en END,
              aprobada_por = $6
          WHERE id_empresa = $1
          RETURNING id_empresa::int AS id, nombre, estado, estado_aprobacion AS "estadoAprobacion",
@@ -652,7 +652,7 @@ async function decidirEstadoEmpresa(idEmpresa, accion, motivo = '') {
 
     await consulta(
         `INSERT INTO notificaciones (destinatario_tipo, destinatario_id, titulo, mensaje, tipo_evento, referencia_url)
-         VALUES ('empresas', $1, $2, $3, 'decision_empresa', '/empresarial/empresas')`,
+         VALUES ('empresas', $1, $2, $3, 'decision_empresa', '/empresarial/perfil')`,
         [
             idNum,
             config.tituloNotif,

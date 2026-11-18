@@ -102,6 +102,13 @@
                                             <a class="adm-modal-cerrar" href="/administrativo/empresas?estado=<%= filtros.estadoAprobacion %>" aria-label="Cerrar expediente">&times;</a>
                                         </header>
 
+                                        <% if (mensaje) { %>
+                                            <div class="adm-flash exito" role="status">✓ <%= mensaje %></div>
+                                        <% } %>
+                                        <% if (error) { %>
+                                            <div class="adm-flash error" role="alert">⚠ <%= error %></div>
+                                        <% } %>
+
                                         <div class="adm-modal-nota">
                                             <i class="fa-solid fa-building-shield" aria-hidden="true"></i>
                                             Expediente administrativo de solo lectura con acciones de aprobación y moderación.
