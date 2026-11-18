@@ -95,8 +95,11 @@ test('Registration pending, no fabricated document, no password seeding/DDL or d
  const pool={connect:async()=>client,async query(sql,values){queries.push({sql,values});if(sql.includes('to_regclass'))return {rows:[{cuentas:'usuarios_cuenta',sesiones:'sesiones_auth'}]};return {rows:[]};}};
  const auth=harness(pool).load('src/services/auth.service.js');await auth.asegurarEsquemaAuth();assert.equal(queries.length,1);assert.ok(queries[0].sql.startsWith('SELECT'));
  await assert.rejects(auth.autenticarDemoPorUsuarioId(1),{status:403});
- const result=await auth.registrarNuevoUsuario({rol:'empresa',nombre:'Empresa prueba',correo:'empresa@example.test',clave:'UnaClaveDePruebaLarga',confirmarClave:'UnaClaveDePruebaLarga',nit:'NIT-DE-PRUEBA'});assert.equal(result.usuario.id,20);
- const insert=queries.find(q=>q.sql.includes('INSERT INTO empresas'));assert.ok(insert.sql.includes("'pendiente', 'pendiente', 'no_verificada'"));assert.ok(!insert.sql.includes('aprobada'));
+ const result=await auth.registrarNuevoUsuario({rol:'empresa',nombre:'Empresa prueba',correo:'empresa@example.test',clave:'UnaClaveDePruebaLarga',confirmarClave:'UnaClaveDePruebaLarga',nit:'06141503221010',telefono:'22000000'});assert.equal(result.usuario.id,20);
+ const datosEmpresa={rol:'empresa',nombre:'Empresa prueba',correo:'otra@example.test',clave:'UnaClaveDePruebaLarga',confirmarClave:'UnaClaveDePruebaLarga'};
+ for(const nit of ['NIT-DE-PRUEBA','0614-150322-101','0614-150322-101-00','0614-15032a-101-0',''])await assert.rejects(auth.registrarNuevoUsuario({...datosEmpresa,nit}),/NIT/);
+ for(const telefono of ['2200-000','2200-00000','8200-0000','2200-00a0'])await assert.rejects(auth.registrarNuevoUsuario({...datosEmpresa,nit:'0614-150322-101-0',telefono}),/teléfono/);
+ const insert=queries.find(q=>q.sql.includes('INSERT INTO empresas'));assert.equal(insert.values[2],'0614-150322-101-0');assert.equal(insert.values[5],'2200-0000');assert.ok(insert.sql.includes("'pendiente', 'pendiente', 'no_verificada'"));assert.ok(!insert.sql.includes('aprobada'));
  const sol=queries.find(q=>q.sql.includes('INSERT INTO solicitudes_empresas'));assert.ok(sol.sql.includes("NULL, $2, 'pendiente'"));assert.ok(!sol.values.some(v=>String(v).includes('https://')));
  assert.ok(!queries.some(q=>/CREATE |ALTER |UPDATE empresas/.test(q.sql)));
 });

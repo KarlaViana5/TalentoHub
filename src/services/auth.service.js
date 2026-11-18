@@ -183,13 +183,32 @@ async function autenticarDemoPorUsuarioId() {
     error.status = 403; throw error;
 }
 
+// nit: 14 digitos 0000-000000-000-0
+function normalizarNit(valor) {
+    const limpio = texto(valor);
+    if (!/^[\d-]+$/.test(limpio)) return null;
+    const d = limpio.replace(/-/g, '');
+    if (d.length !== 14) return null;
+    return `${d.slice(0, 4)}-${d.slice(4, 10)}-${d.slice(10, 13)}-${d.slice(13)}`;
+}
+
+// tel: 8 digitos, empieza con 2, 6 o 7
+function normalizarTelefono(valor) {
+    const limpio = texto(valor);
+    if (!limpio) return '';
+    if (!/^[\d-]+$/.test(limpio)) return null;
+    const d = limpio.replace(/-/g, '');
+    if (!/^[267]\d{7}$/.test(d)) return null;
+    return `${d.slice(0, 4)}-${d.slice(4)}`;
+}
+
 async function registrarNuevoUsuario(datos = {}) {
     const rol = datos.rol === 'empresa' ? 'empresa' : 'candidato';
     const nombre = texto(datos.nombre);
     const correo = texto(datos.correo).toLowerCase();
     const clave = String(datos.clave ?? '');
     const confirmarClave = String(datos.confirmarClave ?? '');
-    const telefono = texto(datos.telefono);
+    const telefono = normalizarTelefono(datos.telefono);
     const ubicacion = texto(datos.ubicacion) || 'San Salvador, El Salvador';
 
     if (!['candidato', 'empresa'].includes(datos.rol)) throw new Error('Selecciona un tipo de cuenta valido.');
@@ -198,6 +217,8 @@ async function registrarNuevoUsuario(datos = {}) {
     if (correo.length > 180 || !correo || !/^\S+@\S+\.\S+$/.test(correo)) throw new Error('Ingresa un correo electrónico válido.');
     if (typeof datos.clave !== 'string' || clave.length < 12 || clave.length > 256) throw new Error('La contraseña debe tener entre 12 y 256 caracteres.');
     if (clave !== confirmarClave) throw new Error('Las contraseñas no coinciden.');
+    if (telefono === null) throw new Error('El teléfono debe tener 8 dígitos y empezar con 2, 6 o 7 (ej. 2200-0000).');
+    if (rol === 'empresa' && !normalizarNit(datos.nit)) throw new Error('El NIT debe tener 14 dígitos con el formato 0000-000000-000-0.');
 
     const { rows: existente } = await pool.query(
         'SELECT id_usuario FROM usuarios_cuenta WHERE LOWER(correo) = $1 LIMIT 1',
@@ -238,8 +259,7 @@ async function registrarNuevoUsuario(datos = {}) {
         } else {
             const nombreEmpresa = texto(datos.nombreEmpresa) || nombre;
             const sector = texto(datos.sector) || 'Tecnología';
-            const nit = texto(datos.nit);
-            if (!nit || nit.length > 50) throw new Error('Ingresa el NIT real de la empresa.');
+            const nit = normalizarNit(datos.nit);
             const razonSocial = texto(datos.razonSocial) || nombreEmpresa;
             const descripcion = texto(datos.descripcion) || 'Empresa registrada en TalentoHub para publicación de oportunidades laborales.';
 
