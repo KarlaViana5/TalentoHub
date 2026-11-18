@@ -1,10 +1,7 @@
 const servicio = require('../services/empresarial.service');
 
 const mensajes = {
-    creada: 'Empresa creada correctamente.',
-    actualizada: 'Cambios guardados correctamente.',
-    desactivada: 'Empresa desactivada.',
-    activada: 'Empresa activada.'
+    actualizada: 'Perfil de la empresa actualizado.'
 };
 
 // EMP-01
@@ -31,36 +28,7 @@ async function mostrarInicio(req, res) {
     });
 }
 
-// EMP-02
-async function renderEmpresas(req, res, panel, status = 200) {
-    const filtros = {
-        q: req.query.q || '',
-        sector: req.query.sector || '',
-        estado: req.query.estado || ''
-    };
-
-    res.status(status).render('empresarial/empresas', {
-        titulo: 'Mis empresas',
-        filtros,
-        empresas: await servicio.listarEmpresas(filtros),
-        sectores: servicio.SECTORES,
-        estados: servicio.ESTADOS_EMPRESA,
-        panel,
-        mensaje: mensajes[req.query.ok] || ''
-    });
-}
-
-function datosFormulario(body, id) {
-    return {
-        id: id ? Number(id) : null,
-        nombre: body.nombre || '',
-        sector: body.sector || '',
-        ubicacion: body.ubicacion || '',
-        descripcion: body.descripcion || '',
-        estado: body.activa ? 'Activa' : 'Inactiva'
-    };
-}
-
+// perfil de empresa (antes EMP-02)
 function noEncontrado(req, res) {
     res.status(404).render('errors/404', {
         titulo: 'Página no encontrada',
@@ -68,56 +36,37 @@ function noEncontrado(req, res) {
     });
 }
 
-async function mostrarEmpresas(req, res) {
-    let panel = null;
-
-    if (req.query.nueva) {
-        panel = { modo: 'nueva', empresa: datosFormulario({ activa: true }), errores: [] };
-    }
-
-    const id = req.query.editar || req.query.ver;
-    if (id) {
-        const empresa = await servicio.obtenerEmpresa(id);
-        if (empresa) {
-            panel = { modo: req.query.editar ? 'editar' : 'ver', empresa, errores: [] };
-        }
-    }
-
-    await renderEmpresas(req, res, panel);
-}
-
-async function crearEmpresa(req, res) {
-    const errores = servicio.validarEmpresa(req.body);
-
-    if (errores.length > 0) {
-        const panel = { modo: 'nueva', empresa: datosFormulario(req.body), errores };
-        return renderEmpresas(req, res, panel, 400);
-    }
-
-    await servicio.crearEmpresa(req.body);
-    res.redirect('/empresarial/empresas?ok=creada');
-}
-
-async function actualizarEmpresa(req, res) {
-    if (!await servicio.obtenerEmpresa(req.params.id)) return noEncontrado(req, res);
-
-    const errores = servicio.validarEmpresa(req.body);
-
-    if (errores.length > 0) {
-        const panel = { modo: 'editar', empresa: datosFormulario(req.body, req.params.id), errores };
-        return renderEmpresas(req, res, panel, 400);
-    }
-
-    await servicio.actualizarEmpresa(req.params.id, req.body);
-    res.redirect('/empresarial/empresas?ok=actualizada');
-}
-
-async function cambiarEstadoEmpresa(req, res) {
-    const empresa = await servicio.cambiarEstadoEmpresa(req.params.id, req.body.estado);
+async function renderPerfilEmpresa(req, res, { valores = null, errores = [], status = 200 } = {}) {
+    const empresa = await servicio.obtenerPerfilEmpresa();
     if (!empresa) return noEncontrado(req, res);
 
-    const ok = empresa.estado === 'Inactiva' ? 'desactivada' : 'activada';
-    res.redirect(`/empresarial/empresas?ok=${ok}`);
+    res.status(status).render('empresarial/perfil', {
+        titulo: 'Perfil de empresa',
+        empresa,
+        valores: valores || empresa,
+        errores,
+        sectores: servicio.SECTORES,
+        mensaje: mensajes[req.query.ok] || ''
+    });
+}
+
+async function mostrarPerfilEmpresa(req, res) {
+    await renderPerfilEmpresa(req, res);
+}
+
+async function actualizarPerfilEmpresa(req, res) {
+    const valores = {
+        nombre: req.body.nombre || '',
+        sector: req.body.sector || '',
+        ubicacion: req.body.ubicacion || '',
+        descripcion: req.body.descripcion || '',
+        telefono: req.body.telefono || ''
+    };
+    const errores = servicio.validarPerfilEmpresa(valores);
+    if (errores.length > 0) return renderPerfilEmpresa(req, res, { valores, errores, status: 400 });
+
+    await servicio.actualizarPerfilEmpresa(valores);
+    res.redirect('/empresarial/perfil?ok=actualizada');
 }
 
 // EMP-03 y mis vacantes
@@ -441,10 +390,8 @@ module.exports = {
     cambiarEstadoPostulacion,
     cambiarEstadoMasivo,
     exportarPostulaciones,
-    mostrarEmpresas,
-    crearEmpresa,
-    actualizarEmpresa,
-    cambiarEstadoEmpresa,
+    mostrarPerfilEmpresa,
+    actualizarPerfilEmpresa,
     mostrarVacantes,
     mostrarPublicar,
     publicarVacante,

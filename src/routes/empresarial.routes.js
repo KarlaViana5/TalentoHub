@@ -23,11 +23,10 @@ router.use(async (req, res, next) => {
 
 router.get('/', empresarialController.mostrarInicio);
 
-// empresas
-router.get('/empresas', empresarialController.mostrarEmpresas);
-router.post('/empresas', empresarialController.crearEmpresa);
-router.post('/empresas/:id', empresarialController.actualizarEmpresa);
-router.post('/empresas/:id/estado', empresarialController.cambiarEstadoEmpresa);
+// perfil empresa (crear/activar = admin)
+router.get('/perfil', empresarialController.mostrarPerfilEmpresa);
+router.post('/perfil', empresarialController.actualizarPerfilEmpresa);
+router.get('/empresas', (req, res) => res.redirect(301, '/empresarial/perfil'));
 
 // vacantes
 router.get('/vacantes', empresarialController.mostrarVacantes);

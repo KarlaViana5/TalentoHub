@@ -82,7 +82,7 @@ test('Enterprise: no context fails closed; cross-company reads/writes/notes/batc
   assert.equal(await service.cambiarEstadoPostulacion(222,'Entrevista'),null);assert.equal(await service.eliminarVacante(22),false);assert.equal(await service.agregarNota(222,'Privada'),null);
   assert.equal((await service.obtenerVacante(11)).id,11);assert.equal((await service.cambiarEstadoPostulacion(111,'Entrevista')).id,111);assert.equal((await service.agregarNota(111,'Valida')).texto,'Valida');
   await assert.rejects(service.cambiarEstadoVariasPostulaciones([111,222],'Entrevista'),{status:403});assert.equal(await service.cambiarEstadoVariasPostulaciones([111],'Entrevista'),1);
-  await assert.rejects(service.crearVacante({empresaId:2},'Borrador'),{status:403});await assert.rejects(service.crearEmpresa({}),{status:503});
+  await assert.rejects(service.crearVacante({empresaId:2},'Borrador'),{status:403});assert.equal(service.crearEmpresa,undefined);assert.equal(service.cambiarEstadoEmpresa,undefined);
  },pool);
 });
 test('Enterprise request contexts remain isolated under concurrent async work',async()=>{
@@ -131,21 +131,25 @@ test('HTTP route protection with mocked PostgreSQL: public GET, roles, CSRF, log
  }finally{await new Promise(r=>server.close(r));}
 });
 
-test('Additional company creation is transactional and assigned to authenticated owner',async()=>{
- const events=[];
- const client={release(){events.push('release');},async query(sql,values){events.push(sql);
-  if(sql.includes('INSERT INTO empresas ('))return {rows:[{id:3,nombre:'Nueva',estado:'pendiente'}]};
-  if(sql.includes('INSERT INTO public.empresas_propietarios'))assert.deepEqual(values,[100,3]);
+test('Company profile edits only the session company; NIT, status and approval are immutable',async()=>{
+ const seen=[];
+ const pool={async query(sql,values=[]){seen.push({sql,values});
+  if(sql.includes('to_regclass'))return {rows:[{propiedad:'empresas_propietarios'}]};
+  if(sql.includes('FROM public.empresas_propietarios'))return {rows:[{id:7}]};
+  if(sql.includes('FROM empresas'))return {rows:[{id:Number(values[0]),nombre:'Uno',estado:'pendiente',estadoAprobacion:'pendiente',nit:'0614-150322-101-0'}]};
   return {rows:[]};
  }};
- const pool=companyPool(true);pool.connect=async()=>client;
  const service=harness(pool).load('src/services/empresarial.service.js');
  await service.conContextoEmpresa({id:100,rol:'empresa',empresaId:1},async()=>{
-   const result=await service.crearEmpresa({nombre:'Nueva',sector:service.SECTORES[0],ubicacion:'San Salvador'});assert.equal(result.id,3);assert.equal(result.estado,'Pendiente');
+  const perfil=await service.obtenerPerfilEmpresa();assert.equal(perfil.id,1);assert.equal(perfil.estadoAprobacion,'Pendiente');
+  await service.actualizarPerfilEmpresa({id:7,nombre:'Nuevo',sector:service.SECTORES[0],ubicacion:'San Salvador',telefono:'22000000',nit:'9999-999999-999-9',estado:'activa',estado_aprobacion:'aprobada'});
+  const update=seen.find(q=>q.sql.startsWith('UPDATE empresas'));
+  assert.equal(update.values[0],1,'Uses session company, never a submitted id');
+  assert.ok(!/nit|estado/.test(update.sql.split('WHERE')[0]),'NIT/status/approval are not writable');
+  assert.ok(update.sql.includes('ANY($2::bigint[])'));assert.equal(update.values[6],'2200-0000');
+  await assert.rejects(service.actualizarPerfilEmpresa({nombre:'X',sector:service.SECTORES[0],ubicacion:'SV',telefono:'1234'}),{status:422});
  },pool);
- assert.equal(events[0],'BEGIN');assert.ok(events.includes('COMMIT'));assert.equal(events.at(-1),'release');
- client.query=async sql=>{events.push(sql);if(sql.includes('INSERT INTO empresas'))return {rows:[{id:4}]};if(sql.includes('INSERT INTO public.empresas_propietarios'))throw Error('Simulated failure');return {rows:[]};};
- await assert.rejects(service.conContextoEmpresa({id:100,rol:'empresa',empresaId:1},()=>service.crearEmpresa({nombre:'Nueva',sector:service.SECTORES[0],ubicacion:'San Salvador'}),pool));assert.ok(events.includes('ROLLBACK'));
+ assert.equal(service.crearEmpresa,undefined);assert.equal(service.cambiarEstadoEmpresa,undefined);
 });
 test('Enterprise aggregates and every protected query retain owner predicate',async()=>{
  const seen=[];
@@ -160,7 +164,7 @@ test('Enterprise aggregates and every protected query retain owner predicate',as
  const service=harness(pool).load('src/services/empresarial.service.js');
  await service.conContextoEmpresa({id:100,rol:'empresa',empresaId:1},async()=>{
   await service.obtenerPanel();await service.listarEmpresas();await service.contarVacantesPorEstado();await service.contarPostulacionesPorEstado(11);await service.obtenerCandidato(10);
-  await service.actualizarEmpresa(2,{nombre:'Test',ubicacion:'SV',sector:'Tecnologia'});await service.cambiarEstadoEmpresa(2,'Activa');
+  await service.obtenerPerfilEmpresa();await service.actualizarPerfilEmpresa({nombre:'Test',ubicacion:'SV',sector:service.SECTORES[0]});
  },pool);assert.ok(seen.length>=12);
 });
 test('Authenticated HTTP role checks and forged company IDs never write foreign records',async()=>{
@@ -174,6 +178,9 @@ test('Authenticated HTTP role checks and forged company IDs never write foreign 
   const vacancies=await fetch(base+'/empresarial/vacantes',{headers:{cookie}});assert.equal(vacancies.status,200);const page=await vacancies.text();assert.ok(page.includes('/empresarial/vacantes/11'));assert.ok(!page.includes('/empresarial/vacantes/22'));
   const form=data=>({method:'POST',headers:{cookie,'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({_csrf:token,...data}),redirect:'manual'});
   assert.equal((await fetch(base+'/empresarial/vacantes/22/eliminar',form({}))).status,404);
+  assert.equal((await fetch(base+'/empresarial/empresas',form({nombre:'Otra',sector:'Tecnología',ubicacion:'SV'}))).status,404);
+  assert.equal((await fetch(base+'/empresarial/empresas/2/estado',form({estado:'Activa'}))).status,404);
+  assert.equal((await fetch(base+'/empresarial/empresas',{headers:{cookie},redirect:'manual'})).headers.get('location'),'/empresarial/perfil');
   assert.equal((await fetch(base+'/empresarial/postulaciones/222/estado',form({estado:'Entrevista'}))).status,404);
   assert.equal((await fetch(base+'/empresarial/vacantes/abc/eliminar',form({}))).status,400);
   role='candidato';assert.equal((await fetch(base+'/administrativo',{headers:{cookie},redirect:'manual'})).status,403);assert.equal((await fetch(base+'/empresarial/vacantes',{headers:{cookie},redirect:'manual'})).status,403);
