@@ -1,0 +1,107 @@
+<%- include('../partials/head', { titulo: titulo }) %>
+
+<body>
+    <%- include('../partials/navigation', { activo: 'empresa' }) %>
+
+    <%- include('partials/menu', { activo: 'perfil' }) %>
+
+    <main class="emp-main">
+
+        <section class="emp-contenido emp-perfil-empresa">
+            <p class="emp-etiqueta">Configuración</p>
+
+            <div class="emp-titulo-fila">
+                <h1>Perfil de empresa</h1>
+                <span class="emp-estado emp-estado-<%= empresa.estado.toLowerCase() %>"><%= empresa.estado %></span>
+            </div>
+
+            <% if (empresa.estadoAprobacion === 'Pendiente') { %>
+                <div class="emp-aviso emp-aviso-pendiente">
+                    <strong>⏳ Tu empresa está pendiente de aprobación.</strong>
+                    El administrador de TalentoHub revisará tus datos. Mientras tanto puedes completar tu perfil, pero no publicar vacantes.
+                </div>
+            <% } else if (empresa.estadoAprobacion === 'Rechazada') { %>
+                <div class="emp-aviso emp-aviso-rechazada">
+                    <strong>✕ El registro de tu empresa fue rechazado.</strong>
+                    Comunícate con el administrador de TalentoHub para más información.
+                </div>
+            <% } else if (empresa.estado === 'Inactiva') { %>
+                <div class="emp-aviso emp-aviso-pendiente">
+                    <strong>⏸ Tu empresa está inactiva.</strong>
+                    Sus vacantes no se muestran en el portal. Comunícate con el administrador para reactivarla.
+                </div>
+            <% } %>
+
+            <div class="emp-perfil-empresa-grid">
+                <form class="emp-tarjeta emp-form emp-bloque" method="post" action="/empresarial/perfil" novalidate>
+                    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || locals.csrf || '' %>">
+                    <h3>Datos de la empresa</h3>
+
+                    <% if (errores.length > 0) { %>
+                        <div class="emp-errores">
+                            <ul>
+                                <% errores.forEach(error => { %>
+                                    <li><%= error %></li>
+                                <% }) %>
+                            </ul>
+                        </div>
+                    <% } %>
+
+                    <label for="nombre">Nombre comercial *</label>
+                    <input id="nombre" name="nombre" maxlength="150" required value="<%= valores.nombre %>">
+
+                    <div class="emp-fila-2">
+                        <div>
+                            <label for="sector">Sector *</label>
+                            <select id="sector" name="sector" required>
+                                <option value="">Selecciona un sector</option>
+                                <% sectores.forEach(sector => { %>
+                                    <option value="<%= sector %>" <%= valores.sector === sector ? 'selected' : '' %>><%= sector %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="telefono">Teléfono corporativo</label>
+                            <input type="tel" id="telefono" name="telefono" data-formato="telefono" inputmode="numeric" minlength="9" pattern="[267]\d{3}-\d{4}" title="8 dígitos, empieza con 2, 6 o 7: 0000-0000" value="<%= valores.telefono || '' %>" placeholder="2200-0000">
+                        </div>
+                    </div>
+
+                    <label for="ubicacion">Ubicación *</label>
+                    <input id="ubicacion" name="ubicacion" maxlength="180" required value="<%= valores.ubicacion %>" placeholder="Ej. San Salvador, El Salvador">
+
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" name="descripcion" maxlength="1000" placeholder="Describe a qué se dedica tu empresa..."><%= valores.descripcion || '' %></textarea>
+
+                    <div class="emp-form-botones">
+                        <button class="emp-btn emp-btn-primario" type="submit">Guardar cambios</button>
+                    </div>
+                </form>
+
+                <aside class="emp-tarjeta emp-bloque">
+                    <h3>Datos de registro</h3>
+                    <p class="emp-ayuda">Estos datos solo los puede cambiar el administrador de TalentoHub.</p>
+                    <dl class="emp-detalle">
+                        <dt>NIT</dt>
+                        <dd><%= empresa.nit || '-' %></dd>
+                        <dt>Correo de acceso</dt>
+                        <dd><%= empresa.correo || '-' %></dd>
+                        <dt>Representante</dt>
+                        <dd><%= empresa.representante || '-' %></dd>
+                        <dt>Aprobación</dt>
+                        <dd><span class="emp-estado emp-estado-<%= (empresa.estadoAprobacion || 'pendiente').toLowerCase() %>"><%= empresa.estadoAprobacion || 'Pendiente' %></span></dd>
+                        <dt>Estado en el portal</dt>
+                        <dd><span class="emp-estado emp-estado-<%= empresa.estado.toLowerCase() %>"><%= empresa.estado %></span></dd>
+                    </dl>
+                </aside>
+            </div>
+        </section>
+
+    </main>
+
+    <% if (mensaje) { %>
+        <div class="emp-toast"><%= mensaje %></div>
+    <% } %>
+
+    <script src="/js/formatos.js"></script>
+
+    <%- include('../partials/footer') %>

@@ -54,8 +54,8 @@
                         </div>
 
                         <div class="auth-campo">
-                            <label for="nit">NIT empresarial</label>
-                            <input type="text" id="nit" name="nit" required maxlength="50" value="<%= valores.nit || '' %>" placeholder="0614-000000-101-0">
+                            <label for="nit">NIT empresarial *</label>
+                            <input type="text" id="nit" name="nit" data-formato="nit" inputmode="numeric" autocomplete="off" required minlength="17" pattern="\d{4}-\d{6}-\d{3}-\d" title="14 dígitos: 0000-000000-000-0" value="<%= valores.nit || '' %>" placeholder="0614-150322-101-0">
                         </div>
                     </div>
 
@@ -67,7 +67,7 @@
 
                         <div class="auth-campo">
                             <label for="telefono">Teléfono corporativo</label>
-                            <input type="text" id="telefono" name="telefono" value="<%= valores.telefono || '' %>" placeholder="+503 2200-0000">
+                            <input type="tel" id="telefono" name="telefono" data-formato="telefono" inputmode="numeric" autocomplete="tel-national" minlength="9" pattern="[267]\d{3}-\d{4}" title="8 dígitos, empieza con 2, 6 o 7: 0000-0000" value="<%= valores.telefono || '' %>" placeholder="2200-0000">
                         </div>
                     </div>
 
@@ -96,7 +96,7 @@
 
                         <div class="auth-campo">
                             <label for="telefono">Teléfono de contacto</label>
-                            <input type="text" id="telefono" name="telefono" value="<%= valores.telefono || '' %>" placeholder="+503 7000-0000">
+                            <input type="tel" id="telefono" name="telefono" data-formato="telefono" inputmode="numeric" autocomplete="tel-national" minlength="9" pattern="[267]\d{3}-\d{4}" title="8 dígitos, empieza con 2, 6 o 7: 0000-0000" value="<%= valores.telefono || '' %>" placeholder="7000-0000">
                         </div>
                     </div>
 
@@ -141,5 +141,7 @@
             </p>
         </section>
     </main>
+
+    <script src="/js/formatos.js"></script>
 </body>
 </html>

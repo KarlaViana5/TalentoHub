@@ -69,4 +69,4 @@ documentHandlers.keydown({key:'Escape'}); check(expanded==='false' && focused, '
 handlers.click(); documentHandlers.click({target:{}}); check(expanded==='false', 'Clic exterior cierra');
 handlers.click(); panelHandlers.click({target:{closest(){return {};}}}); check(expanded==='false', 'Enlace cierra');
 handlers.click(); mediaHandlers.change(); check(expanded==='false', 'Cambio de tama?o restablece men?');
-console.log(checks + ' comprobaciones correctas; ' + files.length + ' EJS v?lidos. Sin acceso a PostgreSQL.');
+console.log(checks + ' comprobaciones correctas; ' + files.length + ' EJS válidos. Sin acceso a PostgreSQL.');

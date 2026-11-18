@@ -1,6 +1,7 @@
 const { createHash, randomBytes, scrypt, timingSafeEqual } = require('node:crypto');
 const { promisify } = require('node:util');
 const { pool } = require('../config/database');
+const { normalizarNit, normalizarTelefono, MENSAJE_NIT, MENSAJE_TELEFONO } = require('../utils/validaciones');
 
 const derivar = promisify(scrypt);
 const COOKIE_SESION = 'talentohub_sid';
@@ -189,7 +190,7 @@ async function registrarNuevoUsuario(datos = {}) {
     const correo = texto(datos.correo).toLowerCase();
     const clave = String(datos.clave ?? '');
     const confirmarClave = String(datos.confirmarClave ?? '');
-    const telefono = texto(datos.telefono);
+    const telefono = normalizarTelefono(datos.telefono);
     const ubicacion = texto(datos.ubicacion) || 'San Salvador, El Salvador';
 
     if (!['candidato', 'empresa'].includes(datos.rol)) throw new Error('Selecciona un tipo de cuenta valido.');
@@ -198,6 +199,8 @@ async function registrarNuevoUsuario(datos = {}) {
     if (correo.length > 180 || !correo || !/^\S+@\S+\.\S+$/.test(correo)) throw new Error('Ingresa un correo electrónico válido.');
     if (typeof datos.clave !== 'string' || clave.length < 12 || clave.length > 256) throw new Error('La contraseña debe tener entre 12 y 256 caracteres.');
     if (clave !== confirmarClave) throw new Error('Las contraseñas no coinciden.');
+    if (telefono === null) throw new Error(MENSAJE_TELEFONO);
+    if (rol === 'empresa' && !normalizarNit(datos.nit)) throw new Error(MENSAJE_NIT);
 
     const { rows: existente } = await pool.query(
         'SELECT id_usuario FROM usuarios_cuenta WHERE LOWER(correo) = $1 LIMIT 1',
@@ -238,8 +241,7 @@ async function registrarNuevoUsuario(datos = {}) {
         } else {
             const nombreEmpresa = texto(datos.nombreEmpresa) || nombre;
             const sector = texto(datos.sector) || 'Tecnología';
-            const nit = texto(datos.nit);
-            if (!nit || nit.length > 50) throw new Error('Ingresa el NIT real de la empresa.');
+            const nit = normalizarNit(datos.nit);
             const razonSocial = texto(datos.razonSocial) || nombreEmpresa;
             const descripcion = texto(datos.descripcion) || 'Empresa registrada en TalentoHub para publicación de oportunidades laborales.';
 

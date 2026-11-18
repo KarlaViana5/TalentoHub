@@ -1,4 +1,5 @@
 const { pool } = require('../config/database');
+const { normalizarTelefono, MENSAJE_TELEFONO } = require('../utils/validaciones');
 
 const { AsyncLocalStorage } = require('node:async_hooks');
 const contexto = new AsyncLocalStorage();
@@ -114,44 +115,37 @@ function validarEmpresa(datos) {
     return errores;
 }
 
-async function crearEmpresa(datos) {
+// perfil: solo la empresa de la sesion
+const SELECT_PERFIL = `
+    SELECT id_empresa::int AS id, nombre, sector, ubicacion, descripcion, telefono, nit, correo,
+        representante, estado, estado_aprobacion AS "estadoAprobacion"
+    FROM empresas
+`;
+
+async function obtenerPerfilEmpresa() {
     const actual = obtenerContexto();
-    if (!actual.extendida) throw errorAcceso('La creacion de empresas adicionales requiere aplicar la migracion 002 de propiedad.', 503);
-    const errors = validarEmpresa(datos);
-    if (errors.length) throw errorAcceso(errors.join(' '), 422);
-    const client = await actual.conexion.connect();
-    try {
-        await client.query('BEGIN');
-        const { rows } = await client.query(
-            "INSERT INTO empresas (nombre, sector, ubicacion, descripcion, estado, estado_aprobacion, estado_verificacion) VALUES ($1,$2,$3,$4,'pendiente','pendiente','no_verificada') RETURNING id_empresa::int AS id, nombre, sector, ubicacion, descripcion, estado",
-            [texto(datos.nombre), datos.sector, texto(datos.ubicacion), texto(datos.descripcion)]);
-        await client.query('INSERT INTO public.empresas_propietarios (usuario_id, empresa_id) VALUES ($1,$2)', [actual.usuarioId, rows[0].id]);
-        await client.query("INSERT INTO solicitudes_empresas (empresa_id, estado, notas_solicitante) VALUES ($1,'pendiente',$2)", [rows[0].id, 'Solicitud empresarial pendiente de revision.']);
-        await client.query('COMMIT');
-        return mapearEmpresa(rows[0]);
-    } catch (error) { await client.query('ROLLBACK'); throw error; }
-    finally { client.release(); }
+    const filas = await consulta(`${SELECT_PERFIL} WHERE id_empresa = $1 AND id_empresa = ANY($2::bigint[])`, [actual.empresaId, propias()]);
+    return filas[0] ? { ...filas[0], estado: capitalizar(filas[0].estado), estadoAprobacion: capitalizar(filas[0].estadoAprobacion) } : null;
 }
 
-async function actualizarEmpresa(id, datos) {
-    if (!idValido(id)) return null;
-    const filas = await consulta(
-        `UPDATE empresas SET nombre = $2, sector = $3, ubicacion = $4, descripcion = $5, estado = CASE WHEN estado_aprobacion = 'aprobada' THEN $6 ELSE estado END
-         WHERE id_empresa = $1 AND id_empresa = ANY($7::bigint[])
-         RETURNING id_empresa::int AS id, nombre, sector, ubicacion, descripcion, estado`,
-        [id, texto(datos.nombre), datos.sector, texto(datos.ubicacion), texto(datos.descripcion), datos.activa ? 'activa' : 'inactiva', propias()]
-    );
-    return mapearEmpresa(filas[0]);
+function validarPerfilEmpresa(datos) {
+    const errores = validarEmpresa(datos);
+    if (texto(datos.descripcion).length > 1000) errores.push('La descripción no puede superar 1000 caracteres.');
+    if (normalizarTelefono(datos.telefono) === null) errores.push(MENSAJE_TELEFONO);
+    return errores;
 }
 
-async function cambiarEstadoEmpresa(id, estado) {
-    if (!idValido(id) || !ESTADOS_EMPRESA.includes(estado)) return null;
-    const filas = await consulta(
-        `UPDATE empresas SET estado = $2 WHERE id_empresa = $1 AND id_empresa = ANY($3::bigint[]) AND estado_aprobacion = 'aprobada'
-         RETURNING id_empresa::int AS id, nombre, sector, ubicacion, descripcion, estado`,
-        [id, estado.toLowerCase(), propias()]
+// nit, estado y aprobacion no se tocan
+async function actualizarPerfilEmpresa(datos) {
+    const actual = obtenerContexto();
+    const errores = validarPerfilEmpresa(datos);
+    if (errores.length) throw errorAcceso(errores.join(' '), 422);
+    await consulta(
+        `UPDATE empresas SET nombre = $3, sector = $4, ubicacion = $5, descripcion = $6, telefono = $7
+         WHERE id_empresa = $1 AND id_empresa = ANY($2::bigint[])`,
+        [actual.empresaId, propias(), texto(datos.nombre), datos.sector, texto(datos.ubicacion), texto(datos.descripcion), normalizarTelefono(datos.telefono) || null]
     );
-    return mapearEmpresa(filas[0]);
+    return obtenerPerfilEmpresa();
 }
 
 // vacantes
@@ -629,9 +623,9 @@ module.exports = {
     listarEmpresas,
     obtenerEmpresa,
     validarEmpresa,
-    crearEmpresa,
-    actualizarEmpresa,
-    cambiarEstadoEmpresa,
+    obtenerPerfilEmpresa,
+    validarPerfilEmpresa,
+    actualizarPerfilEmpresa,
     listarVacantes,
     obtenerVacante,
     contarVacantesPorEstado,

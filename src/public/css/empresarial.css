@@ -860,3 +860,33 @@ footer {
 .emp-menu .emp-menu-label { color: #475569; font-size: 12px; font-weight: 700; margin-right: 12px; }
 .emp-menu a.emp-link { min-height: 42px; display: inline-flex; align-items: center; }
 @media (max-width: 600px) { .emp-menu { padding-left: 16px; padding-right: 16px; } .emp-menu .emp-menu-label { flex-basis: 100%; } }
+
+/* perfil empresa */
+.emp-perfil-empresa-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.emp-perfil-empresa-grid .emp-form { display: flex; flex-direction: column; gap: 6px; }
+.emp-perfil-empresa-grid textarea { min-height: 110px; }
+
+.emp-aviso {
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.emp-aviso strong { display: block; }
+.emp-aviso-pendiente { background: var(--emp-amarillo-claro); color: #8a5a00; border: 1px solid #ffe066; }
+.emp-aviso-rechazada { background: var(--emp-rojo-claro); color: var(--emp-rojo); border: 1px solid #ffc9c9; }
+
+.emp-estado-aprobada { background: var(--emp-verde-claro); color: var(--emp-verde); }
+.emp-estado-rechazada { background: var(--emp-rojo-claro); color: var(--emp-rojo); }
+
+@media (max-width: 1100px) {
+    .emp-perfil-empresa-grid { grid-template-columns: 1fr; }
+}
